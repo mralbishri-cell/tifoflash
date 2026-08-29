@@ -9,27 +9,39 @@ workflows:
       flutter: stable
       xcode: latest
       cocoapods: default
-      ios_signing:
-        distribution_type: app_store
-        bundle_identifier: com.tifoflash.tifoflashApp
     scripts:
+      - name: Initialize keychain on build machine
+        script: |
+          keychain initialize
+
       - name: Fetch Flutter dependencies
         script: |
           cd tifoflash_app
           flutter pub get
-      - name: Run Code Analysis & Unit Tests
+
+      - name: Create certificate and provisioning profile automatically
+        script: |
+          app-store-connect certificates create --type IOS_DISTRIBUTION --save
+          app-store-connect fetch-signing-files "com.tifoflash.tifoflashApp" \
+            --type IOS_APP_STORE \
+            --create \
+            --save
+
+      - name: Add certificates to keychain
+        script: |
+          keychain add-certificates
+
+      - name: Apply code signing settings
+        script: |
+          xcode-project use-profiles
+
+      - name: Build & Sign iOS IPA Package
         script: |
           cd tifoflash_app
-          flutter analyze
-          flutter test
-      - name: Build Signed iOS Package
-        script: |
-          cd tifoflash_app
-          flutter build ios --release
           flutter build ipa --release
+
     artifacts:
       - tifoflash_app/build/ios/ipa/*.ipa
-      - tifoflash_app/build/ios/archive/Runner.xcarchive
     publishing:
       app_store_connect:
         auth: integration
