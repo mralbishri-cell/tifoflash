@@ -19,8 +19,9 @@ workflows:
           cd tifoflash_app
           flutter analyze
           flutter test
-      - name: Fetch iOS Signing Files via App Store Connect API Key
+      - name: Create & Fetch iOS Signing Files via App Store Connect API Key
         script: |
+          app-store-connect create-certificate --type IOS_DISTRIBUTION || true
           app-store-connect fetch-signing-files "com.tifoflash.tifoflashApp" --type IOS_APP_STORE --create
       - name: Build & Sign iOS IPA Package
         script: |
