@@ -17,6 +17,10 @@ workflows:
           cd tifoflash_app
           flutter analyze
           flutter test
+      - name: Prepare CocoaPods & Xcode Workspace
+        script: |
+          cd tifoflash_app
+          flutter build ios --release --no-codesign
       - name: Build iOS IPA Package
         script: |
           cd tifoflash_app
