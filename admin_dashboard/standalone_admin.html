@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>TifoFlash Stadium Admin Control | لوحة التحكم السلسة فائقة السرعة</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&family=Outfit:wght@400;600;700;900&display=swap" rel="stylesheet">
+  <style>
+    body {
+      font-family: 'Cairo', 'Outfit', sans-serif;
+      background-color: #090d16;
+      color: #f8fafc;
+    }
+    .glass-panel {
+      background: rgba(15, 23, 42, 0.75);
+      backdrop-filter: blur(16px);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+    }
+    .sector-btn {
+      transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    .sector-btn:active {
+      transform: scale(0.96);
+    }
+  </style>
+</head>
+<body class="p-4 md:p-8">
+  <div class="max-w-7xl mx-auto space-y-6">
+    <!-- Header -->
+    <header class="glass-panel p-6 rounded-2xl flex flex-wrap items-center justify-between gap-4 border border-slate-800">
+      <div class="flex items-center gap-4">
+        <div class="w-12 h-12 rounded-2xl bg-gradient-to-tr from-emerald-500 to-cyan-400 flex items-center justify-center text-black font-black text-2xl shadow-lg shadow-emerald-500/20">
+          ⚡
+        </div>
+        <div>
+          <h1 class="text-2xl font-black text-white flex items-center gap-2">
+            TIFO FLASH <span class="text-xs bg-emerald-500/20 text-emerald-400 px-2.5 py-1 rounded-full border border-emerald-500/30">SMOOTH CONTROL V3.0</span>
+          </h1>
+          <p class="text-xs text-slate-400">لوحة التحكم التفاعلية المباشرة والسلسة للمدرجات | Ultra-Smooth Stadium Control</p>
+        </div>
+      </div>
+
+      <div class="flex items-center gap-3 text-xs">
+        <div class="bg-slate-900 px-4 py-2 rounded-xl border border-slate-800 flex items-center gap-2">
+          <span class="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-ping"></span>
+          <span class="text-slate-400">السحابة:</span>
+          <span class="font-mono text-emerald-400 font-bold">LIVE FIREBASE RTDB</span>
+        </div>
+      </div>
+    </header>
+
+    <!-- Main Content Grid -->
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+      <!-- Sector Matrix & Trigger Controls (8 Cols) -->
+      <div class="lg:col-span-8 space-y-6">
+        <!-- Stadium Matrix & Quick Group Filters -->
+        <div class="glass-panel p-6 rounded-2xl border border-slate-800 space-y-4">
+          <div class="flex flex-wrap items-center justify-between gap-3">
+            <h2 class="text-lg font-bold text-white flex items-center gap-2">
+              <span>🏟️</span> التحكم التفاعلي بالمدرجات | Interactive Stadium Selector
+            </h2>
+            
+            <!-- Quick Preset Filters for Instant Smooth Selection -->
+            <div class="flex flex-wrap gap-1.5 text-xs">
+              <button onclick="filterGroup('ALL')" class="px-3 py-1.5 rounded-lg bg-emerald-500 text-black font-bold hover:bg-emerald-400 transition">كل الاستاد (ALL)</button>
+              <button onclick="filterGroup('EAST')" class="px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-cyan-400 border border-cyan-500/30 font-bold">الواجهة الشرقية</button>
+              <button onclick="filterGroup('WEST')" class="px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-purple-400 border border-purple-500/30 font-bold">المدرج الغربي</button>
+              <button onclick="filterGroup('CURVES')" class="px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-amber-400 border border-amber-500/30 font-bold">المنحنيات</button>
+              <button onclick="filterGroup('NONE')" class="px-3 py-1.5 rounded-lg bg-slate-900 text-slate-400 hover:bg-slate-800">تفرغ ✕</button>
+            </div>
+          </div>
+
+          <!-- Stadium Pitch Interactive 2D Visual Matrix -->
+          <div class="relative bg-slate-950 p-5 rounded-2xl border border-slate-800 space-y-4">
+            <!-- Stadium Pitch Center -->
+            <div class="w-full py-3 bg-emerald-950/40 border border-emerald-500/30 rounded-xl flex items-center justify-center text-emerald-400 text-xs font-bold tracking-widest uppercase">
+              ⚽ أرضية الملعب الرئيسية • STADIUM PITCH ⚽
+            </div>
+
+            <!-- Interactive Sector Grid -->
+            <div class="grid grid-cols-2 sm:grid-cols-4 gap-3" id="matrixGrid">
+              <!-- Rendered dynamically -->
+            </div>
+          </div>
+        </div>
+
+        <!-- Smooth Live Action Controller -->
+        <div class="glass-panel p-6 rounded-2xl border border-slate-800 space-y-4">
+          <div class="flex items-center justify-between">
+            <h2 class="text-lg font-bold text-white flex items-center gap-2">
+              <span>⚡</span> البث المباشر الفوري | Instant Broadcast Commands
+            </h2>
+            <button id="btnStop" class="px-4 py-2 bg-red-950 hover:bg-red-900 text-red-400 border border-red-500/40 rounded-xl font-bold text-xs transition">STOP ALL (إيقاف الشاشات)</button>
+          </div>
+
+          <!-- Directional Wave Sweep Controls -->
+          <div class="bg-slate-950 p-4 rounded-xl border border-slate-800 flex flex-wrap items-center justify-between gap-3 text-xs">
+            <span class="text-slate-400 font-bold">اتجاه الموجة الضوئية (Wave Direction):</span>
+            <div class="flex gap-2">
+              <button onclick="setDirection('L2R')" id="dirL2R" class="px-3 py-1.5 rounded-lg bg-cyan-500 text-black font-bold">من اليسار لليمين ➡️</button>
+              <button onclick="setDirection('R2L')" id="dirR2L" class="px-3 py-1.5 rounded-lg bg-slate-800 text-slate-300">من اليمين لليسار ⬅️</button>
+            </div>
+          </div>
+
+          <!-- Live Trigger Buttons -->
+          <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
+            <button onclick="triggerAction('STROBE')" class="p-4 bg-emerald-500/20 hover:bg-emerald-500/30 border border-emerald-500/50 rounded-xl font-bold text-xs text-emerald-400 flex flex-col items-center gap-1 transition shadow-lg shadow-emerald-500/10">
+              <span class="text-lg">⚡</span>
+              <span>Goal Strobe</span>
+              <span class="text-[10px] opacity-60 font-normal">ومضات الهدف السريعة</span>
+            </button>
+            <button onclick="triggerAction('WAVE')" class="p-4 bg-cyan-500/20 hover:bg-cyan-500/30 border border-cyan-500/50 rounded-xl font-bold text-xs text-cyan-400 flex flex-col items-center gap-1 transition shadow-lg shadow-cyan-500/10">
+              <span class="text-lg">🌊</span>
+              <span>Wave Effect</span>
+              <span class="text-[10px] opacity-60 font-normal">موجة تتابع سلسة</span>
+            </button>
+            <button onclick="triggerAction('TEXT_DISPLAY')" class="p-4 bg-purple-500/20 hover:bg-purple-500/30 border border-purple-500/50 rounded-xl font-bold text-xs text-purple-400 flex flex-col items-center gap-1 transition shadow-lg shadow-purple-500/10">
+              <span class="text-lg">🔤</span>
+              <span>Word Tifo</span>
+              <span class="text-[10px] opacity-60 font-normal">عرض الحروف والتيفو</span>
+            </button>
+            <button onclick="triggerAction('SPONSOR_POPUP')" class="p-4 bg-amber-500/20 hover:bg-amber-500/30 border border-amber-500/50 rounded-xl font-bold text-xs text-amber-400 flex flex-col items-center gap-1 transition shadow-lg shadow-amber-500/10">
+              <span class="text-lg">🎁</span>
+              <span>Sponsor Offer</span>
+              <span class="text-[10px] opacity-60 font-normal">بث كارت الهدية</span>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Live Stream Log (4 Cols) -->
+      <div class="lg:col-span-4 glass-panel p-6 rounded-2xl border border-slate-800 flex flex-col">
+        <h2 class="text-lg font-bold text-white mb-4 flex items-center gap-2">
+          <span>📡</span> سجل الإشارات السحابية | Live Log Stream
+        </h2>
+
+        <div id="logStream" class="flex-1 bg-slate-950 p-4 rounded-xl border border-slate-800 font-mono text-xs space-y-2 overflow-y-auto max-h-[500px]">
+          <div class="text-slate-500 text-center py-6">جاهز للبث السحابي المباشر...</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const FIREBASE_DB_URL = "https://tifoflash-default-rtdb.europe-west1.firebasedatabase.app";
+    const MATCH_ID = "match_2026_final";
+
+    const SECTORS = [
+      { id: 'SEC_EAST_101', name: 'الشرقي 101', group: 'EAST', orderIndex: 1 },
+      { id: 'SEC_EAST_102', name: 'الشرقي 102', group: 'EAST', orderIndex: 2 },
+      { id: 'SEC_EAST_103', name: 'الشرقي 103', group: 'EAST', orderIndex: 3 },
+      { id: 'SEC_EAST_104', name: 'الشرقي 104', group: 'EAST', orderIndex: 4 },
+
+      { id: 'SEC_WEST_201', name: 'الغربي 201', group: 'WEST', orderIndex: 5 },
+      { id: 'SEC_WEST_202', name: 'الغربي 202', group: 'WEST', orderIndex: 6 },
+      { id: 'SEC_CURVE_L1', name: 'المنحنى الأيسر', group: 'CURVES', orderIndex: 7 },
+      { id: 'SEC_CURVE_R1', name: 'المنحنى الأيمن', group: 'CURVES', orderIndex: 8 },
+
+      { id: 'SEC_NORTH_301', name: 'الشمالي 301', group: 'NORTH', orderIndex: 9 },
+      { id: 'SEC_SOUTH_401', name: 'الجنوبي 401', group: 'SOUTH', orderIndex: 10 }
+    ];
+
+    let selectedSectors = SECTORS.map(s => s.id);
+    let currentDirection = 'L2R';
+
+    function renderMatrix() {
+      const grid = document.getElementById('matrixGrid');
+      grid.innerHTML = SECTORS.map(s => {
+        const isSelected = selectedSectors.includes(s.id);
+        return `
+          <button onclick="toggleSector('${s.id}')" class="sector-btn p-3 rounded-xl border text-right font-bold text-xs flex flex-col justify-between h-20 ${
+            isSelected 
+              ? 'bg-emerald-950/70 border-emerald-400 text-emerald-300 shadow-md shadow-emerald-950' 
+              : 'bg-slate-900 border-slate-800 text-slate-500 opacity-60 hover:opacity-100'
+          }">
+            <div class="flex items-center justify-between w-full">
+              <span class="text-white">${s.name}</span>
+              ${isSelected ? '<span>✓</span>' : ''}
+            </div>
+            <div class="text-[10px] font-mono text-slate-400">${s.id}</div>
+          </button>
+        `;
+      }).join('');
+    }
+
+    function toggleSector(id) {
+      if (selectedSectors.includes(id)) {
+        selectedSectors = selectedSectors.filter(x => x !== id);
+      } else {
+        selectedSectors.push(id);
+      }
+      renderMatrix();
+    }
+
+    function filterGroup(groupName) {
+      if (groupName === 'ALL') {
+        selectedSectors = SECTORS.map(s => s.id);
+      } else if (groupName === 'NONE') {
+        selectedSectors = [];
+      } else {
+        selectedSectors = SECTORS.filter(s => s.group === groupName).map(s => s.id);
+      }
+      renderMatrix();
+    }
+
+    function setDirection(dir) {
+      currentDirection = dir;
+      document.getElementById('dirL2R').className = dir === 'L2R' ? 'px-3 py-1.5 rounded-lg bg-cyan-500 text-black font-bold' : 'px-3 py-1.5 rounded-lg bg-slate-800 text-slate-300';
+      document.getElementById('dirR2L').className = dir === 'R2L' ? 'px-3 py-1.5 rounded-lg bg-cyan-500 text-black font-bold' : 'px-3 py-1.5 rounded-lg bg-slate-800 text-slate-300';
+    }
+
+    async function triggerAction(type) {
+      const logStream = document.getElementById('logStream');
+      const time = new Date().toLocaleTimeString();
+
+      let targetSectorsOrdered = [...selectedSectors];
+      if (currentDirection === 'R2L') {
+        targetSectorsOrdered.reverse();
+      }
+
+      const payload = {
+        action_id: 'act_' + Date.now(),
+        timestamp: Date.now(),
+        type: type,
+        target_type: selectedSectors.length === SECTORS.length ? 'ALL' : 'SECTOR',
+        target_ids: targetSectorsOrdered,
+        payload: {
+          color_hex: type === 'STROBE' ? '#00E676' : (type === 'WAVE' ? '#00E5FF' : '#FFD700'),
+          flash_frequency_ms: 120,
+          duration_seconds: 8,
+          text_char: type === 'TEXT_DISPLAY' ? 'A' : '',
+          wave_delay_step_ms: 200,
+          sponsor: type === 'SPONSOR_POPUP' ? { title: 'عرض خاص من الراعي الرسمي - خصم 30%', coupon_code: 'MATCH2026' } : null
+        }
+      };
+
+      const entry = document.createElement('div');
+      entry.className = 'p-2.5 bg-slate-900 rounded-lg border border-slate-800 text-slate-300 transition animate-fade-in';
+      entry.innerHTML = `
+        <div class="text-[10px] text-emerald-400 font-bold">[${time}] BROADCASTING TO FIREBASE...</div>
+        <div class="font-bold text-white text-xs mt-0.5">${type} (${selectedSectors.length} Sectors)</div>
+        <pre class="text-[10px] text-slate-400 mt-1 max-h-24 overflow-x-auto">${JSON.stringify(payload.payload, null, 1)}</pre>
+      `;
+      logStream.prepend(entry);
+
+      try {
+        const response = await fetch(`${FIREBASE_DB_URL}/matches/${MATCH_ID}/live_action.json`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+        if (response.ok) {
+          entry.querySelector('div').innerText = `[${time}] SENT LIVE TO FIREBASE (200 OK) 🟢`;
+        }
+      } catch (err) {
+        console.error("Firebase Error:", err);
+      }
+    }
+
+    document.getElementById('btnStop').onclick = () => triggerAction('IDLE');
+
+    renderMatrix();
+  </script>
+</body>
+</html>

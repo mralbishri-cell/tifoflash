@@ -1,0 +1,17 @@
+{
+  "rules": {
+    ".read": "auth != null",
+    ".write": "auth != null",
+    "matches": {
+      "$match_id": {
+        ".read": true,
+        ".write": true,
+        "live_action": {
+          ".read": true,
+          ".write": true,
+          ".indexOn": ["timestamp", "type", "action_id"]
+        }
+      }
+    }
+  }
+}

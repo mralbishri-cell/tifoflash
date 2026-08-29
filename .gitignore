@@ -1,0 +1,57 @@
+# Miscellaneous
+*.class
+*.log
+*.pyc
+*.swp
+.DS_Store
+.atom/
+.buildlog/
+.history
+.svn/
+migrate_working_dir/
+
+# Flutter & Dart
+.dart_tool/
+.flutter-plugins
+.flutter-plugins-dependencies
+.packages
+.pub-cache/
+.pub/
+build/
+tifoflash_app/build/
+tifoflash_app/.dart_tool/
+tifoflash_app/.flutter-plugins
+tifoflash_app/.flutter-plugins-dependencies
+
+# Android
+.gradle/
+local.properties
+tifoflash_app/android/.gradle/
+tifoflash_app/android/local.properties
+tifoflash_app/android/app/release/
+tifoflash_app/android/app/debug/
+
+# iOS / Xcode
+*.mode1v3
+*.mode2v3
+*.moved-aside
+*.pbxuser
+*.perspectivev3
+*.xcodeproj/project.xcworkspace/xcuserdata/
+*.xcodeproj/xcuserdata/
+*.xcworkspace/xcuserdata/
+tifoflash_app/ios/Pods/
+tifoflash_app/ios/.symlinks/
+tifoflash_app/ios/Flutter/Flutter.framework
+tifoflash_app/ios/Flutter/Flutter.podspec
+tifoflash_app/ios/Runner.xcworkspace/
+
+# Web / Node
+node_modules/
+admin_dashboard/node_modules/
+admin_dashboard/dist/
+admin_dashboard/.vite/
+
+# AntiGravity IDE scratch files
+brain/
+scratch/
