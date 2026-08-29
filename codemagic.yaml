@@ -21,9 +21,14 @@ workflows:
 
       - name: Create certificate and provisioning profile automatically
         script: |
+          # Generate a fresh RSA private key for certificate signing
+          openssl genrsa -out /tmp/cert_private_key.pem 2048
+
+          # Create distribution certificate + provisioning profile using the generated key
           app-store-connect fetch-signing-files "com.tifoflash.tifoflashApp" \
             --type IOS_APP_STORE \
-            --create
+            --create \
+            --certificate-key /tmp/cert_private_key.pem
 
       - name: Add certificates to keychain
         script: |
