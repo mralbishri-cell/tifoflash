@@ -9,9 +9,6 @@ workflows:
       flutter: stable
       xcode: latest
       cocoapods: default
-      ios_signing:
-        distribution_type: app_store
-        bundle_identifier: com.tifoflash.tifoflashApp
     scripts:
       - name: Fetch Flutter dependencies
         script: |
@@ -22,7 +19,7 @@ workflows:
           cd tifoflash_app
           flutter analyze
           flutter test
-      - name: Build & Sign IPA using App Store Connect API Key
+      - name: Build & Sign IPA using Codemagic CLI and App Store Connect Key
         script: |
           cd tifoflash_app
           xcode-project build-ipa \
