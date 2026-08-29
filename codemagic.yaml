@@ -24,11 +24,14 @@ workflows:
           # Generate a fresh RSA private key for certificate signing
           openssl genrsa -out /tmp/cert_private_key.pem 2048
 
-          # Create distribution certificate + provisioning profile using the generated key
+          # Read the key content into a variable (CLI expects content, not file path)
+          CERT_KEY=$(cat /tmp/cert_private_key.pem)
+
+          # Create distribution certificate + provisioning profile using the generated key content
           app-store-connect fetch-signing-files "com.tifoflash.tifoflashApp" \
             --type IOS_APP_STORE \
             --create \
-            --certificate-key /tmp/cert_private_key.pem
+            --certificate-key "$CERT_KEY"
 
       - name: Add certificates to keychain
         script: |
