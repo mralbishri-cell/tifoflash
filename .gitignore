@@ -44,7 +44,6 @@ tifoflash_app/ios/Pods/
 tifoflash_app/ios/.symlinks/
 tifoflash_app/ios/Flutter/Flutter.framework
 tifoflash_app/ios/Flutter/Flutter.podspec
-tifoflash_app/ios/Runner.xcworkspace/
 
 # Web / Node
 node_modules/
