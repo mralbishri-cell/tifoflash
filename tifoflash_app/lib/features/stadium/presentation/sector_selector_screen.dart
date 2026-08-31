@@ -344,6 +344,9 @@ class _SectorSelectorScreenState extends State<SectorSelectorScreen> {
                 const SizedBox(height: 10),
               ],
 
+              // 2D Stadium Pitch Visualizer Blueprint
+              _buildStadiumPitchBlueprint(),
+
               // Interactive Sector Selector Grid
               Text(
                 _placementMode == 0 ? 'القطاعات المتاحة في الفعالية:' : 'اختر القطاع / Sector:',
@@ -580,6 +583,107 @@ class _SectorSelectorScreenState extends State<SectorSelectorScreen> {
             ],
           ),
         ),
+      ),
+    );
+  }
+
+  Widget _buildStadiumPitchBlueprint() {
+    return Container(
+      width: double.infinity,
+      height: 140,
+      margin: const EdgeInsets.only(bottom: 12),
+      decoration: BoxDecoration(
+        color: const Color(0xFF06140F),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: const Color(0xFF10B981).withValues(alpha: 0.4)),
+        boxShadow: [
+          BoxShadow(
+            color: const Color(0xFF10B981).withValues(alpha: 0.15),
+            blurRadius: 10,
+          ),
+        ],
+      ),
+      child: Stack(
+        alignment: Alignment.center,
+        children: [
+          // Center Pitch Lines
+          Container(
+            width: 140,
+            height: 80,
+            decoration: BoxDecoration(
+              color: const Color(0xFF042F20).withValues(alpha: 0.8),
+              borderRadius: BorderRadius.circular(10),
+              border: Border.all(color: const Color(0xFF10B981).withValues(alpha: 0.6), width: 1.5),
+            ),
+            child: Stack(
+              alignment: Alignment.center,
+              children: [
+                Container(width: 1.5, color: const Color(0xFF10B981).withValues(alpha: 0.6)),
+                Container(
+                  width: 32,
+                  height: 32,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    border: Border.all(color: const Color(0xFF10B981).withValues(alpha: 0.6), width: 1.5),
+                  ),
+                ),
+                const Text(
+                  'أرضية الملعب PITCH',
+                  style: TextStyle(
+                    color: Color(0xFF34D399),
+                    fontSize: 8.5,
+                    fontWeight: FontWeight.w900,
+                    letterSpacing: 1,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          Positioned(
+            top: 6,
+            child: Text(
+              'المدرج الشمالي ⬆️',
+              style: TextStyle(
+                color: _selectedSector.standGroup == 'NORTH' ? const Color(0xFF00E5FF) : Colors.white70,
+                fontSize: 10,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ),
+          Positioned(
+            bottom: 6,
+            child: Text(
+              'المدرج الجنوبي ⬇️',
+              style: TextStyle(
+                color: _selectedSector.standGroup == 'SOUTH' ? const Color(0xFF00E5FF) : Colors.white70,
+                fontSize: 10,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ),
+          Positioned(
+            right: 12,
+            child: Text(
+              'المدرج الشرقي ➡️',
+              style: TextStyle(
+                color: _selectedSector.standGroup == 'EAST' ? const Color(0xFF00E5FF) : Colors.white70,
+                fontSize: 10,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ),
+          Positioned(
+            left: 12,
+            child: Text(
+              'المدرج الغربي ⬅️',
+              style: TextStyle(
+                color: _selectedSector.standGroup == 'WEST' ? const Color(0xFF00E5FF) : Colors.white70,
+                fontSize: 10,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }
