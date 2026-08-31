@@ -1,11 +1,57 @@
 import 'dart:ui';
 
+/// Security sanitization utilities for incoming payloads
+class PayloadSanitizer {
+  /// Validate and sanitize hex color string (e.g. '#00E676')
+  static String sanitizeColorHex(String? raw) {
+    if (raw == null || raw.isEmpty) return '#008000';
+    final cleaned = raw.replaceAll(RegExp(r'[^#0-9A-Fa-f]'), '');
+    if (RegExp(r'^#[0-9A-Fa-f]{6}$').hasMatch(cleaned)) return cleaned;
+    if (RegExp(r'^#[0-9A-Fa-f]{8}$').hasMatch(cleaned)) return cleaned;
+    return '#008000';
+  }
+
+  /// Sanitize text input — strip HTML/script tags, limit length
+  static String sanitizeText(String? raw, {int maxLength = 50}) {
+    if (raw == null || raw.isEmpty) return '';
+    // Strip any HTML tags
+    final stripped = raw.replaceAll(RegExp(r'<[^>]*>'), '');
+    // Limit length
+    return stripped.length > maxLength ? stripped.substring(0, maxLength) : stripped;
+  }
+
+  /// Validate URL — only allow https:// URLs, reject javascript: and other schemes
+  static String sanitizeUrl(String? raw) {
+    if (raw == null || raw.isEmpty) return '';
+    final trimmed = raw.trim();
+    // Only allow HTTPS URLs
+    if (trimmed.startsWith('https://')) return trimmed;
+    // Block everything else (javascript:, data:, http:, ftp:, etc.)
+    return '';
+  }
+
+  /// Sanitize coupon code — alphanumeric + limited symbols only
+  static String sanitizeCouponCode(String? raw) {
+    if (raw == null || raw.isEmpty) return '';
+    return raw.replaceAll(RegExp(r'[^a-zA-Z0-9_\-]'), '').substring(0, raw.length > 30 ? 30 : raw.length);
+  }
+
+  /// Clamp numeric value within safe bounds
+  static int clampInt(dynamic raw, int defaultVal, int min, int max) {
+    final val = (raw is num) ? raw.toInt() : defaultVal;
+    return val.clamp(min, max);
+  }
+}
+
 enum TifoActionType {
   strobe,
   solidColor,
   wave,
   textDisplay,
   sponsorPopup,
+  chantLyrics,
+  goalCelebration,
+  pixelMatrix,
   idle;
 
   static TifoActionType parse(String? value) {
@@ -20,6 +66,12 @@ enum TifoActionType {
         return TifoActionType.textDisplay;
       case 'SPONSOR_POPUP':
         return TifoActionType.sponsorPopup;
+      case 'CHANT_LYRICS':
+        return TifoActionType.chantLyrics;
+      case 'GOAL_CELEBRATION':
+        return TifoActionType.goalCelebration;
+      case 'PIXEL_MATRIX':
+        return TifoActionType.pixelMatrix;
       default:
         return TifoActionType.idle;
     }
@@ -59,10 +111,12 @@ class SponsorInfo {
 
   factory SponsorInfo.fromJson(Map<String, dynamic> json) {
     return SponsorInfo(
-      title: json['title'] ?? 'عرض خاص من الراعي الرسمي',
-      imageUrl: json['image_url'] ?? '',
-      couponCode: json['coupon_code'] ?? 'MATCH2026',
-      linkUrl: json['link_url'] ?? '',
+      title: PayloadSanitizer.sanitizeText(json['title'] as String?, maxLength: 100) 
+             .isEmpty ? 'عرض خاص من الراعي الرسمي' 
+             : PayloadSanitizer.sanitizeText(json['title'] as String?, maxLength: 100),
+      imageUrl: PayloadSanitizer.sanitizeUrl(json['image_url'] as String?),
+      couponCode: PayloadSanitizer.sanitizeCouponCode(json['coupon_code'] as String?),
+      linkUrl: PayloadSanitizer.sanitizeUrl(json['link_url'] as String?),
     );
   }
 
@@ -85,7 +139,13 @@ class TifoActionPayload {
   final int durationSeconds;
   final String textChar;
   final int waveDelayStepMs;
-  final SponsorInfo? sponsor;
+  final List<SponsorInfo> sponsors;
+  final String lyricsTitle;
+  final List<String> lyricsLines;
+  final Map<String, dynamic>? pixelMatrixMap;
+  final Map<String, String>? sectorColors;
+
+  SponsorInfo? get sponsor => sponsors.isNotEmpty ? sponsors.first : null;
 
   const TifoActionPayload({
     required this.actionId,
@@ -98,7 +158,11 @@ class TifoActionPayload {
     required this.durationSeconds,
     required this.textChar,
     required this.waveDelayStepMs,
-    this.sponsor,
+    this.sponsors = const [],
+    this.lyricsTitle = '',
+    this.lyricsLines = const [],
+    this.pixelMatrixMap,
+    this.sectorColors,
   });
 
   factory TifoActionPayload.fromJson(Map<String, dynamic> json) {
@@ -109,20 +173,55 @@ class TifoActionPayload {
       parsedTargetIds = rawTargetIds.map((e) => e.toString()).toList();
     }
 
+    final rawLyrics = payloadMap['lyrics_lines'];
+    List<String> parsedLyrics = [];
+    if (rawLyrics is List) {
+      parsedLyrics = rawLyrics.map((e) => e.toString()).toList();
+    }
+
+    Map<String, String>? parsedSectorColors;
+    if (payloadMap['sector_colors'] is Map) {
+      parsedSectorColors = {};
+      (payloadMap['sector_colors'] as Map).forEach((key, val) {
+        if (key != null && val != null) {
+          parsedSectorColors![key.toString()] = PayloadSanitizer.sanitizeColorHex(val.toString());
+        }
+      });
+    }
+
+    // Parse multi-sponsor list or single sponsor (with backward compatibility)
+    List<SponsorInfo> parsedSponsors = [];
+    if (payloadMap['sponsors'] is List) {
+      final list = payloadMap['sponsors'] as List;
+      for (final item in list) {
+        if (item is Map) {
+          parsedSponsors.add(SponsorInfo.fromJson(Map<String, dynamic>.from(item)));
+        }
+      }
+    } else if (payloadMap['sponsor'] != null && payloadMap['sponsor'] is Map) {
+      parsedSponsors.add(SponsorInfo.fromJson(Map<String, dynamic>.from(payloadMap['sponsor'])));
+    }
+
     return TifoActionPayload(
-      actionId: json['action_id'] ?? 'act_idle',
+      actionId: PayloadSanitizer.sanitizeText(json['action_id'] as String?, maxLength: 64)
+               .isEmpty ? 'act_idle'
+               : PayloadSanitizer.sanitizeText(json['action_id'] as String?, maxLength: 64),
       timestamp: json['timestamp'] ?? DateTime.now().millisecondsSinceEpoch,
       type: TifoActionType.parse(json['type']),
       targetType: TargetType.parse(json['target_type']),
       targetIds: parsedTargetIds,
-      colorHex: payloadMap['color_hex'] ?? '#008000',
-      flashFrequencyMs: payloadMap['flash_frequency_ms'] ?? 150,
-      durationSeconds: payloadMap['duration_seconds'] ?? 10,
-      textChar: payloadMap['text_char'] ?? '',
-      waveDelayStepMs: payloadMap['wave_delay_step_ms'] ?? 250,
-      sponsor: payloadMap['sponsor'] != null
-          ? SponsorInfo.fromJson(Map<String, dynamic>.from(payloadMap['sponsor']))
+      colorHex: PayloadSanitizer.sanitizeColorHex(payloadMap['color_hex'] as String?),
+      flashFrequencyMs: PayloadSanitizer.clampInt(payloadMap['flash_frequency_ms'], 150, 80, 1000),
+      durationSeconds: PayloadSanitizer.clampInt(payloadMap['duration_seconds'], 10, 0, 30),
+      textChar: PayloadSanitizer.sanitizeText(payloadMap['text_char'] as String?, maxLength: 50),
+      waveDelayStepMs: PayloadSanitizer.clampInt(payloadMap['wave_delay_step_ms'], 250, 40, 2000),
+      sponsors: parsedSponsors,
+      lyricsTitle: PayloadSanitizer.sanitizeText(payloadMap['lyrics_title'] as String?, maxLength: 100),
+      lyricsLines: parsedLyrics.map((l) => PayloadSanitizer.sanitizeText(l, maxLength: 200)).toList(),
+      pixelMatrixMap: payloadMap['pixel_matrix'] != null
+          ? Map<String, dynamic>.from(payloadMap['pixel_matrix'])
           : null,
+      sectorColors: parsedSectorColors,
     );
   }
 
@@ -138,3 +237,4 @@ class TifoActionPayload {
     return const Color(0xFF008000); // Default stadium green
   }
 }
+

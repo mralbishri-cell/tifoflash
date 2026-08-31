@@ -62,12 +62,17 @@ class FlashControllerService {
     await stopStrobe(); // Cleanup existing timer
 
     if (!_isTorchAvailable) {
-      debugPrint('[FlashController] Strobe requested but torch not available. Falling back to screen strobe.');
+      await checkAvailability();
+    }
+
+    if (!_isTorchAvailable) {
+      debugPrint('[FlashController] Strobe requested but torch not available on this platform/hardware.');
       return;
     }
 
     _isStrobing = true;
-    final intervalMs = frequencyMs.clamp(50, 1000);
+    final intervalMs = frequencyMs.clamp(40, 1000);
+    debugPrint('[FlashController] Hardware strobe active: frequency = $intervalMs ms, duration = $durationSeconds s');
 
     _strobeTimer = Timer.periodic(Duration(milliseconds: intervalMs), (timer) async {
       if (!_isStrobing) {

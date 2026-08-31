@@ -1,16 +1,75 @@
 {
   "rules": {
     ".read": "auth != null",
-    ".write": "auth != null",
+    ".write": false,
+
     "matches": {
       "$match_id": {
-        ".read": true,
-        ".write": true,
+        ".validate": "newData.exists() && $match_id.matches(/^match_[a-zA-Z0-9_]{1,50}$/)",
+
         "live_action": {
           ".read": true,
-          ".write": true,
+          ".write": "auth != null",
+
+          ".validate": "newData.hasChildren(['action_id', 'type', 'timestamp', 'target_type'])",
+
+          "action_id": {
+            ".validate": "newData.isString() && newData.val().length > 0 && newData.val().length <= 64"
+          },
+          "timestamp": {
+            ".validate": "newData.isNumber() && newData.val() <= now + 60000"
+          },
+          "type": {
+            ".validate": "newData.isString() && newData.val().matches(/^(STROBE|SOLID_COLOR|WAVE|TEXT_DISPLAY|SPONSOR_POPUP|CHANT_LYRICS|GOAL_CELEBRATION|PIXEL_MATRIX|IDLE)$/)"
+          },
+          "target_type": {
+            ".validate": "newData.isString() && newData.val().matches(/^(ALL|SECTOR|SEAT)$/)"
+          },
+          "target_ids": {
+            ".validate": "newData.exists()"
+          },
+          "payload": {
+            "color_hex": {
+              ".validate": "newData.isString() && newData.val().matches(/^#[0-9A-Fa-f]{6}$/) && newData.val().length <= 7"
+            },
+            "flash_frequency_ms": {
+              ".validate": "newData.isNumber() && newData.val() >= 80 && newData.val() <= 1000"
+            },
+            "duration_seconds": {
+              ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 30"
+            },
+            "text_char": {
+              ".validate": "newData.isString() && newData.val().length <= 50"
+            },
+            "wave_delay_step_ms": {
+              ".validate": "newData.isNumber() && newData.val() >= 40 && newData.val() <= 2000"
+            }
+          },
+
           ".indexOn": ["timestamp", "type", "action_id"]
+        },
+
+        "metadata": {
+          ".read": "auth != null",
+          ".write": "auth != null"
+        },
+
+        "active_devices": {
+          ".read": true,
+          "$device_id": {
+            ".read": true,
+            ".write": true,
+            ".validate": "newData.hasChildren(['sector_id', 'joined_at'])"
+          }
         }
+      }
+    },
+
+    "admin_audit_log": {
+      ".read": "auth != null",
+      ".write": "auth != null",
+      "$log_id": {
+        ".validate": "newData.hasChildren(['admin_uid', 'action_type', 'timestamp'])"
       }
     }
   }

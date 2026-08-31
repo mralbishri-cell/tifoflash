@@ -1,7 +1,9 @@
 import 'dart:async';
+import 'dart:convert';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/foundation.dart';
+import 'package:http/http.dart' as http;
 
 import '../models/stadium_sector.dart';
 import '../models/tifo_action_payload.dart';
@@ -17,6 +19,10 @@ class SyncEngineState {
   final String? activeColorHex;
   final SponsorInfo? activeSponsor;
   final String statusMessageAr;
+
+  List<SponsorInfo> get activeSponsors => currentAction?.sponsors.isNotEmpty == true 
+      ? currentAction!.sponsors 
+      : (activeSponsor != null ? [activeSponsor!] : const []);
 
   const SyncEngineState({
     required this.isConnectedToFirebase,
@@ -68,12 +74,7 @@ class SyncEngineService {
   factory SyncEngineService() => _instance;
   SyncEngineService._internal();
 
-  DatabaseReference? _liveActionRef;
-  DatabaseReference? _offsetRef;
-  StreamSubscription<DatabaseEvent>? _actionSubscription;
-  StreamSubscription<DatabaseEvent>? _offsetSubscription;
-
-  final StreamController<SyncEngineState> _stateController = StreamController<SyncEngineState>.broadcast();
+  final _stateController = StreamController<SyncEngineState>.broadcast();
   Stream<SyncEngineState> get stateStream => _stateController.stream;
 
   SyncEngineState _state = SyncEngineState.initial();
@@ -83,7 +84,17 @@ class SyncEngineService {
   StadiumSector _selectedSector = PresetStadiumData.sectors.first;
   String _seatRow = '';
   String _seatNumber = '';
+  final String _deviceId = 'dev_${DateTime.now().millisecondsSinceEpoch.toString().substring(6)}';
+  
+  DatabaseReference? _liveActionRef;
+  DatabaseReference? _presenceRef;
+  DatabaseReference? _offsetRef;
+  StreamSubscription<DatabaseEvent>? _actionSubscription;
+  StreamSubscription<DatabaseEvent>? _offsetSubscription;
   Timer? _actionDurationTimer;
+  Timer? _httpPollTimer;
+  String _lastHandledActionId = '';
+  int _lastHandledTimestamp = 0;
 
   void updateFanPlacement({
     required StadiumSector sector,
@@ -93,12 +104,35 @@ class SyncEngineService {
     _selectedSector = sector;
     _seatRow = seatRow;
     _seatNumber = seatNumber;
-    debugPrint('[SyncEngine] Fan placement updated: Sector=${sector.id}, Row=$seatRow, Seat=$seatNumber');
+    _registerDevicePresence();
+    debugPrint('[SyncEngine] Fan placement updated: Sector=${sector.id}, Row=$seatRow, Seat=$seatNumber, Device=$_deviceId');
   }
 
-  /// Connect to Firebase Realtime Database and start listening to server offset + live action node
+  void _registerDevicePresence() {
+    if (_presenceRef == null) return;
+    try {
+      _presenceRef?.set({
+        'device_id': _deviceId,
+        'sector_id': _selectedSector.id,
+        'sector_name': _selectedSector.nameAr,
+        'seat_row': _seatRow,
+        'seat_number': _seatNumber,
+        'joined_at': ServerValue.timestamp,
+      });
+      _presenceRef?.onDisconnect().remove();
+    } catch (e) {
+      debugPrint('[SyncEngine] Presence register error: $e');
+    }
+  }
+
   void initialize({String matchId = 'match_2026_final'}) {
-    _matchId = matchId;
+    final sanitizedMatchId = matchId.replaceAll(RegExp(r'[^a-zA-Z0-9_]'), '');
+    if (sanitizedMatchId.isEmpty || sanitizedMatchId.length > 50) {
+      debugPrint('[SyncEngine] Invalid matchId rejected: $matchId');
+      return;
+    }
+    _matchId = sanitizedMatchId;
+    FlashControllerService().checkAvailability();
 
     try {
       FirebaseDatabase db;
@@ -110,6 +144,7 @@ class SyncEngineService {
       } catch (_) {
         db = FirebaseDatabase.instance;
       }
+      
       _offsetRef = db.ref('/.info/serverTimeOffset');
       _offsetSubscription = _offsetRef?.onValue.listen((event) {
         final offset = (event.snapshot.value as num?)?.toInt() ?? 0;
@@ -120,49 +155,85 @@ class SyncEngineService {
         ));
       });
 
+      _presenceRef = db.ref('/matches/$_matchId/active_devices/$_deviceId');
+      _registerDevicePresence();
+
       _liveActionRef = db.ref('/matches/$_matchId/live_action');
       _actionSubscription = _liveActionRef?.onValue.listen((event) {
         if (event.snapshot.value == null) return;
         try {
           final dataMap = Map<String, dynamic>.from(event.snapshot.value as Map);
-          final action = TifoActionPayload.fromJson(dataMap);
-          _handleIncomingAction(action);
+          final actionId = dataMap['action_id']?.toString() ?? '';
+          final timestamp = (dataMap['timestamp'] as num?)?.toInt() ?? 0;
+          if (actionId != _lastHandledActionId || timestamp != _lastHandledTimestamp) {
+            _lastHandledActionId = actionId;
+            _lastHandledTimestamp = timestamp;
+            final action = TifoActionPayload.fromJson(dataMap);
+            _handleIncomingAction(action);
+          }
         } catch (e) {
           debugPrint('[SyncEngine] Error parsing live action: $e');
         }
       }, onError: (err) {
-        _updateState(_state.copyWith(
-          isConnectedToFirebase: false,
-          statusMessageAr: 'تعذر الاتصال بقاعدة البيانات. تفعيل النظام الاحتياطي.',
-        ));
+        debugPrint('[SyncEngine] WebSocket error: $err');
       });
     } catch (e) {
       debugPrint('[SyncEngine] Firebase init error: $e');
-      _updateState(_state.copyWith(
-        isConnectedToFirebase: false,
-        statusMessageAr: 'وضع المحاكاة المحلي يعمل بنجاح.',
-      ));
     }
+
+    _startHttpPolling();
   }
 
-  /// Evaluate if current fan placement matches target scope
+  void _startHttpPolling() {
+    _httpPollTimer?.cancel();
+    _httpPollTimer = Timer.periodic(const Duration(milliseconds: 400), (_) async {
+      try {
+        final url = Uri.parse('https://tifoflash-default-rtdb.europe-west1.firebasedatabase.app/matches/$_matchId/live_action.json');
+        final response = await http.get(url).timeout(const Duration(milliseconds: 1500));
+        if (response.statusCode == 200 && response.body.isNotEmpty && response.body != 'null') {
+          final dataMap = json.decode(response.body) as Map<String, dynamic>;
+          final actionId = dataMap['action_id']?.toString() ?? '';
+          final timestamp = (dataMap['timestamp'] as num?)?.toInt() ?? 0;
+
+          if (actionId.isNotEmpty && (actionId != _lastHandledActionId || timestamp != _lastHandledTimestamp)) {
+            _lastHandledActionId = actionId;
+            _lastHandledTimestamp = timestamp;
+            final action = TifoActionPayload.fromJson(dataMap);
+            _handleIncomingAction(action);
+          }
+
+          if (!_state.isConnectedToFirebase) {
+            _updateState(_state.copyWith(
+              isConnectedToFirebase: true,
+              statusMessageAr: 'متصل بشبكة التيفو التزامنية 🟢',
+            ));
+          }
+        }
+      } catch (e) {
+        // Network silent retry
+      }
+    });
+  }
+
   bool isFanTargeted(TifoActionPayload action) {
     if (action.targetType == TargetType.all) return true;
+    if (action.targetIds.isEmpty || action.targetIds.contains('ALL')) return true;
 
     if (action.targetType == TargetType.sector) {
       return action.targetIds.contains(_selectedSector.id) ||
-          action.targetIds.contains(_selectedSector.standGroup.toUpperCase());
+          action.targetIds.contains(_selectedSector.standGroup.toUpperCase()) ||
+          action.targetIds.any((id) => id.contains(_selectedSector.id) || _selectedSector.id.contains(id));
     }
 
     if (action.targetType == TargetType.seat) {
       final userSeatId = '${_selectedSector.id}_R${_seatRow}_S$_seatNumber';
-      return action.targetIds.contains(userSeatId);
+      return action.targetIds.contains(userSeatId) ||
+          action.targetIds.contains(_selectedSector.id);
     }
 
-    return false;
+    return true;
   }
 
-  /// Process incoming live action command
   void _handleIncomingAction(TifoActionPayload action) {
     debugPrint('[SyncEngine] Received action payload: ${action.type} (ID: ${action.actionId})');
 
@@ -179,7 +250,13 @@ class SyncEngineService {
     // Calculate wave offset delay if target_type is wave
     int executionDelayMs = 0;
     if (action.type == TifoActionType.wave) {
-      executionDelayMs = (_selectedSector.orderIndex - 1) * action.waveDelayStepMs;
+      // Find sector's exact position in the ordered targetIds list (respects L2R & R2L direction)
+      int sectorIndex = action.targetIds.indexOf(_selectedSector.id);
+      if (sectorIndex < 0) {
+        sectorIndex = (_selectedSector.orderIndex - 1).clamp(0, 50);
+      }
+      executionDelayMs = sectorIndex * action.waveDelayStepMs;
+      debugPrint('[SyncEngine] Wave delay for ${_selectedSector.id}: $executionDelayMs ms (Step: ${action.waveDelayStepMs} ms, Index: $sectorIndex)');
     }
 
     Timer(Duration(milliseconds: executionDelayMs), () {
@@ -187,41 +264,86 @@ class SyncEngineService {
     });
   }
 
-  /// Execute payload action on hardware (Screen + Strobe + Character + Sponsor)
+  /// Execute payload action on hardware (Screen + Strobe + Character + Sponsor + Lyrics + Matrix)
   Future<void> _executeAction(TifoActionPayload action) async {
     _actionDurationTimer?.cancel();
 
     // 1. Maximize Screen Brightness
     await ScreenLightService().maximizeBrightness();
 
-    // 2. Hardware Strobe Trigger
-    if (action.type == TifoActionType.strobe || action.type == TifoActionType.wave) {
+    // 2. Hardware Strobe Trigger for strobe, wave, or goal celebration
+    if (action.type == TifoActionType.strobe ||
+        action.type == TifoActionType.wave ||
+        action.type == TifoActionType.goalCelebration) {
       await FlashControllerService().startStrobe(
-        frequencyMs: action.flashFrequencyMs,
+        frequencyMs: action.type == TifoActionType.goalCelebration ? 80 : action.flashFrequencyMs,
         durationSeconds: action.durationSeconds,
       );
     }
 
     // Determine target character (custom payload text or default assigned sector letter)
-    String charToDisplay = action.textChar;
-    if (charToDisplay.isEmpty && action.type == TifoActionType.textDisplay) {
+    String charToDisplay = action.textChar.trim();
+    if (charToDisplay.length > 1 && action.type == TifoActionType.textDisplay) {
+      // Sector-level and seat-level word rasterization algorithm:
+      // Map word letters across targeted sectors in the stand sequentially
+      final secIndex = action.targetIds.indexOf(_selectedSector.id);
+      if (secIndex >= 0) {
+        charToDisplay = charToDisplay[secIndex % charToDisplay.length];
+      } else {
+        final seatIdx = (int.tryParse(_seatNumber) ?? 1) - 1;
+        final charIdx = seatIdx % charToDisplay.length;
+        charToDisplay = charToDisplay[charIdx];
+      }
+    } else if (charToDisplay.isEmpty && action.type == TifoActionType.textDisplay) {
       charToDisplay = _selectedSector.assignedChar;
+    }
+
+    // Determine pixel color if matrix mode is active or sector-specific colors
+    String targetColorHex = action.colorHex;
+    if (action.sectorColors != null && action.sectorColors!.isNotEmpty) {
+      // Use per-sector custom color if available, else fall back to global colorHex
+      targetColorHex = action.sectorColors![_selectedSector.id] ?? action.colorHex;
+    } else if (action.type == TifoActionType.pixelMatrix && action.pixelMatrixMap != null) {
+      final seatKey = '${_selectedSector.id}_R${_seatRow}_S$_seatNumber';
+      final rowKey = 'ROW_$_seatRow';
+      if (action.pixelMatrixMap!.containsKey(seatKey)) {
+        targetColorHex = action.pixelMatrixMap![seatKey].toString();
+      } else if (action.pixelMatrixMap!.containsKey(rowKey)) {
+        targetColorHex = action.pixelMatrixMap![rowKey].toString();
+      } else {
+        // Pattern calculation for matrix tifo if no exact seat key match
+        final row = int.tryParse(_seatRow) ?? 1;
+        final seat = int.tryParse(_seatNumber) ?? 1;
+        if ((row + seat) % 2 == 0) {
+          targetColorHex = action.colorHex;
+        } else {
+          targetColorHex = '#FFFFFF';
+        }
+      }
+    }
+
+    String statusText = 'تيفو مفعّل الآن ⚡';
+    if (action.type == TifoActionType.chantLyrics) {
+      statusText = 'أهازيج المدرج متزامنة الآن 🎵';
+    } else if (action.type == TifoActionType.goalCelebration) {
+      statusText = 'احتفال بالهدف ⚽🔥!';
+    } else if (action.type == TifoActionType.pixelMatrix) {
+      statusText = 'تيفو نقطي متناسق مفعّل 🎨';
     }
 
     _updateState(_state.copyWith(
       currentAction: action,
       isActionActive: true,
       activeCharDisplay: charToDisplay,
-      activeColorHex: action.colorHex,
+      activeColorHex: targetColorHex,
       activeSponsor: action.sponsor,
-      statusMessageAr: 'تيفو مفعّل الآن ⚡',
+      statusMessageAr: statusText,
     ));
 
     // Schedule automatic restoration after action duration
     if (action.durationSeconds > 0) {
       _actionDurationTimer = Timer(Duration(seconds: action.durationSeconds), () {
         if (action.sponsor != null) {
-          // Show sponsor popup after main sequence
           _updateState(_state.copyWith(
             isActionActive: false,
             statusMessageAr: 'تم التفعيل بنجاح! شاهد العرض المتاح.',
@@ -232,6 +354,7 @@ class SyncEngineService {
       });
     }
   }
+
 
   /// Stop current action & restore previous screen brightness
   void _stopCurrentAction() {
@@ -260,6 +383,7 @@ class SyncEngineService {
   }
 
   void dispose() {
+    _httpPollTimer?.cancel();
     _actionSubscription?.cancel();
     _offsetSubscription?.cancel();
     _actionDurationTimer?.cancel();

@@ -54,3 +54,34 @@ admin_dashboard/.vite/
 # AntiGravity IDE scratch files
 brain/
 scratch/
+
+# ===== SECURITY: Sensitive Files =====
+# Environment Variables
+.env
+.env.local
+.env.production
+.env.staging
+.env.*.local
+
+# Firebase Credentials & Secrets
+google-services.json
+GoogleService-Info.plist
+firebase_app_id_file.json
+**/serviceAccountKey*.json
+firebase-debug.log
+firebase-debug.*.log
+.firebaserc
+
+# Android Signing Keys
+*.keystore
+*.jks
+key.properties
+
+# iOS Certificates
+*.p12
+*.cer
+*.mobileprovision
+
+# API Keys & Secrets
+**/secrets/
+**/credentials/

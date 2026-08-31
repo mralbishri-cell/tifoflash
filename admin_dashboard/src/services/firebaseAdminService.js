@@ -3,13 +3,13 @@ import { getDatabase, ref, set } from 'firebase/database';
 
 // Firebase Config linked to user's live Realtime Database
 const firebaseConfig = {
-  apiKey: "AIzaSyDemoTifoKey2026",
+  apiKey: "AIzaSyDftMnZer4Fjsq90VX2GMa3U0LUcaSyiNw",
   authDomain: "tifoflash.firebaseapp.com",
   databaseURL: "https://tifoflash-default-rtdb.europe-west1.firebasedatabase.app",
   projectId: "tifoflash",
-  storageBucket: "tifoflash.appspot.com",
-  messagingSenderId: "998877665544",
-  appId: "1:998877665544:web:demo123456"
+  storageBucket: "tifoflash.firebasestorage.app",
+  messagingSenderId: "554205703255",
+  appId: "1:554205703255:web:f06d0efbf433cc78660712"
 };
 
 let db = null;

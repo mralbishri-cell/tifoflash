@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:math' as math;
 import 'package:flutter/foundation.dart';
+import 'package:flutter/services.dart';
 import 'package:sensors_plus/sensors_plus.dart';
 
 class OrientationState {
@@ -35,6 +36,7 @@ class OrientationService {
   Stream<OrientationState> get orientationStream => _controller.stream;
   OrientationState _currentState = OrientationState.initial();
   OrientationState get currentState => _currentState;
+  bool _lastFacingState = false;
 
   void startListening() {
     if (kIsWeb) return;
@@ -59,6 +61,14 @@ class OrientationService {
 
       // Facing pitch condition: phone held upright & tilted toward field
       final bool isFacing = pitchDeg >= 45.0 && pitchDeg <= 115.0;
+
+      // Haptic confirmation trigger when reaching target angle
+      if (isFacing && !_lastFacingState) {
+        try {
+          HapticFeedback.mediumImpact();
+        } catch (_) {}
+      }
+      _lastFacingState = isFacing;
 
       String prompt = 'وجه هاتفك نحو الملعب';
       if (isFacing) {
