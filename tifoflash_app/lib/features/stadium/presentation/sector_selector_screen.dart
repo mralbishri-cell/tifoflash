@@ -42,6 +42,7 @@ class _SectorSelectorScreenState extends State<SectorSelectorScreen> {
     final row = _placementMode == 2 ? _rowController.text.trim() : '';
     final seat = _placementMode == 2 ? _seatController.text.trim() : '';
 
+    SyncEngineService().initialize(matchId: _selectedStadium.id);
     SyncEngineService().updateFanPlacement(
       sector: _selectedSector,
       seatRow: row,

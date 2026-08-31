@@ -209,7 +209,7 @@ class _LiveTifoScreenState extends State<LiveTifoScreen> with SingleTickerProvid
     return Scaffold(
       backgroundColor: Colors.black,
       body: AnimatedContainer(
-        duration: const Duration(milliseconds: 50),
+        duration: isActive && (_screenStrobeTimer != null) ? Duration.zero : const Duration(milliseconds: 200),
         color: isActive ? activeEffectiveColor : const Color(0xFF030712),
         child: SafeArea(
           child: Stack(
@@ -347,6 +347,38 @@ class _LiveTifoScreenState extends State<LiveTifoScreen> with SingleTickerProvid
               ),
             ),
 
+            // Cell Tower Status Badge
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
+              decoration: BoxDecoration(
+                color: const Color(0xFF10B981).withValues(alpha: 0.15),
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(
+                  color: const Color(0xFF10B981).withValues(alpha: 0.5),
+                ),
+              ),
+              child: const Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(
+                    Icons.cell_tower_rounded,
+                    color: Color(0xFF10B981),
+                    size: 13,
+                  ),
+                  SizedBox(width: 4),
+                  Text(
+                    'أبراج الملعب 📡',
+                    style: TextStyle(
+                      color: Color(0xFF10B981),
+                      fontSize: 10,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(width: 6),
+
             // Orientation Status Badge
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
@@ -397,6 +429,57 @@ class _LiveTifoScreenState extends State<LiveTifoScreen> with SingleTickerProvid
                 'نحن الجماهير خلفك بالطول والعرض 🔥',
               ],
         primaryColor: surfaceColor == Colors.black ? const Color(0xFF00E5FF) : Colors.white,
+      );
+    }
+
+    if (currentType == TifoActionType.wave) {
+      final waveStyle = _syncState.currentAction?.waveStyle ?? 'RADIAL_RIPPLE';
+      return Stack(
+        alignment: Alignment.center,
+        children: [
+          // 3D Depth Radial Animated Pulsing Rings
+          AnimatedBuilder(
+            animation: _radarController,
+            builder: (context, child) {
+              final scale = 1.0 + (_radarController.value * 0.5);
+              final opacity = (1.0 - _radarController.value).clamp(0.0, 1.0);
+              return Transform.scale(
+                scale: scale,
+                child: Container(
+                  width: 350,
+                  height: 350,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    gradient: RadialGradient(
+                      colors: [
+                        surfaceColor.withValues(alpha: 0.95),
+                        waveStyle == 'INFERNO_PULSE'
+                            ? Colors.orange.withValues(alpha: 0.7 * opacity)
+                            : (waveStyle == 'DIAMOND_SPARKLE'
+                                ? Colors.cyanAccent.withValues(alpha: 0.8 * opacity)
+                                : const Color(0xFF00E5FF).withValues(alpha: 0.6 * opacity)),
+                        Colors.transparent,
+                      ],
+                      stops: const [0.2, 0.65, 1.0],
+                    ),
+                  ),
+                ),
+              );
+            },
+          ),
+          if (_syncState.activeCharDisplay.isNotEmpty)
+            Text(
+              _syncState.activeCharDisplay,
+              style: const TextStyle(
+                fontSize: 200,
+                fontWeight: FontWeight.w900,
+                color: Colors.white,
+                shadows: [
+                  Shadow(color: Colors.black87, blurRadius: 20, offset: Offset(0, 8)),
+                ],
+              ),
+            ),
+        ],
       );
     }
 

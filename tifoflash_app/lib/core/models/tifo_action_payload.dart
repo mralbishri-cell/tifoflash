@@ -139,6 +139,8 @@ class TifoActionPayload {
   final int durationSeconds;
   final String textChar;
   final int waveDelayStepMs;
+  final String waveDirection;
+  final String waveStyle;
   final List<SponsorInfo> sponsors;
   final String lyricsTitle;
   final List<String> lyricsLines;
@@ -158,6 +160,8 @@ class TifoActionPayload {
     required this.durationSeconds,
     required this.textChar,
     required this.waveDelayStepMs,
+    this.waveDirection = 'L2R',
+    this.waveStyle = 'RADIAL_RIPPLE',
     this.sponsors = const [],
     this.lyricsTitle = '',
     this.lyricsLines = const [],
@@ -167,22 +171,23 @@ class TifoActionPayload {
 
   factory TifoActionPayload.fromJson(Map<String, dynamic> json) {
     final payloadMap = (json['payload'] as Map?)?.cast<String, dynamic>() ?? {};
-    final rawTargetIds = json['target_ids'];
+    final rawTargetIds = json['target_ids'] ?? payloadMap['target_ids'];
     List<String> parsedTargetIds = [];
     if (rawTargetIds is List) {
       parsedTargetIds = rawTargetIds.map((e) => e.toString()).toList();
     }
 
-    final rawLyrics = payloadMap['lyrics_lines'];
+    final rawLyrics = payloadMap['lyrics_lines'] ?? json['lyrics_lines'];
     List<String> parsedLyrics = [];
     if (rawLyrics is List) {
       parsedLyrics = rawLyrics.map((e) => e.toString()).toList();
     }
 
     Map<String, String>? parsedSectorColors;
-    if (payloadMap['sector_colors'] is Map) {
+    final rawSectorColors = payloadMap['sector_colors'] ?? json['sector_colors'];
+    if (rawSectorColors is Map) {
       parsedSectorColors = {};
-      (payloadMap['sector_colors'] as Map).forEach((key, val) {
+      (rawSectorColors).forEach((key, val) {
         if (key != null && val != null) {
           parsedSectorColors![key.toString()] = PayloadSanitizer.sanitizeColorHex(val.toString());
         }
@@ -191,35 +196,40 @@ class TifoActionPayload {
 
     // Parse multi-sponsor list or single sponsor (with backward compatibility)
     List<SponsorInfo> parsedSponsors = [];
-    if (payloadMap['sponsors'] is List) {
-      final list = payloadMap['sponsors'] as List;
-      for (final item in list) {
+    final rawSponsors = payloadMap['sponsors'] ?? json['sponsors'];
+    final rawSponsor = payloadMap['sponsor'] ?? json['sponsor'];
+    if (rawSponsors is List) {
+      for (final item in rawSponsors) {
         if (item is Map) {
           parsedSponsors.add(SponsorInfo.fromJson(Map<String, dynamic>.from(item)));
         }
       }
-    } else if (payloadMap['sponsor'] != null && payloadMap['sponsor'] is Map) {
-      parsedSponsors.add(SponsorInfo.fromJson(Map<String, dynamic>.from(payloadMap['sponsor'])));
+    } else if (rawSponsor != null && rawSponsor is Map) {
+      parsedSponsors.add(SponsorInfo.fromJson(Map<String, dynamic>.from(rawSponsor)));
     }
+
+    dynamic getField(String key) => payloadMap[key] ?? json[key];
 
     return TifoActionPayload(
       actionId: PayloadSanitizer.sanitizeText(json['action_id'] as String?, maxLength: 64)
                .isEmpty ? 'act_idle'
                : PayloadSanitizer.sanitizeText(json['action_id'] as String?, maxLength: 64),
       timestamp: json['timestamp'] ?? DateTime.now().millisecondsSinceEpoch,
-      type: TifoActionType.parse(json['type']),
-      targetType: TargetType.parse(json['target_type']),
+      type: TifoActionType.parse(getField('type')?.toString() ?? json['type']?.toString()),
+      targetType: TargetType.parse(getField('target_type')?.toString() ?? json['target_type']?.toString()),
       targetIds: parsedTargetIds,
-      colorHex: PayloadSanitizer.sanitizeColorHex(payloadMap['color_hex'] as String?),
-      flashFrequencyMs: PayloadSanitizer.clampInt(payloadMap['flash_frequency_ms'], 150, 80, 1000),
-      durationSeconds: PayloadSanitizer.clampInt(payloadMap['duration_seconds'], 10, 0, 30),
-      textChar: PayloadSanitizer.sanitizeText(payloadMap['text_char'] as String?, maxLength: 50),
-      waveDelayStepMs: PayloadSanitizer.clampInt(payloadMap['wave_delay_step_ms'], 250, 40, 2000),
+      colorHex: PayloadSanitizer.sanitizeColorHex(getField('color_hex') as String?),
+      flashFrequencyMs: PayloadSanitizer.clampInt(getField('flash_frequency_ms'), 150, 40, 1000),
+      durationSeconds: PayloadSanitizer.clampInt(getField('duration_seconds'), 0, 0, 300),
+      textChar: PayloadSanitizer.sanitizeText(getField('text_char') as String?, maxLength: 50),
+      waveDelayStepMs: PayloadSanitizer.clampInt(getField('wave_delay_step_ms'), 250, 40, 2000),
+      waveDirection: getField('wave_direction')?.toString() ?? 'L2R',
+      waveStyle: getField('wave_style')?.toString() ?? 'RADIAL_RIPPLE',
       sponsors: parsedSponsors,
-      lyricsTitle: PayloadSanitizer.sanitizeText(payloadMap['lyrics_title'] as String?, maxLength: 100),
+      lyricsTitle: PayloadSanitizer.sanitizeText(getField('lyrics_title') as String?, maxLength: 100),
       lyricsLines: parsedLyrics.map((l) => PayloadSanitizer.sanitizeText(l, maxLength: 200)).toList(),
-      pixelMatrixMap: payloadMap['pixel_matrix'] != null
-          ? Map<String, dynamic>.from(payloadMap['pixel_matrix'])
+      pixelMatrixMap: getField('pixel_matrix') != null
+          ? Map<String, dynamic>.from(getField('pixel_matrix') as Map)
           : null,
       sectorColors: parsedSectorColors,
     );

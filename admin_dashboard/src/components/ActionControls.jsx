@@ -10,6 +10,9 @@ export function ActionControls({ onTriggerAction, selectedSectors, isBroadcastin
   const [strobeDuration, setStrobeDuration] = useState(8);
 
   const [waveStepMs, setWaveStepMs] = useState(250);
+  const [waveDirection, setWaveDirection] = useState('L2R');
+  const [waveStyle, setWaveStyle] = useState('RADIAL_RIPPLE');
+  const [waveColor, setWaveColor] = useState('#00E5FF');
 
   const [wordText, setWordText] = useState('TIFO');
   const [wordColor, setWordColor] = useState('#00E5FF');
@@ -33,9 +36,11 @@ export function ActionControls({ onTriggerAction, selectedSectors, isBroadcastin
       type: 'WAVE',
       target_type: 'SECTOR',
       target_ids: selectedSectors,
-      color_hex: '#00E676',
+      color_hex: waveColor,
       flash_frequency_ms: 100,
       wave_delay_step_ms: Number(waveStepMs),
+      wave_direction: waveDirection,
+      wave_style: waveStyle,
       duration_seconds: 12,
     });
   };
@@ -98,8 +103,9 @@ export function ActionControls({ onTriggerAction, selectedSectors, isBroadcastin
       </div>
 
       {/* Preset Mode Tabs */}
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 mb-6">
+      <div className="grid grid-cols-2 sm:grid-cols-5 gap-2 mb-6">
         {[
+          { id: 'STAR', label: 'استقبال النجم 🌟', icon: Zap, color: 'text-amber-400' },
           { id: 'GOAL', label: 'Goal Strobe ⚡', icon: Zap, color: 'text-emerald-400' },
           { id: 'WAVE', label: 'Wave Effect 🌊', icon: Activity, color: 'text-cyan-400' },
           { id: 'WORD', label: 'Word Builder 🔤', icon: Type, color: 'text-purple-400' },
@@ -113,7 +119,7 @@ export function ActionControls({ onTriggerAction, selectedSectors, isBroadcastin
               onClick={() => setActiveTab(tab.id)}
               className={`p-3 rounded-xl border text-xs font-bold transition flex items-center justify-center gap-2 ${
                 isSelected
-                  ? 'bg-slate-800 border-emerald-500 text-white shadow-lg'
+                  ? 'bg-slate-800 border-amber-500 text-white shadow-lg'
                   : 'bg-slate-900/60 border-slate-800 text-slate-400 hover:border-slate-700'
               }`}
             >
@@ -126,6 +132,31 @@ export function ActionControls({ onTriggerAction, selectedSectors, isBroadcastin
 
       {/* Tab Panels */}
       <div className="bg-slate-950/80 p-5 rounded-xl border border-slate-800">
+        {activeTab === 'STAR' && (
+          <div className="space-y-4">
+            <h3 className="text-sm font-bold text-amber-400 flex items-center gap-2">
+              <Zap className="w-4 h-4" /> عرض استقبال النجم التتابعي (Star Welcoming 4-Phase Show)
+            </h3>
+            <p className="text-xs text-slate-400">
+              مسح ضوئي متتابّع بين مدرجات الشرق، الجنوب، الغرب، والشمال، متبوعاً بـ Strobe جماعي فائق السرعة في ختام الفعالية.
+            </p>
+            <button
+              onClick={() => onTriggerAction({
+                type: 'GOAL_CELEBRATION',
+                target_type: 'ALL',
+                target_ids: selectedSectors,
+                color_hex: '#FFD700',
+                duration_seconds: 12,
+              })}
+              disabled={selectedSectors.length === 0}
+              className="w-full py-3 bg-gradient-to-r from-amber-500 to-yellow-400 hover:from-amber-400 hover:to-yellow-300 disabled:opacity-50 text-black font-black rounded-xl text-sm flex items-center justify-center gap-2 transition shadow-lg shadow-amber-500/20"
+            >
+              <Play className="w-4 h-4 fill-black" />
+              إطلاق عرض استقبال النجم المتزامن (LAUNCH STAR SHOW)
+            </button>
+          </div>
+        )}
+
         {activeTab === 'GOAL' && (
           <div className="space-y-4">
             <h3 className="text-sm font-bold text-emerald-400 flex items-center gap-2">
@@ -189,29 +220,80 @@ export function ActionControls({ onTriggerAction, selectedSectors, isBroadcastin
         {activeTab === 'WAVE' && (
           <div className="space-y-4">
             <h3 className="text-sm font-bold text-cyan-400 flex items-center gap-2">
-              <Sliders className="w-4 h-4" /> إعدادات موجة الضوء التتابع (Wave Step Controller)
+              <Sliders className="w-4 h-4" /> مصمم الموجات التفاعلي (Interactive Wave Designer)
             </h3>
 
-            <div>
-              <label className="text-xs text-slate-400 block mb-1">فارق التأخير بين المدرجات / Delay Step ({waveStepMs}ms)</label>
-              <input
-                type="range"
-                min="100"
-                max="1000"
-                step="50"
-                value={waveStepMs}
-                onChange={(e) => setWaveStepMs(e.target.value)}
-                className="w-full accent-cyan-500"
-              />
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {/* Wave Direction Selector */}
+              <div>
+                <label className="text-xs text-slate-400 block mb-1">اتجاه الحركة والتموج (Sweep Direction)</label>
+                <select
+                  value={waveDirection}
+                  onChange={(e) => setWaveDirection(e.target.value)}
+                  className="w-full bg-slate-900 border border-slate-800 text-cyan-300 font-bold rounded-lg px-3 py-2 text-xs focus:outline-none focus:border-cyan-500"
+                >
+                  <option value="L2R">من اليسار إلى اليمين ➡️ (Clockwise Sweep)</option>
+                  <option value="R2L">من اليمين إلى اليسار ⬅️ (Counter Sweep)</option>
+                  <option value="CENTER_OUT">انفجار ضوئي من المنتصف 💥 (Center Explosion)</option>
+                  <option value="TOP_BOTTOM">شلال رأسي من أعلى المدرج 🌊 (Vertical Cascade)</option>
+                </select>
+              </div>
+
+              {/* Wave Motion Visual Style */}
+              <div>
+                <label className="text-xs text-slate-400 block mb-1">المؤثر البصري المباشر (Visual Motion Style)</label>
+                <select
+                  value={waveStyle}
+                  onChange={(e) => setWaveStyle(e.target.value)}
+                  className="w-full bg-slate-900 border border-slate-800 text-amber-300 font-bold rounded-lg px-3 py-2 text-xs focus:outline-none focus:border-amber-500"
+                >
+                  <option value="RADIAL_RIPPLE">تموج إشعاعي ثلاثي الأبعاد 🌌 (3D Radial Ripple)</option>
+                  <option value="INFERNO_PULSE">نبض الشعلة النارية 🔥 (Volcano Inferno Pulse)</option>
+                  <option value="DIAMOND_SPARKLE">بريق النجوم والألماس 💎 (Diamond Sparkle Matrix)</option>
+                </select>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label className="text-xs text-slate-400 block mb-1">لون قمة الموجة / Crest Color</label>
+                <div className="flex items-center gap-2">
+                  <input
+                    type="color"
+                    value={waveColor}
+                    onChange={(e) => setWaveColor(e.target.value)}
+                    className="w-9 h-9 rounded bg-slate-900 border border-slate-700 cursor-pointer"
+                  />
+                  <input
+                    type="text"
+                    value={waveColor}
+                    onChange={(e) => setWaveColor(e.target.value)}
+                    className="bg-slate-900 border border-slate-800 rounded px-3 py-1.5 text-xs text-cyan-300 flex-1 font-mono"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="text-xs text-slate-400 block mb-1">سرعة التموج / Wave Delay Step ({waveStepMs}ms)</label>
+                <input
+                  type="range"
+                  min="100"
+                  max="1000"
+                  step="50"
+                  value={waveStepMs}
+                  onChange={(e) => setWaveStepMs(e.target.value)}
+                  className="w-full accent-cyan-500"
+                />
+              </div>
             </div>
 
             <button
               onClick={handleTriggerWave}
               disabled={selectedSectors.length === 0}
-              className="w-full py-3 bg-cyan-500 hover:bg-cyan-400 disabled:opacity-50 text-black font-black rounded-xl text-sm flex items-center justify-center gap-2 transition shadow-lg shadow-cyan-500/20"
+              className="w-full py-3 bg-gradient-to-r from-cyan-500 to-emerald-400 hover:from-cyan-400 hover:to-emerald-300 disabled:opacity-50 text-black font-black rounded-xl text-sm flex items-center justify-center gap-2 transition shadow-lg shadow-cyan-500/20"
             >
               <Play className="w-4 h-4 fill-black" />
-              إطلاق موجة الملعب المتتابعة (TRIGGER WAVE)
+              إطلاق نموذج الموجة المصممة للملعب (LAUNCH DESIGNED WAVE)
             </button>
           </div>
         )}

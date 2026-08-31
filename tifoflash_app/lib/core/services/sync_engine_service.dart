@@ -85,7 +85,7 @@ class SyncEngineService {
   String _seatRow = '';
   String _seatNumber = '';
   final String _deviceId = 'dev_${DateTime.now().millisecondsSinceEpoch.toString().substring(6)}';
-  
+
   DatabaseReference? _liveActionRef;
   DatabaseReference? _presenceRef;
   DatabaseReference? _offsetRef;
@@ -144,7 +144,7 @@ class SyncEngineService {
       } catch (_) {
         db = FirebaseDatabase.instance;
       }
-      
+
       _offsetRef = db.ref('/.info/serverTimeOffset');
       _offsetSubscription = _offsetRef?.onValue.listen((event) {
         final offset = (event.snapshot.value as num?)?.toInt() ?? 0;
@@ -220,15 +220,28 @@ class SyncEngineService {
     if (action.targetIds.isEmpty || action.targetIds.contains('ALL')) return true;
 
     if (action.targetType == TargetType.sector) {
-      return action.targetIds.contains(_selectedSector.id) ||
-          action.targetIds.contains(_selectedSector.standGroup.toUpperCase()) ||
-          action.targetIds.any((id) => id.contains(_selectedSector.id) || _selectedSector.id.contains(id));
+      final userGroup = _selectedSector.standGroup.toUpperCase();
+      final userSecId = _selectedSector.id.toUpperCase();
+
+      for (final rawTarget in action.targetIds) {
+        final target = rawTarget.toUpperCase();
+        if (target == 'ALL') return true;
+        if (target == userSecId) return true;
+        if (target == userGroup) return true;
+        if (target.contains(userSecId) || userSecId.contains(target)) return true;
+
+        if (target.contains('NORTH') && userGroup == 'NORTH') return true;
+        if (target.contains('SOUTH') && userGroup == 'SOUTH') return true;
+        if (target.contains('EAST') && userGroup == 'EAST') return true;
+        if (target.contains('WEST') && userGroup == 'WEST') return true;
+        if (target.contains('VIP') && userGroup == 'VIP') return true;
+      }
+      return false;
     }
 
     if (action.targetType == TargetType.seat) {
-      final userSeatId = '${_selectedSector.id}_R${_seatRow}_S$_seatNumber';
-      return action.targetIds.contains(userSeatId) ||
-          action.targetIds.contains(_selectedSector.id);
+      final userSeatId = '${_selectedSector.id}_R${_seatRow}_S$_seatNumber'.toUpperCase();
+      return action.targetIds.any((id) => id.toUpperCase() == userSeatId || id.toUpperCase() == _selectedSector.id.toUpperCase());
     }
 
     return true;
@@ -244,34 +257,88 @@ class SyncEngineService {
 
     if (!isFanTargeted(action)) {
       debugPrint('[SyncEngine] Fan sector (${_selectedSector.id}) not targeted by this action.');
+      _stopCurrentAction();
       return;
     }
 
-    // Calculate wave offset delay if target_type is wave
-    int executionDelayMs = 0;
-    if (action.type == TifoActionType.wave) {
-      // Find sector's exact position in the ordered targetIds list (respects L2R & R2L direction)
-      int sectorIndex = action.targetIds.indexOf(_selectedSector.id);
-      if (sectorIndex < 0) {
-        sectorIndex = (_selectedSector.orderIndex - 1).clamp(0, 50);
+    // Expiration Check: Ignore old actions from previous sessions
+    final nowMs = DateTime.now().millisecondsSinceEpoch + _state.serverTimeOffsetMs;
+    final actionAgeMs = nowMs - action.timestamp;
+    if (action.durationSeconds > 0) {
+      final totalDurationMs = action.durationSeconds * 1000;
+      if (actionAgeMs >= totalDurationMs) {
+        debugPrint('[SyncEngine] Action ${action.actionId} expired (${actionAgeMs}ms old >= ${totalDurationMs}ms total). Keeping Standby.');
+        _stopCurrentAction();
+        return;
       }
-      executionDelayMs = sectorIndex * action.waveDelayStepMs;
-      debugPrint('[SyncEngine] Wave delay for ${_selectedSector.id}: $executionDelayMs ms (Step: ${action.waveDelayStepMs} ms, Index: $sectorIndex)');
     }
 
-    Timer(Duration(milliseconds: executionDelayMs), () {
-      _executeAction(action);
-    });
+    // Handle repeating wave laps sequence across sectors
+    if (action.type == TifoActionType.wave) {
+      _actionDurationTimer?.cancel();
+
+      int sectorIndex = action.targetIds.indexOf(_selectedSector.id);
+      if (sectorIndex < 0) {
+        sectorIndex = action.targetIds.indexOf(_selectedSector.standGroup.toUpperCase());
+      }
+      if (sectorIndex < 0) {
+        sectorIndex = (_selectedSector.orderIndex - 1).clamp(0, 10);
+      }
+
+      final waveStepMs = action.waveDelayStepMs > 0 ? action.waveDelayStepMs : 250;
+      final crestDurationMs = 1200; // Duration of wave crest on a sector
+      final totalSectors = action.targetIds.isNotEmpty ? action.targetIds.length : 10;
+      final singleLapMs = totalSectors * waveStepMs + 500; // Total time for 1 lap (~3.0s)
+
+      final nowMs = DateTime.now().millisecondsSinceEpoch + _state.serverTimeOffsetMs;
+      final elapsedMs = (nowMs - action.timestamp).clamp(0, 1000000);
+      final totalDurationMs = (action.durationSeconds > 0 ? action.durationSeconds : 12) * 1000;
+
+      if (elapsedMs >= totalDurationMs) {
+        _stopCurrentAction();
+        return;
+      }
+
+      final timeInLap = elapsedMs % singleLapMs;
+      final myCrestStart = sectorIndex * waveStepMs;
+      final myCrestEnd = myCrestStart + crestDurationMs;
+
+      if (timeInLap >= myCrestStart && timeInLap < myCrestEnd) {
+        // Wave crest is ON THIS SECTOR RIGHT NOW!
+        _executeAction(action);
+        final remainingMsInCrest = myCrestEnd - timeInLap;
+
+        _actionDurationTimer = Timer(Duration(milliseconds: remainingMsInCrest), () {
+          _stopCurrentAction();
+          // Schedule next lap check for this sector
+          final nextLapCheckMs = singleLapMs - crestDurationMs;
+          _actionDurationTimer = Timer(Duration(milliseconds: nextLapCheckMs), () {
+            _handleIncomingAction(action);
+          });
+        });
+      } else {
+        // Wave crest is on OTHER SECTORS right now! Keep THIS sector in Standby!
+        _stopCurrentAction();
+
+        final msUntilMyCrest = timeInLap < myCrestStart
+            ? (myCrestStart - timeInLap)
+            : (singleLapMs - timeInLap + myCrestStart);
+
+        _actionDurationTimer = Timer(Duration(milliseconds: msUntilMyCrest), () {
+          _handleIncomingAction(action);
+        });
+      }
+      return;
+    }
+
+    _executeAction(action);
   }
 
-  /// Execute payload action on hardware (Screen + Strobe + Character + Sponsor + Lyrics + Matrix)
   Future<void> _executeAction(TifoActionPayload action) async {
     _actionDurationTimer?.cancel();
 
-    // 1. Maximize Screen Brightness
     await ScreenLightService().maximizeBrightness();
 
-    // 2. Hardware Strobe Trigger for strobe, wave, or goal celebration
     if (action.type == TifoActionType.strobe ||
         action.type == TifoActionType.wave ||
         action.type == TifoActionType.goalCelebration) {
@@ -281,11 +348,8 @@ class SyncEngineService {
       );
     }
 
-    // Determine target character (custom payload text or default assigned sector letter)
     String charToDisplay = action.textChar.trim();
     if (charToDisplay.length > 1 && action.type == TifoActionType.textDisplay) {
-      // Sector-level and seat-level word rasterization algorithm:
-      // Map word letters across targeted sectors in the stand sequentially
       final secIndex = action.targetIds.indexOf(_selectedSector.id);
       if (secIndex >= 0) {
         charToDisplay = charToDisplay[secIndex % charToDisplay.length];
@@ -298,10 +362,8 @@ class SyncEngineService {
       charToDisplay = _selectedSector.assignedChar;
     }
 
-    // Determine pixel color if matrix mode is active or sector-specific colors
     String targetColorHex = action.colorHex;
     if (action.sectorColors != null && action.sectorColors!.isNotEmpty) {
-      // Use per-sector custom color if available, else fall back to global colorHex
       targetColorHex = action.sectorColors![_selectedSector.id] ?? action.colorHex;
     } else if (action.type == TifoActionType.pixelMatrix && action.pixelMatrixMap != null) {
       final seatKey = '${_selectedSector.id}_R${_seatRow}_S$_seatNumber';
@@ -311,7 +373,6 @@ class SyncEngineService {
       } else if (action.pixelMatrixMap!.containsKey(rowKey)) {
         targetColorHex = action.pixelMatrixMap![rowKey].toString();
       } else {
-        // Pattern calculation for matrix tifo if no exact seat key match
         final row = int.tryParse(_seatRow) ?? 1;
         final seat = int.tryParse(_seatNumber) ?? 1;
         if ((row + seat) % 2 == 0) {
@@ -340,9 +401,12 @@ class SyncEngineService {
       statusMessageAr: statusText,
     ));
 
-    // Schedule automatic restoration after action duration
     if (action.durationSeconds > 0) {
-      _actionDurationTimer = Timer(Duration(seconds: action.durationSeconds), () {
+      final nowMs = DateTime.now().millisecondsSinceEpoch + _state.serverTimeOffsetMs;
+      final elapsedSec = ((nowMs - action.timestamp) / 1000).floor().clamp(0, action.durationSeconds);
+      final remainingSec = (action.durationSeconds - elapsedSec).clamp(1, action.durationSeconds);
+
+      _actionDurationTimer = Timer(Duration(seconds: remainingSec), () {
         if (action.sponsor != null) {
           _updateState(_state.copyWith(
             isActionActive: false,
@@ -355,8 +419,6 @@ class SyncEngineService {
     }
   }
 
-
-  /// Stop current action & restore previous screen brightness
   void _stopCurrentAction() {
     _actionDurationTimer?.cancel();
     FlashControllerService().stopStrobe();
@@ -370,7 +432,6 @@ class SyncEngineService {
     ));
   }
 
-  /// Trigger a direct local test action (for testing/demoing offline or in Admin preview)
   void simulateAction(TifoActionPayload action) {
     _handleIncomingAction(action);
   }
