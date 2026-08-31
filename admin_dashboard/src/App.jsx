@@ -11,8 +11,6 @@ export default function App() {
   const [logs, setLogs] = useState([]);
   const [isBroadcasting, setIsBroadcasting] = useState(false);
 
-  const [activeStadium, setActiveStadium] = useState('stadium_kingdom_arena');
-
   const handleToggleSector = (id) => {
     setSelectedSectors((prev) =>
       prev.includes(id) ? prev.filter((item) => item !== id) : [...prev, id]
@@ -25,7 +23,7 @@ export default function App() {
   const handleTriggerAction = async (payloadData) => {
     setIsBroadcasting(true);
 
-    const result = await broadcastLiveAction(payloadData, activeStadium);
+    const result = await broadcastLiveAction(payloadData);
     const rec = result.record;
 
     setActiveAction(rec.type === 'IDLE' ? null : rec);
@@ -62,19 +60,12 @@ export default function App() {
         </div>
 
         <div className="flex items-center gap-4">
-          {/* Active Stadium Selector */}
-          <div className="bg-slate-900 px-3 py-1.5 rounded-xl border border-slate-800 text-xs">
-            <div className="text-slate-400 text-[10px] mb-0.5">الملعب المستهدف للبث</div>
-            <select
-              value={activeStadium}
-              onChange={(e) => setActiveStadium(e.target.value)}
-              className="bg-slate-950 text-emerald-400 font-bold border border-slate-800 rounded px-2 py-1 text-xs focus:outline-none focus:border-emerald-500"
-            >
-              <option value="stadium_kingdom_arena">المملكة أرينا (Kingdom Arena)</option>
-              <option value="stadium_jawhara">مدينة الملك عبد الله (الجوهرة)</option>
-              <option value="stadium_alawwal_park">الأول بارك (Al-Awwal Park)</option>
-              <option value="stadium_aramco">استاد أرامكو الجديد (Aramco)</option>
-            </select>
+          <div className="bg-slate-900 px-4 py-2 rounded-xl border border-slate-800 flex items-center gap-3 text-xs">
+            <Radio className="w-4 h-4 text-emerald-400 animate-pulse" />
+            <div>
+              <div className="text-slate-400 text-[10px]">المباراة النشطة</div>
+              <div className="font-bold text-white font-mono">{MATCH_ID}</div>
+            </div>
           </div>
 
           <div className="bg-slate-900 px-4 py-2 rounded-xl border border-slate-800 flex items-center gap-3 text-xs">

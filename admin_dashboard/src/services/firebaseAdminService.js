@@ -25,8 +25,8 @@ export const MATCH_ID = "match_2026_final";
 /**
  * Broadcast live action payload to Firebase Realtime Database
  */
-export async function broadcastLiveAction(payload, stadiumId = 'stadium_kingdom_arena') {
-  const matchId = stadiumId || MATCH_ID;
+export async function broadcastLiveAction(payload) {
+  const matchId = MATCH_ID;
   const targetNode = `/matches/${matchId}/live_action`;
 
   const fullRecord = {
