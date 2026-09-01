@@ -256,7 +256,8 @@ class SyncEngineService {
     }
 
     if (!isFanTargeted(action)) {
-      debugPrint('[SyncEngine] Fan sector (${_selectedSector.id}) not targeted by this action.');
+      debugPrint('[SyncEngine] Fan sector (${_selectedSector.id}) not targeted by this action. Setting to idle standby.');
+      _stopCurrentAction();
       return;
     }
 
