@@ -460,11 +460,59 @@ class _LiveTifoScreenState extends State<LiveTifoScreen> with SingleTickerProvid
     }
 
     if (_syncState.activeCharDisplay.isNotEmpty) {
-      // Giant High-Contrast Stadium Stencil Character (Zero extra clutter)
+      final text = _syncState.activeCharDisplay;
+      final isLongMessage = text.length > 3;
       final isLightBg = surfaceColor.computeLuminance() > 0.5;
+
+      if (isLongMessage) {
+        return Center(
+          child: Container(
+            margin: const EdgeInsets.symmetric(horizontal: 20),
+            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 28),
+            decoration: BoxDecoration(
+              gradient: const LinearGradient(
+                colors: [Color(0xFF1E1B4B), Color(0xFF0F172A)],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+              ),
+              borderRadius: BorderRadius.circular(28),
+              border: Border.all(color: const Color(0xFFFFD700), width: 3),
+              boxShadow: [
+                BoxShadow(
+                  color: const Color(0xFFFFD700).withValues(alpha: 0.4),
+                  blurRadius: 35,
+                  spreadRadius: 6,
+                ),
+              ],
+            ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const Text('🎉 🎁 🏆', style: TextStyle(fontSize: 42)),
+                const SizedBox(height: 14),
+                Text(
+                  text,
+                  textAlign: TextAlign.center,
+                  style: const TextStyle(
+                    fontSize: 26,
+                    fontWeight: FontWeight.w900,
+                    color: Color(0xFFFFD700),
+                    height: 1.35,
+                    shadows: [
+                      Shadow(color: Colors.black, blurRadius: 16, offset: Offset(0, 4)),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+        );
+      }
+
+      // Giant High-Contrast Stadium Stencil Character (Zero extra clutter)
       return Center(
         child: Text(
-          _syncState.activeCharDisplay,
+          text,
           style: TextStyle(
             fontSize: 220,
             fontWeight: FontWeight.w900,

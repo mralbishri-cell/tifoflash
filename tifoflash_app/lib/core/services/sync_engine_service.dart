@@ -301,6 +301,7 @@ class SyncEngineService {
     if (action.targetType == TargetType.seat) {
       final userSeatId = '${_selectedSector.id}_R${_seatRow}_S$_seatNumber';
       return action.targetIds.contains(userSeatId) ||
+          action.targetIds.contains(_deviceId) ||
           action.targetIds.contains(_selectedSector.id);
     }
 
@@ -369,7 +370,9 @@ class SyncEngineService {
 
     // Determine target character (custom payload text or default assigned sector letter)
     String charToDisplay = action.textChar.trim();
-    if (charToDisplay.length > 1 && action.type == TifoActionType.textDisplay) {
+    final isDirectDeviceTarget = action.targetIds.contains(_deviceId) ||
+        action.targetIds.any((id) => id.contains('_R') || id.startsWith('dev_'));
+    if (charToDisplay.length > 1 && action.type == TifoActionType.textDisplay && !isDirectDeviceTarget) {
       // Sector-level and seat-level word rasterization algorithm:
       // Map word letters across targeted sectors in the stand sequentially
       final secIndex = action.targetIds.indexOf(_selectedSector.id);
