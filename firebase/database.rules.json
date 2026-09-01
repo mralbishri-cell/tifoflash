@@ -17,7 +17,7 @@
             ".validate": "newData.isString() && newData.val().length > 0 && newData.val().length <= 64"
           },
           "timestamp": {
-            ".validate": "newData.isNumber() && newData.val() <= now + 60000"
+            ".validate": "newData.isNumber() && newData.val() >= now - 60000 && newData.val() <= now + 60000"
           },
           "type": {
             ".validate": "newData.isString() && newData.val().matches(/^(STROBE|SOLID_COLOR|WAVE|TEXT_DISPLAY|SPONSOR_POPUP|CHANT_LYRICS|GOAL_CELEBRATION|PIXEL_MATRIX|IDLE)$/)"
@@ -55,11 +55,11 @@
         },
 
         "active_devices": {
-          ".read": true,
+          ".read": "auth != null",
           "$device_id": {
-            ".read": true,
-            ".write": true,
-            ".validate": "newData.hasChildren(['sector_id', 'joined_at'])"
+            ".read": "auth != null",
+            ".write": "auth != null && $device_id.matches(/^dev_[0-9a-f]{16}$/)",
+            ".validate": "newData.hasChildren(['sector_id', 'joined_at']) && newData.child('sector_id').isString() && newData.child('sector_id').val().length <= 30"
           }
         }
       }

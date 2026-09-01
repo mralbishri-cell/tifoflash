@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:convert';
+import 'dart:math';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/foundation.dart';
@@ -84,8 +85,10 @@ class SyncEngineService {
   StadiumSector _selectedSector = PresetStadiumData.sectors.first;
   String _seatRow = '';
   String _seatNumber = '';
-  final String _deviceId = 'dev_${DateTime.now().millisecondsSinceEpoch.toString().substring(6)}';
-  
+  final String _deviceId = _generateDeviceId();
+
+  bool _disposed = false;
+
   DatabaseReference? _liveActionRef;
   DatabaseReference? _presenceRef;
   DatabaseReference? _offsetRef;
@@ -95,6 +98,12 @@ class SyncEngineService {
   Timer? _httpPollTimer;
   String _lastHandledActionId = '';
   int _lastHandledTimestamp = 0;
+
+  static String _generateDeviceId() {
+    final rng = Random.secure();
+    final bytes = List<int>.generate(8, (_) => rng.nextInt(256));
+    return 'dev_${bytes.map((b) => b.toRadixString(16).padLeft(2, '0')).join()}';
+  }
 
   void updateFanPlacement({
     required StadiumSector sector,
@@ -162,10 +171,15 @@ class SyncEngineService {
       _actionSubscription = _liveActionRef?.onValue.listen((event) {
         if (event.snapshot.value == null) return;
         try {
-          final dataMap = Map<String, dynamic>.from(event.snapshot.value as Map);
+          final raw = event.snapshot.value;
+          if (raw is! Map) {
+            debugPrint('[SyncEngine] Unexpected RTDB value type: ${raw.runtimeType}');
+            return;
+          }
+          final dataMap = Map<String, dynamic>.from(raw);
           final actionId = dataMap['action_id']?.toString() ?? '';
           final timestamp = (dataMap['timestamp'] as num?)?.toInt() ?? 0;
-          if (actionId != _lastHandledActionId || timestamp != _lastHandledTimestamp) {
+          if (actionId.isNotEmpty && (actionId != _lastHandledActionId || timestamp != _lastHandledTimestamp)) {
             _lastHandledActionId = actionId;
             _lastHandledTimestamp = timestamp;
             final action = TifoActionPayload.fromJson(dataMap);
@@ -187,11 +201,20 @@ class SyncEngineService {
   void _startHttpPolling() {
     _httpPollTimer?.cancel();
     _httpPollTimer = Timer.periodic(const Duration(milliseconds: 400), (_) async {
+      if (_disposed) return;
       try {
-        final url = Uri.parse('https://tifoflash-default-rtdb.europe-west1.firebasedatabase.app/matches/$_matchId/live_action.json');
+        final encodedMatchId = Uri.encodeComponent(_matchId);
+        final url = Uri.parse('https://tifoflash-default-rtdb.europe-west1.firebasedatabase.app/matches/$encodedMatchId/live_action.json');
         final response = await http.get(url).timeout(const Duration(milliseconds: 1500));
-        if (response.statusCode == 200 && response.body.isNotEmpty && response.body != 'null') {
-          final dataMap = json.decode(response.body) as Map<String, dynamic>;
+        // Reject suspiciously large payloads (>64KB) to prevent memory exhaustion
+        if (response.contentLength != null && response.contentLength! > 65536) {
+          debugPrint('[SyncEngine] HTTP poll payload too large (${response.contentLength} bytes). Skipping.');
+          return;
+        }
+        if (response.statusCode == 200 && response.body.isNotEmpty && response.body != 'null' && response.body.length <= 65536) {
+          final decoded = json.decode(response.body);
+          if (decoded is! Map) return;
+          final dataMap = Map<String, dynamic>.from(decoded);
           final actionId = dataMap['action_id']?.toString() ?? '';
           final timestamp = (dataMap['timestamp'] as num?)?.toInt() ?? 0;
 
@@ -412,6 +435,7 @@ class SyncEngineService {
   }
 
   void _updateState(SyncEngineState newState) {
+    if (_disposed) return;
     _state = newState;
     if (!_stateController.isClosed) {
       _stateController.add(_state);
@@ -419,10 +443,12 @@ class SyncEngineService {
   }
 
   void dispose() {
+    _disposed = true;
     _httpPollTimer?.cancel();
     _actionSubscription?.cancel();
     _offsetSubscription?.cancel();
     _actionDurationTimer?.cancel();
-    _stateController.close();
+    FlashControllerService().stopStrobe();
+    if (!_stateController.isClosed) _stateController.close();
   }
 }
