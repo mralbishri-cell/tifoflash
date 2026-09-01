@@ -27,6 +27,7 @@ workflows:
 
           app-store-connect fetch-signing-files "com.tifoflash.tifoflashApp" \
             --type IOS_APP_STORE \
+            --create \
             --certificate-key "$CERT_KEY"
 
       - name: Add certificates to keychain
