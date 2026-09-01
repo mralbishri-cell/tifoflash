@@ -370,11 +370,15 @@ class SyncEngineService {
 
     // Determine target character (custom payload text or default assigned sector letter)
     String charToDisplay = action.textChar.trim();
-    final isDirectDeviceTarget = action.targetIds.contains(_deviceId) ||
-        action.targetIds.any((id) => id.contains('_R') || id.startsWith('dev_'));
-    if (charToDisplay.length > 1 && action.type == TifoActionType.textDisplay && !isDirectDeviceTarget) {
-      // Sector-level and seat-level word rasterization algorithm:
-      // Map word letters across targeted sectors in the stand sequentially
+    
+    // Clean Architectural Separation:
+    // 1. Stadium-wide multi-sector Word Tifo: distribute letters across sectors for aerial visibility
+    // 2. Individual / Winner / Single target messages: preserve full message text for the fan to read
+    final isStadiumWideWordTifo = (action.targetType == TargetType.all ||
+                                  (action.targetType == TargetType.sector && action.targetIds.length > 1)) &&
+                                  !action.actionId.startsWith('winner_');
+
+    if (charToDisplay.length > 1 && action.type == TifoActionType.textDisplay && isStadiumWideWordTifo) {
       final secIndex = action.targetIds.indexOf(_selectedSector.id);
       if (secIndex >= 0) {
         charToDisplay = charToDisplay[secIndex % charToDisplay.length];

@@ -461,7 +461,7 @@ class _LiveTifoScreenState extends State<LiveTifoScreen> with SingleTickerProvid
 
     if (_syncState.activeCharDisplay.isNotEmpty) {
       final text = _syncState.activeCharDisplay;
-      final isLongMessage = text.length > 3;
+      final isLongMessage = text.length > 1;
       final isLightBg = surfaceColor.computeLuminance() > 0.5;
 
       if (isLongMessage) {
