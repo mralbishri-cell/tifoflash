@@ -1,24 +1,4 @@
 workflows:
-  android-release-workflow:
-    name: TifoFlash Android Release Workflow (APK & AAB)
-    max_build_duration: 30
-    instance_type: linux
-    environment:
-      flutter: stable
-    scripts:
-      - name: Fetch Flutter dependencies
-        script: |
-          cd tifoflash_app
-          flutter pub get
-      - name: Build Android APK & App Bundle (AAB)
-        script: |
-          cd tifoflash_app
-          flutter build apk --release
-          flutter build appbundle --release
-    artifacts:
-      - tifoflash_app/build/app/outputs/flutter-apk/*.apk
-      - tifoflash_app/build/app/outputs/bundle/release/*.aab
-
   ios-release-workflow:
     name: TifoFlash iOS Release Workflow
     max_build_duration: 60
@@ -40,4 +20,25 @@ workflows:
 
     artifacts:
       - tifoflash_app/build/ios/ipa/*.ipa
+
+  android-release-workflow:
+    name: TifoFlash Android Release Workflow (APK & AAB)
+    max_build_duration: 30
+    instance_type: linux
+    environment:
+      flutter: stable
+    scripts:
+      - name: Fetch Flutter dependencies
+        script: |
+          cd tifoflash_app
+          flutter pub get
+      - name: Build Android APK & App Bundle (AAB)
+        script: |
+          cd tifoflash_app
+          flutter build apk --release
+          flutter build appbundle --release
+    artifacts:
+      - tifoflash_app/build/app/outputs/flutter-apk/*.apk
+      - tifoflash_app/build/app/outputs/bundle/release/*.aab
+
 
