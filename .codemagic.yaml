@@ -19,10 +19,14 @@ workflows:
           cd tifoflash_app
           flutter pub get
 
-      - name: Fetch signing certificates from Apple
-        script: |
+          # Generate fresh RSA private key for signing
+          openssl genrsa -out /tmp/cert_private_key.pem 2048
+          CERT_KEY=$(cat /tmp/cert_private_key.pem)
+
           app-store-connect fetch-signing-files "com.tifoflash.tifoflashApp" \
-            --type IOS_APP_STORE
+            --type IOS_APP_STORE \
+            --create \
+            --certificate-key "$CERT_KEY"
 
       - name: Add certificates to keychain
         script: |
