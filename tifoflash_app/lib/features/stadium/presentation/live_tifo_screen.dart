@@ -387,16 +387,54 @@ class _LiveTifoScreenState extends State<LiveTifoScreen> with SingleTickerProvid
 
   /// Center Pure Radiant Beacon View (When Tifo is Active)
   Widget _buildActiveBeaconView(TifoActionType? currentType, Color surfaceColor) {
-    if (currentType == TifoActionType.chantLyrics) {
-      return ChantLyricsWidget(
-        title: _syncState.currentAction?.lyricsTitle ?? 'أهازيج المدرج 🎵',
-        lines: _syncState.currentAction?.lyricsLines.isNotEmpty == true
-            ? _syncState.currentAction!.lyricsLines
-            : [
-                'أووووه أووووه يا فريق البطولة 🏆',
-                'نحن الجماهير خلفك بالطول والعرض 🔥',
-              ],
-        primaryColor: surfaceColor == Colors.black ? const Color(0xFF00E5FF) : Colors.white,
+    if (currentType == TifoActionType.wave) {
+      final waveStyle = _syncState.currentAction?.waveStyle ?? 'RADIAL_RIPPLE';
+      return Stack(
+        alignment: Alignment.center,
+        children: [
+          // 3D Depth Radial Animated Pulsing Rings
+          AnimatedBuilder(
+            animation: _radarController,
+            builder: (context, child) {
+              final scale = 1.0 + (_radarController.value * 0.5);
+              final opacity = (1.0 - _radarController.value).clamp(0.0, 1.0);
+              return Transform.scale(
+                scale: scale,
+                child: Container(
+                  width: 360,
+                  height: 360,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    gradient: RadialGradient(
+                      colors: [
+                        surfaceColor.withValues(alpha: 0.95),
+                        waveStyle == 'INFERNO_PULSE'
+                            ? Colors.orange.withValues(alpha: 0.8 * opacity)
+                            : (waveStyle == 'DIAMOND_SPARKLE'
+                                ? Colors.cyanAccent.withValues(alpha: 0.85 * opacity)
+                                : const Color(0xFF00E5FF).withValues(alpha: 0.65 * opacity)),
+                        Colors.transparent,
+                      ],
+                      stops: const [0.15, 0.65, 1.0],
+                    ),
+                  ),
+                ),
+              );
+            },
+          ),
+          if (_syncState.activeCharDisplay.isNotEmpty)
+            Text(
+              _syncState.activeCharDisplay,
+              style: const TextStyle(
+                fontSize: 200,
+                fontWeight: FontWeight.w900,
+                color: Colors.white,
+                shadows: [
+                  Shadow(color: Colors.black87, blurRadius: 20, offset: Offset(0, 8)),
+                ],
+              ),
+            ),
+        ],
       );
     }
 

@@ -250,13 +250,25 @@ class SyncEngineService {
     // Calculate wave offset delay if target_type is wave
     int executionDelayMs = 0;
     if (action.type == TifoActionType.wave) {
-      // Find sector's exact position in the ordered targetIds list (respects L2R & R2L direction)
       int sectorIndex = action.targetIds.indexOf(_selectedSector.id);
       if (sectorIndex < 0) {
-        sectorIndex = (_selectedSector.orderIndex - 1).clamp(0, 50);
+        sectorIndex = (_selectedSector.orderIndex - 1).clamp(0, 10);
       }
+
+      final totalSectors = action.targetIds.isNotEmpty ? action.targetIds.length : 10;
+
+      if (action.waveDirection == 'R2L') {
+        sectorIndex = (totalSectors - 1 - sectorIndex).clamp(0, totalSectors - 1);
+      } else if (action.waveDirection == 'CENTER_OUT') {
+        final center = totalSectors / 2;
+        sectorIndex = (sectorIndex - center).abs().floor();
+      } else if (action.waveDirection == 'TOP_BOTTOM') {
+        final rowNum = int.tryParse(_seatRow) ?? 1;
+        sectorIndex = (rowNum - 1).clamp(0, 5);
+      }
+
       executionDelayMs = sectorIndex * action.waveDelayStepMs;
-      debugPrint('[SyncEngine] Wave delay for ${_selectedSector.id}: $executionDelayMs ms (Step: ${action.waveDelayStepMs} ms, Index: $sectorIndex)');
+      debugPrint('[SyncEngine] Wave delay for ${_selectedSector.id}: $executionDelayMs ms (Dir: ${action.waveDirection}, Step: ${action.waveDelayStepMs} ms)');
     }
 
     Timer(Duration(milliseconds: executionDelayMs), () {

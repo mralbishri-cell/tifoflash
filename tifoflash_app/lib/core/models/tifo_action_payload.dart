@@ -139,6 +139,9 @@ class TifoActionPayload {
   final int durationSeconds;
   final String textChar;
   final int waveDelayStepMs;
+  final String waveDirection;
+  final String waveStyle;
+  final String waveTempo;
   final List<SponsorInfo> sponsors;
   final String lyricsTitle;
   final List<String> lyricsLines;
@@ -158,6 +161,9 @@ class TifoActionPayload {
     required this.durationSeconds,
     required this.textChar,
     required this.waveDelayStepMs,
+    this.waveDirection = 'L2R',
+    this.waveStyle = 'RADIAL_RIPPLE',
+    this.waveTempo = 'SMOOTH',
     this.sponsors = const [],
     this.lyricsTitle = '',
     this.lyricsLines = const [],
@@ -215,6 +221,9 @@ class TifoActionPayload {
       durationSeconds: PayloadSanitizer.clampInt(payloadMap['duration_seconds'], 10, 0, 30),
       textChar: PayloadSanitizer.sanitizeText(payloadMap['text_char'] as String?, maxLength: 50),
       waveDelayStepMs: PayloadSanitizer.clampInt(payloadMap['wave_delay_step_ms'], 250, 40, 2000),
+      waveDirection: payloadMap['wave_direction']?.toString() ?? 'L2R',
+      waveStyle: payloadMap['wave_style']?.toString() ?? 'RADIAL_RIPPLE',
+      waveTempo: payloadMap['wave_tempo']?.toString() ?? 'SMOOTH',
       sponsors: parsedSponsors,
       lyricsTitle: PayloadSanitizer.sanitizeText(payloadMap['lyrics_title'] as String?, maxLength: 100),
       lyricsLines: parsedLyrics.map((l) => PayloadSanitizer.sanitizeText(l, maxLength: 200)).toList(),

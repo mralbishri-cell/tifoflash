@@ -179,12 +179,27 @@
           <div class="bg-slate-950 p-4 rounded-xl border border-slate-800 space-y-3 text-xs">
             <div class="flex flex-wrap items-center justify-between gap-3">
               <span class="text-slate-400 font-bold flex items-center gap-1">
-                <span>🧭</span> اتجاه الحركة (Wave Direction):
+                <span>🧭</span> اتجاه مسار التموج (Wave Sweep Direction):
               </span>
-              <div class="flex gap-2">
+              <div class="flex flex-wrap gap-1.5">
                 <button onclick="setDirection('L2R')" id="dirL2R" class="px-3 py-1.5 rounded-lg bg-cyan-500 text-black font-bold">من اليسار لليمين ➡️</button>
-                <button onclick="setDirection('R2L')" id="dirR2L" class="px-3 py-1.5 rounded-lg bg-slate-800 text-slate-300">من اليمين لليسار ⬅️</button>
+                <button onclick="setDirection('R2L')" id="dirR2L" class="px-3 py-1.5 rounded-lg bg-slate-800 text-slate-300 hover:bg-slate-700">من اليمين لليسار ⬅️</button>
+                <button onclick="setDirection('CENTER_OUT')" id="dirCENTER" class="px-3 py-1.5 rounded-lg bg-amber-950 border border-amber-500/40 text-amber-300 font-bold hover:bg-amber-900">انفجار من المنتصف 💥</button>
+                <button onclick="setDirection('TOP_BOTTOM')" id="dirTOP" class="px-3 py-1.5 rounded-lg bg-emerald-950 border border-emerald-500/40 text-emerald-300 font-bold hover:bg-emerald-900">شلال رأسي من الأعلى 🌊</button>
               </div>
+            </div>
+
+            {/* Visual Motion Style & Tempo Bar */}
+            <div class="flex flex-wrap items-center justify-between gap-3 pt-2 border-t border-slate-900">
+              <span class="text-slate-400 font-bold flex items-center gap-1">
+                <span>🎆</span> المؤثر البصري المباشر (Visual Motion Style):
+              </span>
+              <select id="waveStyleSelect" class="bg-slate-900 border border-slate-700 rounded-lg px-3 py-1.5 text-xs text-amber-300 font-bold outline-none cursor-pointer">
+                <option value="RADIAL_RIPPLE" selected>🌌 تموج إشعاعي ثلاثي الأبعاد (3D Depth Ripple)</option>
+                <option value="INFERNO_PULSE">🔥 نبض الشعلة النارية (Volcano Inferno Pulse)</option>
+                <option value="DIAMOND_SPARKLE">💎 بريق الألماس والنجوم (Diamond Sparkle Matrix)</option>
+                <option value="AUDIO_BEAT_SYNC">🎵 موجة الصوت والإيقاع (Audio Beat Wave Sync)</option>
+              </select>
             </div>
 
             <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-2 border-t border-slate-900">
