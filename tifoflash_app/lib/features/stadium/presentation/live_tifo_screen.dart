@@ -183,8 +183,9 @@ class _LiveTifoScreenState extends State<LiveTifoScreen> with SingleTickerProvid
       if (_screenFlashToggle) {
         activeEffectiveColor = Colors.white;
       } else {
-        // Continuous radiant color pulse animation (pulses continuously in its active color)
-        final pulseFactor = 0.80 + (0.20 * (1.0 - (_radarController.value - 0.5).abs() * 2));
+        // Deep, visible radiant color pulse animation (pulses up and down continuously)
+        final pulseProgress = (1.0 - (_radarController.value - 0.5).abs() * 2);
+        final pulseFactor = 0.30 + (0.70 * pulseProgress);
         final hsl = HSLColor.fromColor(surfaceColor);
         activeEffectiveColor = hsl.withLightness((hsl.lightness * pulseFactor).clamp(0.0, 1.0)).toColor();
       }
