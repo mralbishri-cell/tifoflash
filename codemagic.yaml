@@ -1,69 +1,8 @@
 workflows:
-  ios-release-workflow:
-    name: TifoFlash iOS Release Workflow
-    max_build_duration: 60
-    instance_type: mac_mini_m1
-    integrations:
-      app_store_connect: appstore_key
-    environment:
-      flutter: stable
-      xcode: latest
-      cocoapods: default
-    scripts:
-      - name: Initialize keychain on build machine
-        script: |
-          keychain initialize
-
-      - name: Fetch Flutter dependencies
-        script: |
-          cd tifoflash_app
-          flutter pub get
-
-      - name: Create certificate and provisioning profile automatically
-        script: |
-          # Generate a fresh RSA private key for certificate signing
-          openssl genrsa -out /tmp/cert_private_key.pem 2048
-
-          # Read the key content into a variable (CLI expects content, not file path)
-          CERT_KEY=$(cat /tmp/cert_private_key.pem)
-
-          # Create distribution certificate + provisioning profile using the generated key content
-          app-store-connect fetch-signing-files "com.tifoflash.tifoflashApp" \
-            --type IOS_APP_STORE \
-            --create \
-            --certificate-key "$CERT_KEY"
-
-      - name: Add certificates to keychain
-        script: |
-          keychain add-certificates
-
-      - name: Apply code signing settings to Xcode project
-        script: |
-          xcode-project use-profiles
-
-      - name: Build & Sign iOS IPA Package
-        script: |
-          cd tifoflash_app
-          flutter build ipa --release
-
-    artifacts:
-      - tifoflash_app/build/ios/ipa/*.ipa
-    publishing:
-      app_store_connect:
-        auth: integration
-        submit_to_testflight: true
-        submit_to_app_store: false
-      email:
-        recipients:
-          - TODO_REPLACE_WITH_YOUR_REAL_EMAIL@domain.com  # ⚠️ M-3: Replace with real admin email
-        notify:
-          success: true
-          failure: true
-
   android-release-workflow:
-    name: TifoFlash Android Release Workflow
-    max_build_duration: 60
-    instance_type: mac_mini_m1
+    name: TifoFlash Android Release Workflow (APK & AAB)
+    max_build_duration: 30
+    instance_type: linux
     environment:
       flutter: stable
     scripts:
@@ -79,3 +18,26 @@ workflows:
     artifacts:
       - tifoflash_app/build/app/outputs/flutter-apk/*.apk
       - tifoflash_app/build/app/outputs/bundle/release/*.aab
+
+  ios-release-workflow:
+    name: TifoFlash iOS Release Workflow
+    max_build_duration: 60
+    instance_type: mac_mini_m1
+    environment:
+      flutter: stable
+      xcode: latest
+      cocoapods: default
+    scripts:
+      - name: Fetch Flutter dependencies
+        script: |
+          cd tifoflash_app
+          flutter pub get
+
+      - name: Build iOS IPA Package
+        script: |
+          cd tifoflash_app
+          flutter build ipa --release --no-codesign
+
+    artifacts:
+      - tifoflash_app/build/ios/ipa/*.ipa
+
