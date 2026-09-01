@@ -1,0 +1,42 @@
+name: Build iOS IPA Package
+
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch:
+
+jobs:
+  build-ios:
+    name: Build iOS App (Unsigned IPA)
+    runs-on: macos-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Java JDK
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'zulu'
+          java-version: '17'
+
+      - name: Set up Flutter SDK
+        uses: subosito/flutter-action@v2
+        with:
+          channel: 'stable'
+          cache: true
+
+      - name: Install Flutter Dependencies
+        run: |
+          cd tifoflash_app
+          flutter pub get
+
+      - name: Build iOS IPA (No Codesign)
+        run: |
+          cd tifoflash_app
+          flutter build ipa --release --no-codesign
+
+      - name: Upload iOS IPA Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: TifoFlash-iOS-IPA
+          path: tifoflash_app/build/ios/ipa/*.ipa
