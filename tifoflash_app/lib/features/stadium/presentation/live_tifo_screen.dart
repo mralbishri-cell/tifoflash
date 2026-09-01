@@ -383,13 +383,28 @@ class _LiveTifoScreenState extends State<LiveTifoScreen> with SingleTickerProvid
               ),
             ),
 
-            ClipRRect(
-              borderRadius: BorderRadius.circular(8),
-              child: Image.asset(
-                'assets/images/app_icon.png',
-                width: 28,
-                height: 28,
-                fit: BoxFit.cover,
+            Container(
+              padding: const EdgeInsets.all(6),
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                gradient: const RadialGradient(
+                  colors: [
+                    Color(0xFF10B981),
+                    Color(0xFF06B6D4),
+                  ],
+                ),
+                boxShadow: [
+                  BoxShadow(
+                    color: const Color(0xFF10B981).withValues(alpha: 0.5),
+                    blurRadius: 10,
+                    spreadRadius: 1,
+                  ),
+                ],
+              ),
+              child: const Icon(
+                Icons.bolt,
+                color: Colors.black,
+                size: 16,
               ),
             ),
             const SizedBox(width: 8),

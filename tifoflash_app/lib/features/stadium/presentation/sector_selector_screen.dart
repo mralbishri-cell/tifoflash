@@ -238,13 +238,28 @@ class _SectorSelectorScreenState extends State<SectorSelectorScreen> {
         title: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            ClipRRect(
-              borderRadius: BorderRadius.circular(8),
-              child: Image.asset(
-                'assets/images/app_icon.png',
-                width: 32,
-                height: 32,
-                fit: BoxFit.cover,
+            Container(
+              padding: const EdgeInsets.all(7),
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                gradient: const RadialGradient(
+                  colors: [
+                    Color(0xFF10B981),
+                    Color(0xFF06B6D4),
+                  ],
+                ),
+                boxShadow: [
+                  BoxShadow(
+                    color: const Color(0xFF10B981).withValues(alpha: 0.6),
+                    blurRadius: 12,
+                    spreadRadius: 1,
+                  ),
+                ],
+              ),
+              child: const Icon(
+                Icons.bolt,
+                color: Colors.black,
+                size: 20,
               ),
             ),
             const SizedBox(width: 8),
