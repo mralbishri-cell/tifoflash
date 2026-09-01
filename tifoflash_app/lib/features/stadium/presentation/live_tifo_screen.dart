@@ -99,6 +99,9 @@ class _LiveTifoScreenState extends State<LiveTifoScreen> with SingleTickerProvid
         });
 
         if (state.isActionActive) {
+          // Auto-maximize brightness for active tifo show
+          ScreenLightService().maximizeBrightness();
+
           final actionType = state.currentAction?.type;
           if (actionType == TifoActionType.strobe ||
               actionType == TifoActionType.goalCelebration ||
@@ -109,13 +112,16 @@ class _LiveTifoScreenState extends State<LiveTifoScreen> with SingleTickerProvid
             _stopScreenStrobe();
           }
 
+          // Rhythmic Haptic Pulse Beats in Fan's Hand
           Vibration.hasVibrator().then((hasVib) {
             if (hasVib == true) {
-              Vibration.vibrate(duration: 180);
+              Vibration.vibrate(pattern: [0, 150, 50, 150, 50, 300]);
             }
           });
         } else {
           _stopScreenStrobe();
+          // AMOLED Battery Saver: Dim brightness during standby idle time
+          ScreenLightService().setDimmedStandby();
         }
       }
     });

@@ -50,4 +50,15 @@ class ScreenLightService {
       debugPrint('[ScreenLightService] Failed to restore brightness: $e');
     }
   }
+
+  /// Set low power dimmed standby mode (0.15) to save 90% battery during idle match time
+  Future<void> setDimmedStandby() async {
+    if (kIsWeb) return;
+    try {
+      await ScreenBrightness().setApplicationScreenBrightness(0.15);
+      _isMaximized = false;
+    } catch (e) {
+      debugPrint('[ScreenLightService] Failed to set standby brightness: $e');
+    }
+  }
 }
