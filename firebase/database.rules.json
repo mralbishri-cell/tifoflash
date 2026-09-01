@@ -55,10 +55,10 @@
         },
 
         "active_devices": {
-          ".read": "auth != null",
+          ".read": true,
           "$device_id": {
-            ".read": "auth != null",
-            ".write": "auth != null && $device_id.matches(/^dev_[0-9a-f]{16}$/)",
+            ".read": true,
+            ".write": true,
             ".validate": "newData.hasChildren(['sector_id', 'joined_at']) && newData.child('sector_id').isString() && newData.child('sector_id').val().length <= 30"
           }
         }

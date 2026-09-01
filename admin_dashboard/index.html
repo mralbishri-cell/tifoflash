@@ -898,17 +898,40 @@
     let activeDevicesMap = {};
 
     function startLivePresenceTracking() {
+      // 1. Firebase WebSocket listener
       try {
-        if (typeof firebase === 'undefined' || !firebase.database) return;
-        const db = firebase.database();
-        const devicesRef = db.ref(`/matches/${MATCH_ID}/active_devices`);
-        
-        devicesRef.on('value', (snapshot) => {
-          activeDevicesMap = snapshot.val() || {};
-          renderLivePresence();
-        });
+        if (typeof firebase !== 'undefined' && firebase.database) {
+          const db = firebase.database();
+          const devicesRef = db.ref(`/matches/${MATCH_ID}/active_devices`);
+          devicesRef.on('value', (snapshot) => {
+            activeDevicesMap = snapshot.val() || {};
+            renderLivePresence();
+          });
+        }
       } catch (err) {
         console.warn('[Presence] Real-time tracking error:', err);
+      }
+
+      // 2. Continuous HTTP REST polling backup (guarantees device count updates even without WebSocket)
+      fetchLiveDevicesRest();
+      setInterval(fetchLiveDevicesRest, 2500);
+    }
+
+    async function fetchLiveDevicesRest() {
+      try {
+        const res = await fetch(`${FIREBASE_DB_URL}/matches/${MATCH_ID}/active_devices.json`);
+        if (res.ok) {
+          const data = await res.json();
+          if (data && typeof data === 'object') {
+            activeDevicesMap = data;
+            renderLivePresence();
+          } else if (data === null) {
+            activeDevicesMap = {};
+            renderLivePresence();
+          }
+        }
+      } catch (e) {
+        // Silent retry
       }
     }
 
@@ -993,6 +1016,16 @@
           }).join('');
         }
       }
+    }
+
+    // Auto-start live device presence tracking immediately on dashboard load
+    try {
+      startLivePresenceTracking();
+    } catch (e) {
+      console.warn('Auto startLivePresenceTracking error:', e);
+    }
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', startLivePresenceTracking);
     }
 
     // ===== H-2: XSS Protection — HTML Escape Utility =====

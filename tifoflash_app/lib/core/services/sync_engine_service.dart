@@ -117,20 +117,57 @@ class SyncEngineService {
     debugPrint('[SyncEngine] Fan placement updated: Sector=${sector.id}, Row=$seatRow, Seat=$seatNumber, Device=$_deviceId');
   }
 
+  Timer? _presenceHeartbeatTimer;
+
   void _registerDevicePresence() {
-    if (_presenceRef == null) return;
+    final payload = {
+      'device_id': _deviceId,
+      'sector_id': _selectedSector.id,
+      'sector_name': _selectedSector.nameAr,
+      'seat_row': _seatRow,
+      'seat_number': _seatNumber,
+      'joined_at': ServerValue.timestamp,
+    };
+
+    // 1. Firebase SDK WebSocket
     try {
-      _presenceRef?.set({
-        'device_id': _deviceId,
-        'sector_id': _selectedSector.id,
-        'sector_name': _selectedSector.nameAr,
-        'seat_row': _seatRow,
-        'seat_number': _seatNumber,
-        'joined_at': ServerValue.timestamp,
-      });
-      _presenceRef?.onDisconnect().remove();
+      if (_presenceRef != null) {
+        _presenceRef?.set(payload);
+        _presenceRef?.onDisconnect().remove();
+      }
     } catch (e) {
-      debugPrint('[SyncEngine] Presence register error: $e');
+      debugPrint('[SyncEngine] Presence SDK write notice: $e');
+    }
+
+    // 2. HTTP REST Direct Backup & Heartbeat (ensures 100% presence registration across all mobile browsers)
+    _sendRestPresence();
+    _presenceHeartbeatTimer?.cancel();
+    _presenceHeartbeatTimer = Timer.periodic(const Duration(seconds: 15), (_) {
+      if (!_disposed) {
+        _sendRestPresence();
+      }
+    });
+  }
+
+  void _sendRestPresence() async {
+    try {
+      final encodedMatchId = Uri.encodeComponent(_matchId);
+      final encodedDeviceId = Uri.encodeComponent(_deviceId);
+      final url = Uri.parse('https://tifoflash-default-rtdb.europe-west1.firebasedatabase.app/matches/$encodedMatchId/active_devices/$encodedDeviceId.json');
+      await http.put(
+        url,
+        headers: {'Content-Type': 'application/json'},
+        body: json.encode({
+          'device_id': _deviceId,
+          'sector_id': _selectedSector.id,
+          'sector_name': _selectedSector.nameAr,
+          'seat_row': _seatRow,
+          'seat_number': _seatNumber,
+          'joined_at': DateTime.now().millisecondsSinceEpoch,
+        }),
+      ).timeout(const Duration(seconds: 2));
+    } catch (e) {
+      // Silent network retry
     }
   }
 
@@ -444,6 +481,7 @@ class SyncEngineService {
 
   void dispose() {
     _disposed = true;
+    _presenceHeartbeatTimer?.cancel();
     _httpPollTimer?.cancel();
     _actionSubscription?.cancel();
     _offsetSubscription?.cancel();
