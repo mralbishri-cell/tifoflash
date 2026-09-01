@@ -198,6 +198,19 @@ class SyncEngineService {
           if (actionId.isNotEmpty && (actionId != _lastHandledActionId || timestamp != _lastHandledTimestamp)) {
             _lastHandledActionId = actionId;
             _lastHandledTimestamp = timestamp;
+
+            // Filter out stale/expired actions from previous test sessions upon app startup
+            final nowMs = DateTime.now().millisecondsSinceEpoch + _state.serverTimeOffsetMs;
+            final ageMs = nowMs - timestamp;
+            final payloadMap = (dataMap['payload'] as Map?)?.cast<String, dynamic>() ?? {};
+            final durationSec = (payloadMap['duration_seconds'] as num?)?.toInt() ?? 30;
+            final maxAllowedAgeMs = (durationSec > 0 ? durationSec : 45) * 1000;
+
+            if (timestamp > 0 && ageMs > maxAllowedAgeMs) {
+              debugPrint('[SyncEngine] Stale action ($actionId) ignored. Age: ${ageMs}ms > Max: ${maxAllowedAgeMs}ms');
+              return;
+            }
+
             final action = TifoActionPayload.fromJson(dataMap);
             _handleIncomingAction(action);
           }
