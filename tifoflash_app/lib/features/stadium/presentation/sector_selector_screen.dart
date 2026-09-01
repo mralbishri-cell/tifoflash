@@ -235,13 +235,14 @@ class _SectorSelectorScreenState extends State<SectorSelectorScreen> {
         title: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Container(
-              padding: const EdgeInsets.all(6),
-              decoration: const BoxDecoration(
-                color: TifoTheme.stadiumGreen,
-                shape: BoxShape.circle,
+            ClipRRect(
+              borderRadius: BorderRadius.circular(8),
+              child: Image.asset(
+                'assets/images/app_icon.png',
+                width: 32,
+                height: 32,
+                fit: BoxFit.cover,
               ),
-              child: const Icon(Icons.flash_on, color: Colors.black, size: 18),
             ),
             const SizedBox(width: 8),
             const Text(

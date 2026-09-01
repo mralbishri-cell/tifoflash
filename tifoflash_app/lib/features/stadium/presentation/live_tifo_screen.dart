@@ -377,6 +377,17 @@ class _LiveTifoScreenState extends State<LiveTifoScreen> with SingleTickerProvid
               ),
             ),
 
+            ClipRRect(
+              borderRadius: BorderRadius.circular(8),
+              child: Image.asset(
+                'assets/images/app_icon.png',
+                width: 28,
+                height: 28,
+                fit: BoxFit.cover,
+              ),
+            ),
+            const SizedBox(width: 8),
+
             // Orientation Status Badge
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
