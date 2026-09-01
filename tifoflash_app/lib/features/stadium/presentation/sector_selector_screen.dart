@@ -18,7 +18,7 @@ class _SectorSelectorScreenState extends State<SectorSelectorScreen> {
   final TextEditingController _seatController = TextEditingController(text: '45');
 
   // Placement Modes: 0 = Auto Smart Sync, 1 = Sector Fast Mode, 2 = Manual Seat Mode
-  int _placementMode = 0;
+  final int _placementMode = 2;
 
   @override
   void initState() {
@@ -189,14 +189,17 @@ class _SectorSelectorScreenState extends State<SectorSelectorScreen> {
                     child: ElevatedButton.icon(
                       onPressed: () {
                         setModalState(() => isScanning = false);
+                        final nav = Navigator.of(context);
+                        final messenger = ScaffoldMessenger.of(context);
                         Future.delayed(const Duration(milliseconds: 600), () {
-                          Navigator.of(context).pop();
+                          if (!mounted) return;
+                          nav.pop();
                           setState(() {
                             _selectedSector = _selectedStadium!.sectors.first;
                             _rowController.text = '14';
                             _seatController.text = '28';
                           });
-                          ScaffoldMessenger.of(context).showSnackBar(
+                          messenger.showSnackBar(
                             SnackBar(
                               content: Text('تم مسح التذكرة بنجاح: ${_selectedSector!.nameAr} • صف 14 • مقعد 28 🎟️'),
                               backgroundColor: TifoTheme.stadiumGreen,
