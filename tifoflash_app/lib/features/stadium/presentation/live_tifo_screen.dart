@@ -177,10 +177,17 @@ class _LiveTifoScreenState extends State<LiveTifoScreen> with SingleTickerProvid
       }
     }
 
-    // Dynamic flashing color on phone screen (toggles between luminous white flash and sector color)
+    // Dynamic flashing & continuous color breathing pulse on phone screen
     Color activeEffectiveColor = surfaceColor;
-    if (isActive && _screenFlashToggle) {
-      activeEffectiveColor = Colors.white;
+    if (isActive) {
+      if (_screenFlashToggle) {
+        activeEffectiveColor = Colors.white;
+      } else {
+        // Continuous radiant color pulse animation (pulses continuously in its active color)
+        final pulseFactor = 0.80 + (0.20 * (1.0 - (_radarController.value - 0.5).abs() * 2));
+        final hsl = HSLColor.fromColor(surfaceColor);
+        activeEffectiveColor = hsl.withLightness((hsl.lightness * pulseFactor).clamp(0.0, 1.0)).toColor();
+      }
     }
 
     if (isActive && currentType == TifoActionType.goalCelebration) {
