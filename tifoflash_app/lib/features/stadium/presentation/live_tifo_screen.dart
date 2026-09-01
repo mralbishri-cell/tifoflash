@@ -387,6 +387,19 @@ class _LiveTifoScreenState extends State<LiveTifoScreen> with SingleTickerProvid
 
   /// Center Pure Radiant Beacon View (When Tifo is Active)
   Widget _buildActiveBeaconView(TifoActionType? currentType, Color surfaceColor) {
+    if (currentType == TifoActionType.chantLyrics) {
+      return ChantLyricsWidget(
+        title: _syncState.currentAction?.lyricsTitle ?? 'أهازيج المدرج 🎵',
+        lines: _syncState.currentAction?.lyricsLines.isNotEmpty == true
+            ? _syncState.currentAction!.lyricsLines
+            : [
+                'أووووه أووووه يا فريق البطولة 🏆',
+                'نحن الجماهير خلفك بالطول والعرض 🔥',
+              ],
+        primaryColor: surfaceColor == Colors.black ? const Color(0xFF00E5FF) : Colors.white,
+      );
+    }
+
     if (currentType == TifoActionType.wave) {
       final waveStyle = _syncState.currentAction?.waveStyle ?? 'RADIAL_RIPPLE';
       return Stack(
