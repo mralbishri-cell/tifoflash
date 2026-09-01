@@ -323,13 +323,23 @@ class SyncEngineService {
       } else if (action.pixelMatrixMap!.containsKey(rowKey)) {
         targetColorHex = action.pixelMatrixMap![rowKey].toString();
       } else {
-        // Pattern calculation for matrix tifo if no exact seat key match
         final row = int.tryParse(_seatRow) ?? 1;
         final seat = int.tryParse(_seatNumber) ?? 1;
-        if ((row + seat) % 2 == 0) {
-          targetColorHex = action.colorHex;
+        final shape = action.pixelMatrixMap!['shape']?.toString() ?? '';
+
+        if (shape == 'HEART') {
+          final x = (seat - 5) / 3.0;
+          final y = (4 - row) / 3.0;
+          final inHeart = (x * x + y * y - 1) * (x * x + y * y - 1) * (x * x + y * y - 1) - x * x * y * y * y <= 0;
+          targetColorHex = inHeart ? '#FF1744' : action.colorHex;
+        } else if (shape == 'STAR') {
+          final isCenterStar = (row >= 2 && row <= 5) && (seat >= 3 && seat <= 8);
+          targetColorHex = isCenterStar ? '#FFD700' : action.colorHex;
+        } else if (shape == 'MOSAIC_ORNAMENT') {
+          final isPattern = (row + seat) % 2 == 0;
+          targetColorHex = isPattern ? '#00E5FF' : '#D500F9';
         } else {
-          targetColorHex = '#FFFFFF';
+          targetColorHex = (row + seat) % 2 == 0 ? action.colorHex : '#FFFFFF';
         }
       }
     }

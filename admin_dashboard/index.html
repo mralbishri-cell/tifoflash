@@ -454,6 +454,42 @@
 
               <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
 
+                <!-- 0.1 Heart Shape -->
+                <button onclick="launchShape('HEART')" class="group p-3 rounded-xl bg-gradient-to-br from-rose-950/60 to-red-950/40 border border-rose-500/40 hover:border-rose-400 hover:scale-[1.02] transition-all duration-200 text-right cursor-pointer">
+                  <div class="flex items-center gap-2 mb-1">
+                    <span class="text-2xl">❤️✨</span>
+                    <div>
+                      <div class="font-black text-rose-300 text-[13px]">لوحة القلب الأحمر!</div>
+                      <div class="text-[9px] text-rose-400/70 font-mono">ARTISTIC HEART CANVAS</div>
+                    </div>
+                  </div>
+                  <div class="text-[10px] text-slate-400 leading-relaxed">رسم مجسم قلب عملاق أحمر ناري يمتد عبر صفوف ومقاعد المدرج</div>
+                </button>
+
+                <!-- 0.2 Star Shape -->
+                <button onclick="launchShape('STAR')" class="group p-3 rounded-xl bg-gradient-to-br from-amber-950/60 to-yellow-950/40 border border-amber-500/40 hover:border-amber-400 hover:scale-[1.02] transition-all duration-200 text-right cursor-pointer">
+                  <div class="flex items-center gap-2 mb-1">
+                    <span class="text-2xl">⭐🏆</span>
+                    <div>
+                      <div class="font-black text-amber-300 text-[13px]">النجمة الذهبية!</div>
+                      <div class="text-[9px] text-amber-400/70 font-mono">GOLDEN CHAMPION STAR</div>
+                    </div>
+                  </div>
+                  <div class="text-[10px] text-slate-400 leading-relaxed">رسم نجمة الذهب المتوهجة فوق خلفية زرقاء أو خضراء للملعب</div>
+                </button>
+
+                <!-- 0.3 Mosaic Ornament -->
+                <button onclick="launchShape('MOSAIC_ORNAMENT')" class="group p-3 rounded-xl bg-gradient-to-br from-fuchsia-950/60 to-purple-950/40 border border-fuchsia-500/40 hover:border-fuchsia-400 hover:scale-[1.02] transition-all duration-200 text-right cursor-pointer">
+                  <div class="flex items-center gap-2 mb-1">
+                    <span class="text-2xl">🕌✨</span>
+                    <div>
+                      <div class="font-black text-fuchsia-300 text-[13px]">الزخرفة العربية والفسيفساء</div>
+                      <div class="text-[9px] text-fuchsia-400/70 font-mono">ISLAMIC MOSAIC PATTERN</div>
+                    </div>
+                  </div>
+                  <div class="text-[10px] text-slate-400 leading-relaxed">توزيع زخرفي هندسي نيون ينبض بين مقاعد الجمهور</div>
+                </button>
+
                 <!-- 1. هدف مدوّي -->
                 <button onclick="launchCelebration('GOAL')" class="group p-3 rounded-xl bg-gradient-to-br from-red-950/60 to-orange-950/40 border border-red-500/40 hover:border-red-400 hover:scale-[1.02] transition-all duration-200 text-right">
                   <div class="flex items-center gap-2 mb-1">
@@ -3365,6 +3401,38 @@
       await new Promise(r => setTimeout(r, 150));
       await triggerAction(cel.action || 'WAVE');
       showToast(`🎉 تم إطلاق: ${cel.name}`);
+    }
+
+    async function launchShape(shapeName) {
+      const allSectors = SECTORS.map(s => s.id);
+      selectedSectors = [...allSectors];
+      
+      const names = {
+        'HEART': '❤️ لوحة القلب الأحمر',
+        'STAR': '⭐ النجمة الذهبية',
+        'MOSAIC_ORNAMENT': '🕌 الزخرفة والفسيفساء العربية'
+      };
+
+      const payload = {
+        action_id: 'act_' + Date.now(),
+        timestamp: Date.now(),
+        type: 'PIXEL_MATRIX',
+        target_type: 'ALL',
+        target_ids: allSectors,
+        stadium_id: currentStadiumKey,
+        payload: {
+          color_hex: shapeName === 'HEART' ? '#FF1744' : '#00E5FF',
+          pixel_matrix: { shape: shapeName },
+          duration_seconds: 30,
+          flash_frequency_ms: 120,
+          wave_delay_step_ms: 200
+        }
+      };
+
+      if (rtdb) {
+        await rtdb.ref(`matches/${currentStadiumKey}/live_action`).set(payload);
+      }
+      showToast(`🎨 تم رسم وإطلاق: ${names[shapeName] || shapeName}`);
     }
 
     // ── Init presets on load ──────────────────────────────────────────────
