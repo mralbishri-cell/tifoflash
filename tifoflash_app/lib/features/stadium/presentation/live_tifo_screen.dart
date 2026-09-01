@@ -252,6 +252,28 @@ class _LiveTifoScreenState extends State<LiveTifoScreen> with SingleTickerProvid
                     // Top Clean Match Pass Bar
                     _buildTopMatchBar(isOptimalAngle, isActive),
 
+                    // Photosensitive Light Sensitivity Safety Warning Pill (Apple Guidelines Compliance)
+                    Container(
+                      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                      decoration: BoxDecoration(
+                        color: Colors.amber.withValues(alpha: 0.1),
+                        borderRadius: BorderRadius.circular(10),
+                        border: Border.all(color: Colors.amber.withValues(alpha: 0.3)),
+                      ),
+                      child: const Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(Icons.warning_amber_rounded, color: Colors.amber, size: 14),
+                          SizedBox(width: 6),
+                          Text(
+                            '⚠️ تنبيه السلامة: يحتوي هذا الوضع على ومضات ضوئية متكررة (Photosensitive Warning)',
+                            style: TextStyle(color: Colors.amber, fontSize: 10, fontWeight: FontWeight.bold),
+                          ),
+                        ],
+                      ),
+                    ),
+
                     const Spacer(),
 
                     // Center Minimalist Sync Radar

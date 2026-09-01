@@ -215,6 +215,25 @@ class _SectorSelectorScreenState extends State<SectorSelectorScreen> {
                             style: TextStyle(color: Colors.white70, fontSize: 12.5, height: 1.4),
                             textAlign: TextAlign.center,
                           ),
+                          const SizedBox(height: 14),
+                          OutlinedButton.icon(
+                            onPressed: () {
+                              setState(() {
+                                _selectedStadium = PresetStadiumData.kingdomArena;
+                                _selectedSector = PresetStadiumData.kingdomArena.sectors.first;
+                              });
+                              _confirmSelectionAndEnterMatch();
+                            },
+                            icon: const Icon(Icons.science, color: TifoTheme.stadiumCyan, size: 18),
+                            label: const Text(
+                              '🧪 وضع المعاينة والتجربة لمراجعي أبل (Apple Reviewer Demo Mode)',
+                              style: TextStyle(color: TifoTheme.stadiumCyan, fontWeight: FontWeight.bold, fontSize: 11),
+                            ),
+                            style: OutlinedButton.styleFrom(
+                              side: const BorderSide(color: TifoTheme.stadiumCyan),
+                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                            ),
+                          ),
                         ],
                       ),
                     ),
