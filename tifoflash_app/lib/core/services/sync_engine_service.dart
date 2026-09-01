@@ -335,10 +335,16 @@ class SyncEngineService {
       if (action.waveDirection == 'R2L') {
         sectorIndex = (totalSectors - 1 - sectorIndex).clamp(0, totalSectors - 1);
       } else if (action.waveDirection == 'CENTER_OUT') {
-        final center = totalSectors / 2;
-        sectorIndex = (sectorIndex - center).abs().floor();
+        final center = (totalSectors - 1) / 2.0;
+        sectorIndex = (sectorIndex - center).abs().round().clamp(0, totalSectors - 1);
       } else if (action.waveDirection == 'TOP_BOTTOM') {
-        final rowNum = int.tryParse(_seatRow) ?? 1;
+        // High row (Row 6) is at the top of the stand; Row 1 is by the pitch.
+        // Top-to-Bottom cascade: Top fires first (offset 0), falling down to Row 1.
+        final rowNum = (int.tryParse(_seatRow) ?? 6).clamp(1, 6);
+        sectorIndex = (6 - rowNum).clamp(0, 5);
+      } else if (action.waveDirection == 'BOTTOM_TOP') {
+        // Bottom-to-Top eruption: Pitch-side (Row 1) fires first, shooting up to Row 6.
+        final rowNum = (int.tryParse(_seatRow) ?? 1).clamp(1, 6);
         sectorIndex = (rowNum - 1).clamp(0, 5);
       }
 
