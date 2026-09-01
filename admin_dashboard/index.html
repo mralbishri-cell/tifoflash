@@ -236,6 +236,19 @@
                 </select>
               </div>
             </div>
+
+            <!-- Big Instant Launch Buttons Bar -->
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-2.5 pt-3 border-t border-slate-900">
+              <button type="button" onclick="triggerAction('WAVE')" class="w-full py-3 bg-gradient-to-r from-cyan-500 to-emerald-400 hover:from-cyan-400 hover:to-emerald-300 text-black font-black rounded-xl text-xs flex items-center justify-center gap-2 transition shadow-lg shadow-cyan-500/20 cursor-pointer">
+                <span>🚀</span> إطلاق الموجة والمؤثر المختار (LAUNCH WAVE / SPARKLE)
+              </button>
+              <button type="button" onclick="triggerAction('STROBE')" class="w-full py-3 bg-gradient-to-r from-emerald-500 to-teal-400 hover:from-emerald-400 hover:to-teal-300 text-black font-black rounded-xl text-xs flex items-center justify-center gap-2 transition shadow-lg shadow-emerald-500/20 cursor-pointer">
+                <span>⚡</span> إطلاق ومضات الهدف (BROADCAST STROBE)
+              </button>
+              <button type="button" onclick="triggerAction('SOLID_COLOR')" class="w-full py-3 bg-gradient-to-r from-amber-500 to-yellow-400 hover:from-amber-400 hover:to-yellow-300 text-black font-black rounded-xl text-xs flex items-center justify-center gap-2 transition shadow-lg shadow-amber-500/20 cursor-pointer">
+                <span>🎨</span> تفعيل التيفو الموحد الثابت (SOLID TIFO COLOR)
+              </button>
+            </div>
           </div>
           <!-- Live Custom Text & Chant Lyrics Writing Box -->
           <div class="bg-slate-950 p-4 rounded-xl border border-slate-800 space-y-3 text-xs">
@@ -2930,6 +2943,8 @@
       const durationSelectVal = parseInt(document.getElementById('actionDurationSelect')?.value || '30', 10);
       const chosenDuration = durationSelectVal >= 0 ? durationSelectVal : 30;
 
+      const waveStyleVal = document.getElementById('waveStyleSelect')?.value || 'RADIAL_RIPPLE';
+
       let payloadData = {
         color_hex: selectedColorHex,
         sector_colors: completeSectorColors,
@@ -2937,6 +2952,8 @@
         duration_seconds: chosenDuration,
         text_char: type === 'TEXT_DISPLAY' ? customWord : '',
         wave_delay_step_ms: waveSpeedMs,
+        wave_direction: currentDirection,
+        wave_style: waveStyleVal,
         sponsor: sponsorPayload,
         sponsors: sponsorsPayloadList
       };
