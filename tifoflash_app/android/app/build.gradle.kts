@@ -22,7 +22,7 @@ android {
     defaultConfig {
         applicationId = "com.tifoflash.tifoflash_app"
         minSdk = flutter.minSdkVersion
-        targetSdk = 35
+        targetSdk = 36
         versionCode = flutter.versionCode
         versionName = flutter.versionName
     }
