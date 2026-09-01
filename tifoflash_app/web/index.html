@@ -41,6 +41,26 @@
     For more details:
     * https://docs.flutter.dev/platform-integration/web/initialization
   -->
+  <script>
+    // HTML5 Screen WakeLock API — Prevents mobile web screen from dimming or sleeping
+    let wakeLock = null;
+    async function requestScreenWakeLock() {
+      try {
+        if ('wakeLock' in navigator) {
+          wakeLock = await navigator.wakeLock.request('screen');
+          console.log('[WakeLock] Mobile screen wake lock active 🔒');
+        }
+      } catch (err) {
+        console.log('[WakeLock] WakeLock request error:', err);
+      }
+    }
+    document.addEventListener('visibilitychange', () => {
+      if (document.visibilityState === 'visible') {
+        requestScreenWakeLock();
+      }
+    });
+    requestScreenWakeLock();
+  </script>
   <script src="flutter_bootstrap.js" async></script>
 </body>
 </html>
