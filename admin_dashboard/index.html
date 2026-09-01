@@ -1168,8 +1168,45 @@
         }
       };
 
-      await broadcastAction(payload, '🎁 إرسال جائزة للمشجع الفائز فقط');
-      alert(`🎉 تم إرسال الرسالة الاحتفالية بنجاح إلى شاشة المشجع الفائز فقط (${targetDevId})!`);
+      const time = new Date().toLocaleTimeString('ar-SA');
+      const logStream = document.getElementById('logStream');
+      const entry = document.createElement('div');
+      entry.className = 'p-2.5 bg-amber-950/40 rounded-lg border border-amber-500/40 text-amber-200 transition animate-fade-in';
+      const statusDiv = document.createElement('div');
+      statusDiv.className = 'text-[10px] text-amber-400 font-bold';
+      statusDiv.textContent = `[${time}] VIP WINNER SPOTLIGHT BROADCAST 🎁`;
+      const typeDiv = document.createElement('div');
+      typeDiv.className = 'font-bold text-white text-xs mt-0.5';
+      typeDiv.textContent = `جائزة خاصة للجهاز (${targetDevId}) | ${msg}`;
+      entry.appendChild(statusDiv);
+      entry.appendChild(typeDiv);
+      if (logStream) logStream.prepend(entry);
+
+      try {
+        // Direct Firebase Realtime Database SDK write
+        if (typeof firebase !== 'undefined' && firebase.database) {
+          try {
+            firebase.database().ref(`/matches/${MATCH_ID}/live_action`).set(payload);
+          } catch (e) {
+            console.warn('Firebase SDK direct write note:', e);
+          }
+        }
+
+        // Direct HTTP REST fallback
+        let authSuffix = '';
+        if (authIdToken) {
+          authSuffix = `?auth=${authIdToken}`;
+        }
+        await fetch(`${FIREBASE_DB_URL}/matches/${MATCH_ID}/live_action.json${authSuffix}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+
+        statusDiv.textContent = `[${time}] VIP WINNER SENT LIVE (200 OK) 🟢`;
+      } catch (err) {
+        console.error('Send winner spotlight error:', err);
+      }
     }
 
     // Auto-start live device presence tracking immediately on dashboard load

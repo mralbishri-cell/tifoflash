@@ -39,7 +39,7 @@
               ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 30"
             },
             "text_char": {
-              ".validate": "newData.isString() && newData.val().length <= 50"
+              ".validate": "newData.isString() && newData.val().length <= 200"
             },
             "wave_delay_step_ms": {
               ".validate": "newData.isNumber() && newData.val() >= 40 && newData.val() <= 2000"

@@ -219,7 +219,7 @@ class TifoActionPayload {
       colorHex: PayloadSanitizer.sanitizeColorHex(payloadMap['color_hex'] as String?),
       flashFrequencyMs: PayloadSanitizer.clampInt(payloadMap['flash_frequency_ms'], 150, 80, 1000),
       durationSeconds: PayloadSanitizer.clampInt(payloadMap['duration_seconds'], 10, 0, 30),
-      textChar: PayloadSanitizer.sanitizeText(payloadMap['text_char'] as String?, maxLength: 50),
+      textChar: PayloadSanitizer.sanitizeText(payloadMap['text_char'] as String?, maxLength: 200),
       waveDelayStepMs: PayloadSanitizer.clampInt(payloadMap['wave_delay_step_ms'], 250, 40, 2000),
       waveDirection: payloadMap['wave_direction']?.toString() ?? 'L2R',
       waveStyle: payloadMap['wave_style']?.toString() ?? 'RADIAL_RIPPLE',
