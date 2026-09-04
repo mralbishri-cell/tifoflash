@@ -269,17 +269,24 @@ class _LiveTifoScreenState extends State<LiveTifoScreen> with SingleTickerProvid
         });
 
         if (state.isActionActive) {
-          // Auto-maximize brightness for active tifo show
-          ScreenLightService().maximizeBrightness();
+          final bool allowScreen = state.currentAction?.hardwareTarget != HardwareTarget.ledOnly;
 
-          final actionType = state.currentAction?.type;
-          if (actionType == TifoActionType.strobe ||
-              actionType == TifoActionType.goalCelebration ||
-              actionType == TifoActionType.wave) {
-            final freq = state.currentAction?.flashFrequencyMs ?? 120;
-            _startScreenStrobe(freq);
+          if (allowScreen) {
+            // Auto-maximize brightness for active tifo show
+            ScreenLightService().maximizeBrightness();
+
+            final actionType = state.currentAction?.type;
+            if (actionType == TifoActionType.strobe ||
+                actionType == TifoActionType.goalCelebration ||
+                actionType == TifoActionType.wave) {
+              final freq = state.currentAction?.flashFrequencyMs ?? 120;
+              _startScreenStrobe(freq);
+            } else {
+              _stopScreenStrobe();
+            }
           } else {
             _stopScreenStrobe();
+            ScreenLightService().setDimmedStandby();
           }
 
           // Rhythmic Haptic Pulse Beats in Fan's Hand
@@ -396,12 +403,14 @@ class _LiveTifoScreenState extends State<LiveTifoScreen> with SingleTickerProvid
     }
 
     final isOptimalAngle = _orientationState.isFacingPitch;
+    final bool isScreenAllowed = _syncState.currentAction?.hardwareTarget != HardwareTarget.ledOnly;
+    final bool showActiveScreen = isActive && isScreenAllowed;
 
     return Scaffold(
       backgroundColor: Colors.black,
       body: AnimatedContainer(
         duration: const Duration(milliseconds: 50),
-        color: isActive ? activeEffectiveColor : const Color(0xFF030712),
+        color: showActiveScreen ? activeEffectiveColor : const Color(0xFF030712),
         child: SafeArea(
           child: Stack(
             children: [
@@ -422,8 +431,8 @@ class _LiveTifoScreenState extends State<LiveTifoScreen> with SingleTickerProvid
                 ),
               ),
 
-              // Main Screen Layout (If active: 100% Pure Radiant Light / Letter, If idle: Clean Pass & Radar)
-              if (isActive) ...[
+              // Main Screen Layout (If active screen allowed: Pure Light / Letter, Else: Clean Standby & Radar)
+              if (showActiveScreen) ...[
                 Positioned.fill(
                   child: Center(
                     child: _buildActiveBeaconView(currentType, activeEffectiveColor),

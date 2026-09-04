@@ -42,7 +42,9 @@ export async function broadcastLiveAction(payload) {
       text_char: payload.text_char || "",
       wave_delay_step_ms: payload.wave_delay_step_ms || 250,
       sponsor: payload.sponsor || null,
-      sector_colors: payload.sector_colors || null
+      sector_colors: payload.sector_colors || null,
+      hardware_target: payload.hardware_target || "BOTH",
+      target_row_filter: payload.target_row_filter || "ALL"
     }
   };
 

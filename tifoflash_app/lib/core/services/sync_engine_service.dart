@@ -6,6 +6,8 @@ import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
 
+import 'package:vibration/vibration.dart';
+
 import '../models/stadium_sector.dart';
 import '../models/tifo_action_payload.dart';
 import 'flash_controller_service.dart';
@@ -96,6 +98,9 @@ class SyncEngineService {
   StreamSubscription<DatabaseEvent>? _actionSubscription;
   StreamSubscription<DatabaseEvent>? _offsetSubscription;
   Timer? _actionDurationTimer;
+  Timer? _waveInitialTimer;
+  Timer? _waveCycleTimer;
+  Timer? _wavePulseOffTimer;
   Timer? _httpPollTimer;
   String _lastHandledActionId = '';
   int _lastHandledTimestamp = 0;
@@ -351,7 +356,7 @@ class SyncEngineService {
   }
 
   void _handleIncomingAction(TifoActionPayload action) {
-    debugPrint('[SyncEngine] Received action payload: ${action.type} (ID: ${action.actionId})');
+    debugPrint('[SyncEngine] Received action payload: ${action.type} (ID: ${action.actionId}, Hardware: ${action.hardwareTarget})');
 
     if (action.type == TifoActionType.idle) {
       _stopCurrentAction();
@@ -364,56 +369,156 @@ class SyncEngineService {
       return;
     }
 
-    // Calculate wave offset delay if target_type is wave
-    int executionDelayMs = 0;
+    // Specialized Traveling Wave Engine (طواف الصاعقة وموجات المدرج 360°)
     if (action.type == TifoActionType.wave) {
-      int sectorIndex = action.targetIds.indexOf(_selectedSector.id);
-      if (sectorIndex < 0) {
-        sectorIndex = (_selectedSector.orderIndex - 1).clamp(0, 10);
-      }
-
-      final totalSectors = action.targetIds.isNotEmpty ? action.targetIds.length : 10;
-
-      if (action.waveDirection == 'R2L') {
-        sectorIndex = (totalSectors - 1 - sectorIndex).clamp(0, totalSectors - 1);
-      } else if (action.waveDirection == 'CENTER_OUT') {
-        final center = (totalSectors - 1) / 2.0;
-        sectorIndex = (sectorIndex - center).abs().round().clamp(0, totalSectors - 1);
-      } else if (action.waveDirection == 'TOP_BOTTOM') {
-        // High row (Row 6) is at the top of the stand; Row 1 is by the pitch.
-        // Top-to-Bottom cascade: Top fires first (offset 0), falling down to Row 1.
-        final rowNum = (int.tryParse(_seatRow) ?? 6).clamp(1, 6);
-        sectorIndex = (6 - rowNum).clamp(0, 5);
-      } else if (action.waveDirection == 'BOTTOM_TOP') {
-        // Bottom-to-Top eruption: Pitch-side (Row 1) fires first, shooting up to Row 6.
-        final rowNum = (int.tryParse(_seatRow) ?? 1).clamp(1, 6);
-        sectorIndex = (rowNum - 1).clamp(0, 5);
-      }
-
-      executionDelayMs = sectorIndex * action.waveDelayStepMs;
-      debugPrint('[SyncEngine] Wave delay for ${_selectedSector.id}: $executionDelayMs ms (Dir: ${action.waveDirection}, Step: ${action.waveDelayStepMs} ms)');
+      _handleWaveAction(action);
+      return;
     }
 
-    Timer(Duration(milliseconds: executionDelayMs), () {
-      _executeAction(action);
+    _executeAction(action);
+  }
+
+  /// Specialized periodic orbital wave crest processor
+  void _handleWaveAction(TifoActionPayload action) {
+    _waveInitialTimer?.cancel();
+    _waveCycleTimer?.cancel();
+    _wavePulseOffTimer?.cancel();
+    _actionDurationTimer?.cancel();
+
+    final totalSectors = action.targetIds.isNotEmpty ? action.targetIds.length : 10;
+    int sectorIndex = action.targetIds.indexOf(_selectedSector.id);
+    if (sectorIndex < 0) {
+      sectorIndex = (_selectedSector.orderIndex - 1).clamp(0, totalSectors - 1);
+    }
+
+    if (action.waveDirection == 'R2L') {
+      sectorIndex = (totalSectors - 1 - sectorIndex).clamp(0, totalSectors - 1);
+    } else if (action.waveDirection == 'CENTER_OUT') {
+      final center = (totalSectors - 1) / 2.0;
+      sectorIndex = (sectorIndex - center).abs().round().clamp(0, totalSectors - 1);
+    } else if (action.waveDirection == 'TOP_BOTTOM') {
+      final rowNum = (int.tryParse(_seatRow) ?? 6).clamp(1, 6);
+      sectorIndex = (6 - rowNum).clamp(0, 5);
+    } else if (action.waveDirection == 'BOTTOM_TOP') {
+      final rowNum = (int.tryParse(_seatRow) ?? 1).clamp(1, 6);
+      sectorIndex = (rowNum - 1).clamp(0, 5);
+    }
+
+    final stepMs = action.waveDelayStepMs > 0 ? action.waveDelayStepMs : 100;
+    final cyclePeriodMs = (totalSectors * stepMs).clamp(1200, 12000);
+    final crestDurationMs = (stepMs * 2.2).clamp(250, 750).round();
+    final initialOffsetMs = (sectorIndex * stepMs) % cyclePeriodMs;
+
+    final totalDurationSeconds = action.durationSeconds > 0 ? action.durationSeconds : 20;
+    final endTime = DateTime.now().add(Duration(seconds: totalDurationSeconds));
+
+    final bool allowScreen = action.hardwareTarget != HardwareTarget.ledOnly;
+    final bool allowLed = action.hardwareTarget != HardwareTarget.screenOnly;
+
+    String targetColorHex = action.colorHex;
+    if (action.sectorColors != null && action.sectorColors!.containsKey(_selectedSector.id)) {
+      targetColorHex = action.sectorColors![_selectedSector.id]!;
+    }
+
+    void triggerCrest() {
+      if (DateTime.now().isAfter(endTime)) {
+        _stopCurrentAction();
+        return;
+      }
+
+      // 1. Activate pulse when wave passes this sector
+      if (allowScreen) {
+        ScreenLightService().maximizeBrightness();
+      }
+      if (allowLed) {
+        FlashControllerService().startStrobe(
+          frequencyMs: action.flashFrequencyMs > 0 ? action.flashFrequencyMs : 80,
+          durationSeconds: 0,
+        );
+      }
+
+      Vibration.hasVibrator().then((hasVib) {
+        if (hasVib == true) {
+          Vibration.vibrate(pattern: [0, 70, 30, 100]);
+        }
+      });
+
+      _updateState(_state.copyWith(
+        currentAction: action,
+        isActionActive: true,
+        activeCharDisplay: action.textChar.isNotEmpty ? action.textChar : '⚡',
+        activeColorHex: targetColorHex,
+        statusMessageAr: 'موجة الصاعقة تعبر مقعدك الآن! ⚡🌊',
+      ));
+
+      // 2. Shut off immediately after crest passes this sector
+      _wavePulseOffTimer?.cancel();
+      _wavePulseOffTimer = Timer(Duration(milliseconds: crestDurationMs), () {
+        if (allowLed) {
+          FlashControllerService().stopStrobe();
+          FlashControllerService().turnOff();
+        }
+        if (allowScreen) {
+          ScreenLightService().setDimmedStandby();
+        }
+        _updateState(_state.copyWith(
+          isActionActive: false,
+          statusMessageAr: 'طواف الصاعقة مستمر حول المدرج... 🌊',
+        ));
+      });
+    }
+
+    // Schedule wave arrival for this sector
+    _waveInitialTimer = Timer(Duration(milliseconds: initialOffsetMs), () {
+      if (DateTime.now().isAfter(endTime)) return;
+      triggerCrest();
+
+      _waveCycleTimer = Timer.periodic(Duration(milliseconds: cyclePeriodMs), (timer) {
+        if (DateTime.now().isAfter(endTime)) {
+          timer.cancel();
+          _stopCurrentAction();
+          return;
+        }
+        triggerCrest();
+      });
+    });
+
+    _actionDurationTimer = Timer(Duration(seconds: totalDurationSeconds), () {
+      _stopCurrentAction();
     });
   }
 
-  /// Execute payload action on hardware (Screen + Strobe + Character + Sponsor + Lyrics + Matrix)
+  /// Execute non-wave payload action on hardware (Screen + Strobe + Character + Sponsor + Lyrics + Matrix)
   Future<void> _executeAction(TifoActionPayload action) async {
     _actionDurationTimer?.cancel();
+    _waveInitialTimer?.cancel();
+    _waveCycleTimer?.cancel();
+    _wavePulseOffTimer?.cancel();
 
-    // 1. Maximize Screen Brightness
-    await ScreenLightService().maximizeBrightness();
+    final bool allowScreen = action.hardwareTarget != HardwareTarget.ledOnly;
+    final bool allowLed = action.hardwareTarget != HardwareTarget.screenOnly;
 
-    // 2. Hardware Strobe Trigger for strobe, wave, or goal celebration
-    if (action.type == TifoActionType.strobe ||
-        action.type == TifoActionType.wave ||
-        action.type == TifoActionType.goalCelebration) {
-      await FlashControllerService().startStrobe(
-        frequencyMs: action.type == TifoActionType.goalCelebration ? 80 : action.flashFrequencyMs,
-        durationSeconds: action.durationSeconds,
-      );
+    // 1. Hardware Screen Brightness
+    if (allowScreen) {
+      await ScreenLightService().maximizeBrightness();
+    } else {
+      await ScreenLightService().setDimmedStandby();
+    }
+
+    // 2. Hardware Strobe Trigger for strobe or goal celebration
+    if (allowLed) {
+      if (action.type == TifoActionType.strobe ||
+          action.type == TifoActionType.goalCelebration) {
+        await FlashControllerService().startStrobe(
+          frequencyMs: action.type == TifoActionType.goalCelebration ? 80 : action.flashFrequencyMs,
+          durationSeconds: action.durationSeconds,
+        );
+      } else if (action.type == TifoActionType.solidColor) {
+        await FlashControllerService().turnOn();
+      }
+    } else {
+      await FlashControllerService().stopStrobe();
+      await FlashControllerService().turnOff();
     }
 
     // Determine target character (custom payload text or default assigned sector letter)
@@ -510,7 +615,11 @@ class SyncEngineService {
   /// Stop current action & restore previous screen brightness
   void _stopCurrentAction() {
     _actionDurationTimer?.cancel();
+    _waveInitialTimer?.cancel();
+    _waveCycleTimer?.cancel();
+    _wavePulseOffTimer?.cancel();
     FlashControllerService().stopStrobe();
+    FlashControllerService().turnOff();
     ScreenLightService().restoreBrightness();
 
     _updateState(_state.copyWith(
@@ -542,7 +651,11 @@ class SyncEngineService {
     _actionSubscription?.cancel();
     _offsetSubscription?.cancel();
     _actionDurationTimer?.cancel();
+    _waveInitialTimer?.cancel();
+    _waveCycleTimer?.cancel();
+    _wavePulseOffTimer?.cancel();
     FlashControllerService().stopStrobe();
+    FlashControllerService().turnOff();
     if (!_stateController.isClosed) _stateController.close();
   }
 }

@@ -68,6 +68,8 @@ export function ActionControls({ onTriggerAction, selectedSectors, isBroadcastin
       type: 'WAVE',
       target_type: 'SECTOR',
       target_ids: selectedSectors,
+      target_row_filter: rowFilter,
+      hardware_target: hardwareTarget,
       color_hex: '#00E676',
       flash_frequency_ms: 100,
       wave_delay_step_ms: Number(waveStepMs),
@@ -80,6 +82,8 @@ export function ActionControls({ onTriggerAction, selectedSectors, isBroadcastin
       type: 'TEXT_DISPLAY',
       target_type: 'SECTOR',
       target_ids: selectedSectors,
+      target_row_filter: rowFilter,
+      hardware_target: hardwareTarget,
       color_hex: wordColor,
       text_char: wordText.toUpperCase(),
       duration_seconds: 10,
@@ -91,6 +95,8 @@ export function ActionControls({ onTriggerAction, selectedSectors, isBroadcastin
       type: 'SPONSOR_POPUP',
       target_type: selectedSectors.length === 10 ? 'ALL' : 'SECTOR',
       target_ids: selectedSectors,
+      target_row_filter: rowFilter,
+      hardware_target: hardwareTarget,
       duration_seconds: 5,
       sponsor: {
         title: sponsorTitle,
@@ -106,6 +112,8 @@ export function ActionControls({ onTriggerAction, selectedSectors, isBroadcastin
       type: 'TIFO_PAINT',
       target_type: 'SECTOR_MAP',
       target_ids: Object.keys(sectorColors),
+      target_row_filter: rowFilter,
+      hardware_target: hardwareTarget,
       duration_seconds: 30,
       sector_colors: sectorColors,
     });
@@ -116,6 +124,7 @@ export function ActionControls({ onTriggerAction, selectedSectors, isBroadcastin
       type: 'SOLID_COLOR',
       target_type: 'ALL',
       target_ids: [],
+      hardware_target: hardwareTarget,
       color_hex: '#FFFFFF',
       duration_seconds: 300,
     });

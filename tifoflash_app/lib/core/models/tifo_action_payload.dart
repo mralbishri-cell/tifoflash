@@ -96,6 +96,25 @@ enum TargetType {
   }
 }
 
+enum HardwareTarget {
+  both,
+  screenOnly,
+  ledOnly;
+
+  static HardwareTarget parse(String? value) {
+    switch (value?.toUpperCase()) {
+      case 'SCREEN_ONLY':
+        return HardwareTarget.screenOnly;
+      case 'LED_ONLY':
+      case 'FLASH_ONLY':
+        return HardwareTarget.ledOnly;
+      case 'BOTH':
+      default:
+        return HardwareTarget.both;
+    }
+  }
+}
+
 class SponsorInfo {
   final String title;
   final String imageUrl;
@@ -148,6 +167,7 @@ class TifoActionPayload {
   final Map<String, dynamic>? pixelMatrixMap;
   final Map<String, String>? sectorColors;
   final String targetRowFilter;
+  final HardwareTarget hardwareTarget;
 
   SponsorInfo? get sponsor => sponsors.isNotEmpty ? sponsors.first : null;
 
@@ -171,6 +191,7 @@ class TifoActionPayload {
     this.pixelMatrixMap,
     this.sectorColors,
     this.targetRowFilter = 'ALL',
+    this.hardwareTarget = HardwareTarget.both,
   });
 
   factory TifoActionPayload.fromJson(Map<String, dynamic> json) {
@@ -210,6 +231,8 @@ class TifoActionPayload {
       parsedSponsors.add(SponsorInfo.fromJson(Map<String, dynamic>.from(payloadMap['sponsor'])));
     }
 
+    final rawHardware = payloadMap['hardware_target'] ?? json['hardware_target'];
+
     return TifoActionPayload(
       actionId: PayloadSanitizer.sanitizeText(json['action_id'] as String?, maxLength: 64)
                .isEmpty ? 'act_idle'
@@ -234,6 +257,7 @@ class TifoActionPayload {
           : null,
       sectorColors: parsedSectorColors,
       targetRowFilter: payloadMap['target_row_filter']?.toString() ?? 'ALL',
+      hardwareTarget: HardwareTarget.parse(rawHardware?.toString()),
     );
   }
 
