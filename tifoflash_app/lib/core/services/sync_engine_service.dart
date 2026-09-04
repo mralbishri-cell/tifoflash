@@ -10,6 +10,7 @@ import 'package:vibration/vibration.dart';
 
 import '../models/stadium_sector.dart';
 import '../models/tifo_action_payload.dart';
+import '../utils/stadium_seat_stencil.dart';
 import 'flash_controller_service.dart';
 import 'screen_light_service.dart';
 
@@ -464,7 +465,7 @@ class SyncEngineService {
       _updateState(_state.copyWith(
         currentAction: action,
         isActionActive: true,
-        activeCharDisplay: action.textChar.isNotEmpty ? action.textChar : '⚡',
+        activeCharDisplay: '', // Pure radiant colored light beam (Zero emojis/symbols)
         activeColorHex: targetColorHex,
         statusMessageAr: 'موجة الصاعقة تعبر مقعدك الآن! ⚡🌊',
       ));
@@ -540,31 +541,43 @@ class SyncEngineService {
     }
 
     // Determine target character (custom payload text or default assigned sector letter)
-    String charToDisplay = action.textChar.trim();
-    
-    // Clean Architectural Separation:
-    // 1. Stadium-wide multi-sector Word Tifo: distribute letters across sectors for aerial visibility
-    // 2. Individual / Winner / Single target messages: preserve full message text for the fan to read
-    final isStadiumWideWordTifo = (action.targetType == TargetType.all ||
-                                  (action.targetType == TargetType.sector && action.targetIds.length > 1)) &&
-                                  !action.actionId.startsWith('winner_');
-
-    if (charToDisplay.length > 1 && action.type == TifoActionType.textDisplay && isStadiumWideWordTifo) {
-      final secIndex = action.targetIds.indexOf(_selectedSector.id);
-      if (secIndex >= 0) {
-        charToDisplay = charToDisplay[secIndex % charToDisplay.length];
-      } else {
-        final seatIdx = (int.tryParse(_seatNumber) ?? 1) - 1;
-        final charIdx = seatIdx % charToDisplay.length;
-        charToDisplay = charToDisplay[charIdx];
-      }
-    } else if (charToDisplay.isEmpty && action.type == TifoActionType.textDisplay) {
-      charToDisplay = _selectedSector.assignedChar;
-    }
-
-    // Determine pixel color if matrix mode is active or sector-specific colors
+    String charToDisplay = '';
     String targetColorHex = action.colorHex;
-    if (action.sectorColors != null && action.sectorColors!.isNotEmpty) {
+
+    // 1. Specialized Arabic & Latin Geometric Seat Stencil Engine (رسم الحروف عبر كراسي المدرجات)
+    if (action.type == TifoActionType.textDisplay) {
+      final rawWord = action.textChar.trim().isNotEmpty ? action.textChar.trim() : 'السعودية';
+      final chars = rawWord.split('').where((c) => c.trim().isNotEmpty).toList();
+      if (chars.isEmpty) chars.add('ا');
+
+      // Assign letter to this sector based on targetIds order
+      String targetChar = chars.first;
+      if (action.targetIds.isNotEmpty) {
+        final secIndex = action.targetIds.indexOf(_selectedSector.id);
+        if (secIndex >= 0) {
+          targetChar = chars[secIndex % chars.length];
+        } else {
+          final sIndex = (_selectedSector.orderIndex - 1).clamp(0, chars.length - 1);
+          targetChar = chars[sIndex];
+        }
+      }
+
+      // Check if this seat coordinate (row, seat) falls on the letter's stroke
+      final row = (int.tryParse(_seatRow) ?? 3).clamp(1, 6);
+      final seat = (int.tryParse(_seatNumber) ?? 5).clamp(1, 10);
+      final bool isStroke = StadiumSeatStencil.isSeatOnStroke(targetChar, row, seat);
+
+      // Foreground stroke color (Bright White/Gold) vs Background stand color (Saudi Green / Theme)
+      final fgColor = (action.colorHex.isNotEmpty && action.colorHex != '#008000')
+          ? action.colorHex
+          : '#FFFFFF'; // Crisp White for the letter outline
+      final bgColor = (action.sectorColors != null && action.sectorColors!.containsKey(_selectedSector.id))
+          ? action.sectorColors![_selectedSector.id]!
+          : '#16A34A'; // Saudi Green for background seats
+
+      targetColorHex = isStroke ? fgColor : bgColor;
+      charToDisplay = ''; // Screen stays 100% pure colored pixel!
+    } else if (action.sectorColors != null && action.sectorColors!.isNotEmpty) {
       // Use per-sector custom color if available, else fall back to global colorHex
       targetColorHex = action.sectorColors![_selectedSector.id] ?? action.colorHex;
     } else if (action.type == TifoActionType.pixelMatrix && action.pixelMatrixMap != null) {
@@ -599,16 +612,19 @@ class SyncEngineService {
     String statusText = 'تيفو مفعّل الآن ⚡';
     if (action.type == TifoActionType.chantLyrics) {
       statusText = 'أهازيج المدرج متزامنة الآن 🎵';
+      charToDisplay = action.textChar.trim();
     } else if (action.type == TifoActionType.goalCelebration) {
       statusText = 'احتفال بالهدف ⚽🔥!';
     } else if (action.type == TifoActionType.pixelMatrix) {
       statusText = 'تيفو نقطي متناسق مفعّل 🎨';
+    } else if (action.type == TifoActionType.textDisplay) {
+      statusText = 'تيفو كلمة "${action.textChar.trim().isNotEmpty ? action.textChar.trim() : 'السعودية'}" مرسوم على المدرج 🇸🇦✨';
     }
 
     _updateState(_state.copyWith(
       currentAction: action,
       isActionActive: true,
-      activeCharDisplay: charToDisplay,
+      activeCharDisplay: (action.type == TifoActionType.chantLyrics) ? charToDisplay : '', // Zero clutter for all tifo displays
       activeColorHex: targetColorHex,
       activeSponsor: action.sponsor,
       statusMessageAr: statusText,

@@ -306,7 +306,7 @@ class _SectorSelectorScreenState extends State<SectorSelectorScreen> {
                         color: const Color(0xFF10B981).withValues(alpha: 0.2),
                         shape: BoxShape.circle,
                       ),
-                      child: const Icon(Icons.play_arrow_rounded, color: Color(0xFF10B981), size: 24),
+                      child: const Icon(Icons.flash_on_rounded, color: Color(0xFF10B981), size: 22),
                     ),
                     const SizedBox(width: 10),
                     const Expanded(
@@ -314,13 +314,13 @@ class _SectorSelectorScreenState extends State<SectorSelectorScreen> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            '✨ وضع العرض التجريبي (Demo Mode)',
-                            style: TextStyle(color: Colors.white, fontWeight: FontWeight.w900, fontSize: 13),
+                            '⚡ فحص جاهزية الإضاءة (Light Check)',
+                            style: TextStyle(color: Colors.white, fontWeight: FontWeight.w900, fontSize: 12.5),
                           ),
                           SizedBox(height: 2),
                           Text(
-                            'اختبر وميض الفلاش وألوان التيفو فوراً بدون انتظار مباراة',
-                            style: TextStyle(color: Color(0xFF9CA3AF), fontSize: 10.5),
+                            'تحقق من فلاش الكاميرا وسطوع الشاشة قبل انطلاق المباراة',
+                            style: TextStyle(color: Color(0xFF9CA3AF), fontSize: 10),
                           ),
                         ],
                       ),
@@ -346,7 +346,7 @@ class _SectorSelectorScreenState extends State<SectorSelectorScreen> {
                         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
                       ),
-                      child: const Text('تجربة الآن', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12)),
+                      child: const Text('فحص العتاد', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 11.5)),
                     ),
                   ],
                 ),
