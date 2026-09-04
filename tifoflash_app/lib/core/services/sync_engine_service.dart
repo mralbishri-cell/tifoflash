@@ -88,6 +88,7 @@ class SyncEngineService {
   final String _deviceId = _generateDeviceId();
 
   bool _disposed = false;
+  bool _isInitialized = false;
 
   DatabaseReference? _liveActionRef;
   DatabaseReference? _presenceRef;
@@ -98,6 +99,9 @@ class SyncEngineService {
   Timer? _httpPollTimer;
   String _lastHandledActionId = '';
   int _lastHandledTimestamp = 0;
+  int _httpPollBackoffMs = 3000; // Start at 3 seconds, increase on errors
+  static const int _httpPollBaseMs = 3000;
+  static const int _httpPollMaxMs = 15000;
 
   static String _generateDeviceId() {
     final rng = Random.secure();
@@ -142,7 +146,7 @@ class SyncEngineService {
     // 2. HTTP REST Direct Backup & Heartbeat (ensures 100% presence registration across all mobile browsers)
     _sendRestPresence();
     _presenceHeartbeatTimer?.cancel();
-    _presenceHeartbeatTimer = Timer.periodic(const Duration(seconds: 15), (_) {
+    _presenceHeartbeatTimer = Timer.periodic(const Duration(seconds: 60), (_) {
       if (!_disposed) {
         _sendRestPresence();
       }
@@ -172,12 +176,19 @@ class SyncEngineService {
   }
 
   void initialize({String matchId = 'match_2026_final'}) {
+    // [STABILITY FIX] Guard against duplicate initialization
+    if (_isInitialized) {
+      debugPrint('[SyncEngine] Already initialized. Skipping duplicate init.');
+      return;
+    }
+
     final sanitizedMatchId = matchId.replaceAll(RegExp(r'[^a-zA-Z0-9_]'), '');
     if (sanitizedMatchId.isEmpty || sanitizedMatchId.length > 50) {
       debugPrint('[SyncEngine] Invalid matchId rejected: $matchId');
       return;
     }
     _matchId = sanitizedMatchId;
+    _isInitialized = true;
     FlashControllerService().checkAvailability();
 
     try {
@@ -237,55 +248,73 @@ class SyncEngineService {
 
   void _startHttpPolling() {
     _httpPollTimer?.cancel();
-    _httpPollTimer = Timer.periodic(const Duration(milliseconds: 400), (_) async {
+    _httpPollBackoffMs = _httpPollBaseMs;
+
+    void scheduleNextPoll() {
       if (_disposed) return;
-      try {
-        final encodedMatchId = Uri.encodeComponent(_matchId);
-        final url = Uri.parse('https://tifoflash-default-rtdb.europe-west1.firebasedatabase.app/matches/$encodedMatchId/live_action.json');
-        final response = await http.get(url).timeout(const Duration(milliseconds: 1500));
-        // Reject suspiciously large payloads (>64KB) to prevent memory exhaustion
-        if (response.contentLength != null && response.contentLength! > 65536) {
-          debugPrint('[SyncEngine] HTTP poll payload too large (${response.contentLength} bytes). Skipping.');
-          return;
-        }
-        if (response.statusCode == 200 && response.body.isNotEmpty && response.body != 'null' && response.body.length <= 65536) {
-          final decoded = json.decode(response.body);
-          if (decoded is! Map) return;
-          final dataMap = Map<String, dynamic>.from(decoded);
-          final actionId = dataMap['action_id']?.toString() ?? '';
-          final timestamp = (dataMap['timestamp'] as num?)?.toInt() ?? 0;
-
-          if (actionId.isNotEmpty && (actionId != _lastHandledActionId || timestamp != _lastHandledTimestamp)) {
-            _lastHandledActionId = actionId;
-            _lastHandledTimestamp = timestamp;
-
-            // Filter out stale/expired actions from previous test sessions upon app startup
-            final nowMs = DateTime.now().millisecondsSinceEpoch + _state.serverTimeOffsetMs;
-            final ageMs = nowMs - timestamp;
-            final payloadMap = (dataMap['payload'] as Map?)?.cast<String, dynamic>() ?? {};
-            final durationSec = (payloadMap['duration_seconds'] as num?)?.toInt() ?? 30;
-            final maxAllowedAgeMs = (durationSec > 0 ? durationSec : 45) * 1000;
-
-            if (timestamp > 0 && ageMs > maxAllowedAgeMs) {
-              debugPrint('[SyncEngine] Stale action ($actionId) ignored. Age: ${ageMs}ms > Max: ${maxAllowedAgeMs}ms');
+      _httpPollTimer = Timer(Duration(milliseconds: _httpPollBackoffMs), () async {
+        if (_disposed) return;
+        try {
+          final encodedMatchId = Uri.encodeComponent(_matchId);
+          final url = Uri.parse('https://tifoflash-default-rtdb.europe-west1.firebasedatabase.app/matches/$encodedMatchId/live_action.json');
+          final response = await http.get(url).timeout(const Duration(milliseconds: 2500));
+          // Reject suspiciously large payloads (>64KB) to prevent memory exhaustion
+          if (response.contentLength != null && response.contentLength! > 65536) {
+            debugPrint('[SyncEngine] HTTP poll payload too large (${response.contentLength} bytes). Skipping.');
+            scheduleNextPoll();
+            return;
+          }
+          if (response.statusCode == 200 && response.body.isNotEmpty && response.body != 'null' && response.body.length <= 65536) {
+            final decoded = json.decode(response.body);
+            if (decoded is! Map) {
+              scheduleNextPoll();
               return;
             }
+            final dataMap = Map<String, dynamic>.from(decoded);
+            final actionId = dataMap['action_id']?.toString() ?? '';
+            final timestamp = (dataMap['timestamp'] as num?)?.toInt() ?? 0;
 
-            final action = TifoActionPayload.fromJson(dataMap);
-            _handleIncomingAction(action);
-          }
+            if (actionId.isNotEmpty && (actionId != _lastHandledActionId || timestamp != _lastHandledTimestamp)) {
+              _lastHandledActionId = actionId;
+              _lastHandledTimestamp = timestamp;
 
-          if (!_state.isConnectedToFirebase) {
-            _updateState(_state.copyWith(
-              isConnectedToFirebase: true,
-              statusMessageAr: 'متصل بشبكة التيفو التزامنية 🟢',
-            ));
+              // Filter out stale/expired actions from previous test sessions upon app startup
+              final nowMs = DateTime.now().millisecondsSinceEpoch + _state.serverTimeOffsetMs;
+              final ageMs = nowMs - timestamp;
+              final payloadMap = (dataMap['payload'] as Map?)?.cast<String, dynamic>() ?? {};
+              final durationSec = (payloadMap['duration_seconds'] as num?)?.toInt() ?? 30;
+              final maxAllowedAgeMs = (durationSec > 0 ? durationSec : 45) * 1000;
+
+              if (timestamp > 0 && ageMs > maxAllowedAgeMs) {
+                debugPrint('[SyncEngine] Stale action ($actionId) ignored. Age: ${ageMs}ms > Max: ${maxAllowedAgeMs}ms');
+                scheduleNextPoll();
+                return;
+              }
+
+              final action = TifoActionPayload.fromJson(dataMap);
+              _handleIncomingAction(action);
+            }
+
+            if (!_state.isConnectedToFirebase) {
+              _updateState(_state.copyWith(
+                isConnectedToFirebase: true,
+                statusMessageAr: 'متصل بشبكة التيفو التزامنية 🟢',
+              ));
+            }
+
+            // [STABILITY FIX] Reset backoff on success
+            _httpPollBackoffMs = _httpPollBaseMs;
           }
+        } catch (e) {
+          // [STABILITY FIX] Exponential backoff on failure
+          _httpPollBackoffMs = (_httpPollBackoffMs * 1.5).toInt().clamp(_httpPollBaseMs, _httpPollMaxMs);
+          debugPrint('[SyncEngine] HTTP poll error, backoff: ${_httpPollBackoffMs}ms');
         }
-      } catch (e) {
-        // Network silent retry
-      }
-    });
+        scheduleNextPoll();
+      });
+    }
+
+    scheduleNextPoll();
   }
 
   bool isFanTargeted(TifoActionPayload action) {
@@ -303,6 +332,19 @@ class SyncEngineService {
       return action.targetIds.contains(userSeatId) ||
           action.targetIds.contains(_deviceId) ||
           action.targetIds.contains(_selectedSector.id);
+    }
+
+    // Row-level filter check (supports 360 ring orbit, lower ring, alternating rows)
+    if (action.targetRowFilter != 'ALL' && _seatRow.isNotEmpty) {
+      final row = int.tryParse(_seatRow) ?? 1;
+      if (action.targetRowFilter == 'EVEN' && row % 2 != 0) return false;
+      if (action.targetRowFilter == 'ODD' && row % 2 == 0) return false;
+      if (action.targetRowFilter == 'LOWER' && row > 15) return false;
+      if (action.targetRowFilter == 'UPPER' && row <= 15) return false;
+      if (action.targetRowFilter.startsWith('ROW_')) {
+        final targetRow = action.targetRowFilter.replaceFirst('ROW_', '');
+        if (_seatRow != targetRow) return false;
+      }
     }
 
     return true;
@@ -494,6 +536,7 @@ class SyncEngineService {
 
   void dispose() {
     _disposed = true;
+    _isInitialized = false;
     _presenceHeartbeatTimer?.cancel();
     _httpPollTimer?.cancel();
     _actionSubscription?.cancel();

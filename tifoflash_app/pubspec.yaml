@@ -2,7 +2,7 @@ name: tifoflash_app
 description: "Synchronized Digital Light Tifo System for Sports Stadiums."
 publish_to: 'none'
 
-version: 1.0.0+5
+version: 1.0.0+6
 
 environment:
   sdk: ^3.6.0
@@ -12,9 +12,10 @@ dependencies:
     sdk: flutter
   cupertino_icons: ^1.0.8
 
-  # Firebase Realtime Sync
+  # Firebase Realtime Sync & Push Notifications
   firebase_core: ^3.12.0
   firebase_database: ^11.3.0
+  firebase_messaging: ^15.2.0
 
   # Hardware & Sensor APIs
   torch_light: ^1.0.0

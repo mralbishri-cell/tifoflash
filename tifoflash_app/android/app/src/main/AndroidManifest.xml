@@ -8,6 +8,7 @@
     <uses-permission android:name="android.permission.VIBRATE" />
     <uses-permission android:name="android.permission.RECORD_AUDIO" />
     <uses-permission android:name="android.permission.MODIFY_AUDIO_SETTINGS" />
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
 
     <!-- Optional Hardware Features declaration -->
     <uses-feature android:name="android.hardware.camera" android:required="false" />
@@ -19,6 +20,12 @@
         android:label="TifoFlash"
         android:name="${applicationName}"
         android:icon="@mipmap/launcher_icon">
+        
+        <!-- FCM Lockscreen Notification Channel -->
+        <meta-data
+            android:name="com.google.firebase.messaging.default_notification_channel_id"
+            android:value="high_importance_channel" />
+        
         <activity
             android:name=".MainActivity"
             android:exported="true"

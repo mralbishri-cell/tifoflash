@@ -17,12 +17,14 @@ class LiveTifoScreen extends StatefulWidget {
   final StadiumSector sector;
   final String seatRow;
   final String seatNumber;
+  final bool startInDemo;
 
   const LiveTifoScreen({
     super.key,
     required this.sector,
     this.seatRow = '',
     this.seatNumber = '',
+    this.startInDemo = false,
   });
 
   @override
@@ -47,6 +49,11 @@ class _LiveTifoScreenState extends State<LiveTifoScreen> with SingleTickerProvid
   Timer? _screenStrobeTimer;
   bool _screenFlashToggle = false;
 
+  // Demo Simulation Mode (Apple Review Guidelines 4.2 Compliance)
+  bool _isDemoModeActive = false;
+  Timer? _demoTimer;
+  int _demoStep = 0;
+
   void _startScreenStrobe(int frequencyMs) {
     _stopScreenStrobe();
     final interval = (frequencyMs > 0 ? frequencyMs : 120).clamp(40, 500);
@@ -63,6 +70,168 @@ class _LiveTifoScreenState extends State<LiveTifoScreen> with SingleTickerProvid
     _screenStrobeTimer?.cancel();
     _screenStrobeTimer = null;
     _screenFlashToggle = false;
+  }
+
+  void _startDemoSimulation() {
+    _stopDemoSimulation();
+    setState(() {
+      _isDemoModeActive = true;
+      _demoStep = 0;
+    });
+    _runNextDemoStep();
+  }
+
+  void _runNextDemoStep() {
+    if (!mounted || !_isDemoModeActive) return;
+
+    if (_demoStep == 0) {
+      // Step 1: Green Solid Tifo Beacon with Strobe
+      setState(() {
+        _syncState = const SyncEngineState(
+          isConnectedToFirebase: true,
+          serverTimeOffsetMs: 0,
+          isActionActive: true,
+          currentAction: TifoActionPayload(
+            actionId: 'demo_1',
+            timestamp: 0,
+            type: TifoActionType.solidColor,
+            targetType: TargetType.all,
+            targetIds: [],
+            colorHex: '#10B981',
+            flashFrequencyMs: 0,
+            durationSeconds: 4,
+            textChar: '',
+            waveDelayStepMs: 0,
+          ),
+          activeColorHex: '#10B981',
+          activeCharDisplay: '',
+          statusMessageAr: 'عرض تجريبي: وميض التيفو الأخضر الموحد 🟢',
+        );
+      });
+      ScreenLightService().maximizeBrightness();
+      FlashControllerService().turnOn();
+      Vibration.hasVibrator().then((has) {
+        if (has == true) Vibration.vibrate(duration: 200);
+      });
+
+      _demoStep++;
+      _demoTimer = Timer(const Duration(seconds: 4), _runNextDemoStep);
+    } else if (_demoStep == 1) {
+      // Step 2: Cyan Strobe Pulse
+      _startScreenStrobe(100);
+      FlashControllerService().startStrobe(frequencyMs: 100, durationSeconds: 4);
+      setState(() {
+        _syncState = const SyncEngineState(
+          isConnectedToFirebase: true,
+          serverTimeOffsetMs: 0,
+          isActionActive: true,
+          currentAction: TifoActionPayload(
+            actionId: 'demo_2',
+            timestamp: 0,
+            type: TifoActionType.strobe,
+            targetType: TargetType.all,
+            targetIds: [],
+            colorHex: '#06B6D4',
+            flashFrequencyMs: 100,
+            durationSeconds: 4,
+            textChar: '',
+            waveDelayStepMs: 0,
+          ),
+          activeColorHex: '#06B6D4',
+          activeCharDisplay: '',
+          statusMessageAr: 'عرض تجريبي: وميض ستوروب الفلاش السريع ⚡',
+        );
+      });
+
+      _demoStep++;
+      _demoTimer = Timer(const Duration(seconds: 4), _runNextDemoStep);
+    } else if (_demoStep == 2) {
+      // Step 3: Goal Celebration Gold Fireworks & Vibration
+      _stopScreenStrobe();
+      FlashControllerService().stopStrobe();
+      setState(() {
+        _syncState = const SyncEngineState(
+          isConnectedToFirebase: true,
+          serverTimeOffsetMs: 0,
+          isActionActive: true,
+          currentAction: TifoActionPayload(
+            actionId: 'demo_3',
+            timestamp: 0,
+            type: TifoActionType.goalCelebration,
+            targetType: TargetType.all,
+            targetIds: [],
+            colorHex: '#FFD700',
+            flashFrequencyMs: 150,
+            durationSeconds: 5,
+            textChar: 'GOAAAL! ⚽ هدف!',
+            waveDelayStepMs: 0,
+          ),
+          activeColorHex: '#FFD700',
+          activeCharDisplay: 'GOAAAL! ⚽ هدف!',
+          statusMessageAr: 'عرض تجريبي: احتفالية الهدف الذهبي ⚽🏆',
+        );
+      });
+      Vibration.hasVibrator().then((has) {
+        if (has == true) Vibration.vibrate(pattern: [0, 150, 50, 150, 50, 300]);
+      });
+
+      _demoStep++;
+      _demoTimer = Timer(const Duration(seconds: 5), _runNextDemoStep);
+    } else if (_demoStep == 3) {
+      // Step 4: Text Stencil Tifo
+      setState(() {
+        _syncState = const SyncEngineState(
+          isConnectedToFirebase: true,
+          serverTimeOffsetMs: 0,
+          isActionActive: true,
+          currentAction: TifoActionPayload(
+            actionId: 'demo_4',
+            timestamp: 0,
+            type: TifoActionType.textDisplay,
+            targetType: TargetType.all,
+            targetIds: [],
+            colorHex: '#8B5CF6',
+            flashFrequencyMs: 0,
+            durationSeconds: 4,
+            textChar: 'TIFO',
+            waveDelayStepMs: 0,
+          ),
+          activeColorHex: '#8B5CF6',
+          activeCharDisplay: 'TIFO',
+          statusMessageAr: 'عرض تجريبي: تشكيل حروف التيفو الضوئي 🔤',
+        );
+      });
+
+      _demoStep++;
+      _demoTimer = Timer(const Duration(seconds: 4), _runNextDemoStep);
+    } else {
+      // Finish Demo
+      _stopDemoSimulation();
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('✨ انتهى العرض التجريبي بنجاح! جاهز للتزامن المباشر'),
+            backgroundColor: Color(0xFF10B981),
+          ),
+        );
+      }
+    }
+  }
+
+  void _stopDemoSimulation() {
+    _demoTimer?.cancel();
+    _demoTimer = null;
+    _stopScreenStrobe();
+    FlashControllerService().stopStrobe();
+    FlashControllerService().turnOff();
+    ScreenLightService().setDimmedStandby();
+    if (mounted) {
+      setState(() {
+        _isDemoModeActive = false;
+        _demoStep = 0;
+        _syncState = SyncEngineState.initial();
+      });
+    }
   }
 
   @override
@@ -87,6 +256,7 @@ class _LiveTifoScreenState extends State<LiveTifoScreen> with SingleTickerProvid
     _syncEngine.initialize();
 
     _syncSubscription = _syncEngine.stateStream.listen((state) {
+      if (_isDemoModeActive) return; // Do not overwrite state while user is testing demo
       if (mounted) {
         setState(() {
           _syncState = state;
@@ -134,10 +304,17 @@ class _LiveTifoScreenState extends State<LiveTifoScreen> with SingleTickerProvid
         });
       }
     });
+
+    if (widget.startInDemo) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        _startDemoSimulation();
+      });
+    }
   }
 
   @override
   void dispose() {
+    _stopDemoSimulation();
     _stopScreenStrobe();
     _syncSubscription?.cancel();
     _orientationSubscription?.cancel();
@@ -252,6 +429,29 @@ class _LiveTifoScreenState extends State<LiveTifoScreen> with SingleTickerProvid
                     child: _buildActiveBeaconView(currentType, activeEffectiveColor),
                   ),
                 ),
+                if (_isDemoModeActive)
+                  Positioned(
+                    top: 16,
+                    right: 16,
+                    child: SafeArea(
+                      child: ElevatedButton.icon(
+                        onPressed: _stopDemoSimulation,
+                        icon: const Icon(Icons.stop_circle, color: Colors.white, size: 16),
+                        label: const Text(
+                          'إيقاف العرض (Stop Demo)',
+                          style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 12),
+                        ),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.black87,
+                          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(20),
+                            side: const BorderSide(color: Colors.white38),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
               ] else ...[
                 Column(
                   children: [
@@ -692,6 +892,25 @@ class _LiveTifoScreenState extends State<LiveTifoScreen> with SingleTickerProvid
                   fontSize: 13,
                   fontWeight: FontWeight.w600,
                 ),
+              ),
+            ),
+            const SizedBox(height: 20),
+            ElevatedButton.icon(
+              onPressed: _startDemoSimulation,
+              icon: const Icon(Icons.play_circle_fill, color: Colors.black, size: 20),
+              label: const Text(
+                '✨ تشغيل العرض التجريبي (Start Demo Show)',
+                style: TextStyle(
+                  color: Colors.black,
+                  fontWeight: FontWeight.w900,
+                  fontSize: 13,
+                ),
+              ),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFF10B981),
+                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                elevation: 4,
               ),
             ),
           ],

@@ -45,11 +45,11 @@ class StadiumProfile {
 class PresetStadiumData {
   static const StadiumProfile jawharaStadium = StadiumProfile(
     id: 'stadium_jawhara',
-    nameAr: 'مدينة الملك عبد الله الرياضية (الجوهرة المشعة)',
-    nameEn: 'King Abdullah Sports City (Al-Jawhara)',
+    nameAr: 'مدينة الملك عبد الله الرياضية (الجوهرة)',
+    nameEn: 'King Abdullah Sports City Stadium',
     cityAr: 'جدة',
     capacity: '62,241 مقعد بيضاوي 360°',
-    homeClub: 'الاتحاد / الأهلي',
+    homeClub: 'مدرجات المنطقة الغربية (Western Stands)',
     primaryColorHex: '#FFD700',
     sectors: [
       StadiumSector(id: 'JAW_VIP_101', nameAr: 'المنصة الملكية VIP 101', nameEn: 'VIP Royal Box 101', standGroup: 'VIP', orderIndex: 1, assignedChar: '★', totalRows: 15, seatsPerRow: 30),
@@ -64,7 +64,7 @@ class PresetStadiumData {
       StadiumSector(id: 'JAW_E_312', nameAr: 'الشرقية العليا 312', nameEn: 'East Upper 312', standGroup: 'East', orderIndex: 10, assignedChar: 'H', totalRows: 35, seatsPerRow: 50),
       StadiumSector(id: 'JAW_E_314', nameAr: 'الشرقية العليا 314 ⚽', nameEn: 'East Upper 314', standGroup: 'East', orderIndex: 11, assignedChar: 'A', totalRows: 35, seatsPerRow: 50),
       StadiumSector(id: 'JAW_E_316', nameAr: 'الشرقية العليا 316', nameEn: 'East Upper 316', standGroup: 'East', orderIndex: 12, assignedChar: 'R', totalRows: 35, seatsPerRow: 50),
-      StadiumSector(id: 'JAW_N_120', nameAr: 'أولتراس الشمالي 120 🔥', nameEn: 'North Ultras 120', standGroup: 'North', orderIndex: 13, assignedChar: 'U', totalRows: 30, seatsPerRow: 45),
+      StadiumSector(id: 'JAW_N_120', nameAr: 'المدرج الشمالي 120 🔥', nameEn: 'North Stand 120', standGroup: 'North', orderIndex: 13, assignedChar: 'U', totalRows: 30, seatsPerRow: 45),
       StadiumSector(id: 'JAW_N_320', nameAr: 'الشمالي العلوي 320', nameEn: 'North Upper 320', standGroup: 'North', orderIndex: 14, assignedChar: 'N', totalRows: 30, seatsPerRow: 45),
       StadiumSector(id: 'JAW_S_130', nameAr: 'الجنوبي السفلي 130', nameEn: 'South Lower 130', standGroup: 'South', orderIndex: 15, assignedChar: 'S', totalRows: 30, seatsPerRow: 45),
       StadiumSector(id: 'JAW_S_330', nameAr: 'الجنوبي العلوي 330', nameEn: 'South Upper 330', standGroup: 'South', orderIndex: 16, assignedChar: 'G', totalRows: 30, seatsPerRow: 45),
@@ -73,14 +73,14 @@ class PresetStadiumData {
 
   static const StadiumProfile kingdomArena = StadiumProfile(
     id: 'stadium_kingdom_arena',
-    nameAr: 'المملكة أرينا (Kingdom Arena)',
-    nameEn: 'Kingdom Arena',
+    nameAr: 'أرينا العاصمة المغطاة (Capital Indoor Arena)',
+    nameEn: 'Capital Indoor Arena (Riyadh)',
     cityAr: 'الرياض',
     capacity: '30,000 مقعد مغلق بكامل الزوايا 360°',
-    homeClub: 'الهلال (Al-Hilal)',
+    homeClub: 'المدرج الأزرق (Blue Stand)',
     primaryColorHex: '#00E5FF',
     sectors: [
-      StadiumSector(id: 'KA_BLUE_WALL', nameAr: '🔥 الجدار الأزرق (BLUE WALL S50-S70)', nameEn: 'The Blue Wall Stand S50-S70', standGroup: 'East', orderIndex: 1, assignedChar: 'H', totalRows: 35, seatsPerRow: 70),
+      StadiumSector(id: 'KA_BLUE_WALL', nameAr: '🔥 المدرج الشرقي الرئيسي (East Stand S50-S70)', nameEn: 'East Stand S50-S70', standGroup: 'East', orderIndex: 1, assignedChar: 'H', totalRows: 35, seatsPerRow: 70),
       StadiumSector(id: 'KA_VIP_SUITES', nameAr: 'كبائن VVIP & Skyboxes', nameEn: 'VVIP Royal Skyboxes', standGroup: 'VIP', orderIndex: 2, assignedChar: 'I', totalRows: 12, seatsPerRow: 25),
       StadiumSector(id: 'KA_CLUB_VIEW', nameAr: 'مدرج Club View المميز', nameEn: 'Club View Stand', standGroup: 'West', orderIndex: 3, assignedChar: 'C', totalRows: 20, seatsPerRow: 35),
       StadiumSector(id: 'KA_NORTH_STAND', nameAr: 'المدرج الشمالي المغلق (S28–S39)', nameEn: 'North Indoor Stand', standGroup: 'North', orderIndex: 4, assignedChar: 'L', totalRows: 25, seatsPerRow: 40),
@@ -92,17 +92,17 @@ class PresetStadiumData {
 
   static const StadiumProfile alawwalPark = StadiumProfile(
     id: 'stadium_alawwal_park',
-    nameAr: 'الأول بارك (مرسول بارك سابقاً)',
-    nameEn: 'Al-Awwal Park (Mrsool Park)',
+    nameAr: 'استاد العاصمة الدولي (Capital Stadium)',
+    nameEn: 'Capital Stadium (Riyadh)',
     cityAr: 'الرياض',
     capacity: '25,000 مقعد مكشوف بكامل الزوايا 360°',
-    homeClub: 'النصر (Al-Nassr)',
+    homeClub: 'المدرج الأصفر (Yellow Stand)',
     primaryColorHex: '#FFD700',
     sectors: [
-      StadiumSector(id: 'AP_YELLOW_WALL', nameAr: '🔥 المدرج الأصفر الرئيسي (THE YELLOW WALL CAT 4)', nameEn: 'The Yellow Wall Ultras', standGroup: 'North', orderIndex: 1, assignedChar: 'N', totalRows: 30, seatsPerRow: 60),
+      StadiumSector(id: 'AP_YELLOW_WALL', nameAr: '🔥 المدرج الشمالي الرئيسي (North Stand CAT 4)', nameEn: 'The North Stand CAT 4', standGroup: 'North', orderIndex: 1, assignedChar: 'N', totalRows: 30, seatsPerRow: 60),
       StadiumSector(id: 'AP_EAST_STAND', nameAr: 'المواجهة الشرقية (CAT 1 Midfield)', nameEn: 'East Stand CAT 1', standGroup: 'East', orderIndex: 2, assignedChar: 'A', totalRows: 25, seatsPerRow: 40),
       StadiumSector(id: 'AP_VIP_CABINS', nameAr: 'كبائن VVIP Platinum Lounge', nameEn: 'VIP Platinum Lounge', standGroup: 'VIP', orderIndex: 3, assignedChar: 'S', totalRows: 12, seatsPerRow: 25),
-      StadiumSector(id: 'AP_SOUTH_STAND', nameAr: 'المدرج الجنوبي (CAT 5 العالمي)', nameEn: 'South Goal Stand CAT 5', standGroup: 'South', orderIndex: 4, assignedChar: 'S', totalRows: 25, seatsPerRow: 40),
+      StadiumSector(id: 'AP_SOUTH_STAND', nameAr: 'المدرج الجنوبي (CAT 5)', nameEn: 'South Goal Stand CAT 5', standGroup: 'South', orderIndex: 4, assignedChar: 'S', totalRows: 25, seatsPerRow: 40),
       StadiumSector(id: 'AP_WEST_STAND', nameAr: 'المدرج الغربي للعائلات (CAT 2)', nameEn: 'West Family Stand CAT 2', standGroup: 'West', orderIndex: 5, assignedChar: 'R', totalRows: 22, seatsPerRow: 35),
       StadiumSector(id: 'AP_CORNER_NE', nameAr: 'الزاوية الشمالية الشرقية N-E', nameEn: 'North-East Corner', standGroup: 'North', orderIndex: 6, assignedChar: 'E', totalRows: 20, seatsPerRow: 30),
       StadiumSector(id: 'AP_CORNER_SE', nameAr: 'الزاوية الجنوبية الشرقية S-E', nameEn: 'South-East Corner', standGroup: 'South', orderIndex: 7, assignedChar: 'E', totalRows: 20, seatsPerRow: 30),
@@ -113,17 +113,17 @@ class PresetStadiumData {
 
   static const StadiumProfile aramcoStadium = StadiumProfile(
     id: 'stadium_aramco',
-    nameAr: 'استاد أرامكو الجديد (Aramco Stadium)',
-    nameEn: 'Aramco Stadium (Khobar)',
+    nameAr: 'استاد المنطقة الشرقية الجديد (Eastern Province Arena)',
+    nameEn: 'Eastern Province Arena (Khobar)',
     cityAr: 'الخبر / المنطقة الشرقية',
     capacity: '47,000 مقعد تحفة معمارية 360°',
-    homeClub: 'المنطقة الشرقية / كأس آسيا 2027 ومونديال 2034',
+    homeClub: 'المنطقة الشرقية (Eastern Province)',
     primaryColorHex: '#00F5D4',
     sectors: [
-      StadiumSector(id: 'ARM_VIP_SKYBOX', nameAr: 'كبائن المقصورة الملكية VVIP Skyboxes', nameEn: 'VVIP Royal Skyboxes', standGroup: 'VIP', orderIndex: 1, assignedChar: 'A', totalRows: 15, seatsPerRow: 30),
+      StadiumSector(id: 'ARM_VIP_SKYBOX', nameAr: 'كبائن المقصورة VVIP Skyboxes', nameEn: 'VVIP Skyboxes', standGroup: 'VIP', orderIndex: 1, assignedChar: 'A', totalRows: 15, seatsPerRow: 30),
       StadiumSector(id: 'ARM_EAST_PITCH', nameAr: 'المواجهة الشرقية البانورامية (CAT 1)', nameEn: 'East Panoramic Stand CAT 1', standGroup: 'East', orderIndex: 2, assignedChar: 'R', totalRows: 30, seatsPerRow: 55),
       StadiumSector(id: 'ARM_NORTH_WAVE', nameAr: 'مدرج الدوامة الشمالي (CAT 2 Wave)', nameEn: 'North Spiral Wave Stand CAT 2', standGroup: 'North', orderIndex: 3, assignedChar: 'A', totalRows: 28, seatsPerRow: 50),
-      StadiumSector(id: 'ARM_SOUTH_ULTRAS', nameAr: '🔥 مدرج أولتراس الشرقية (CAT 3 Goal)', nameEn: 'South Eastern Ultras CAT 3', standGroup: 'South', orderIndex: 4, assignedChar: 'M', totalRows: 30, seatsPerRow: 55),
+      StadiumSector(id: 'ARM_SOUTH_ULTRAS', nameAr: '🔥 مدرج الشرقية الجنوبي (CAT 3)', nameEn: 'South Stand CAT 3', standGroup: 'South', orderIndex: 4, assignedChar: 'M', totalRows: 30, seatsPerRow: 55),
       StadiumSector(id: 'ARM_WEST_STAND', nameAr: 'المدرج الغربي الرئيسي (CAT 1)', nameEn: 'West Main Stand CAT 1', standGroup: 'West', orderIndex: 5, assignedChar: 'C', totalRows: 28, seatsPerRow: 50),
       StadiumSector(id: 'ARM_CORNER_NE', nameAr: 'زاوية دوامة الخليج N-E', nameEn: 'Gulf Spiral Corner N-E', standGroup: 'North', orderIndex: 6, assignedChar: 'O', totalRows: 20, seatsPerRow: 35),
       StadiumSector(id: 'ARM_CORNER_SE', nameAr: 'زاوية دوامة الخليج S-E', nameEn: 'Gulf Spiral Corner S-E', standGroup: 'South', orderIndex: 7, assignedChar: 'S', totalRows: 20, seatsPerRow: 35),

@@ -280,6 +280,78 @@ class _SectorSelectorScreenState extends State<SectorSelectorScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
+              // Demo / Simulation Mode Card (Instant Reviewer & Fan Test)
+              Container(
+                margin: const EdgeInsets.only(bottom: 14),
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  gradient: const LinearGradient(
+                    colors: [Color(0xFF064E3B), Color(0xFF0F172A)],
+                  ),
+                  borderRadius: BorderRadius.circular(16),
+                  border: Border.all(color: const Color(0xFF10B981), width: 1.5),
+                  boxShadow: [
+                    BoxShadow(
+                      color: const Color(0xFF10B981).withValues(alpha: 0.15),
+                      blurRadius: 12,
+                      offset: const Offset(0, 4),
+                    ),
+                  ],
+                ),
+                child: Row(
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.all(8),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFF10B981).withValues(alpha: 0.2),
+                        shape: BoxShape.circle,
+                      ),
+                      child: const Icon(Icons.play_arrow_rounded, color: Color(0xFF10B981), size: 24),
+                    ),
+                    const SizedBox(width: 10),
+                    const Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            '✨ وضع العرض التجريبي (Demo Mode)',
+                            style: TextStyle(color: Colors.white, fontWeight: FontWeight.w900, fontSize: 13),
+                          ),
+                          SizedBox(height: 2),
+                          Text(
+                            'اختبر وميض الفلاش وألوان التيفو فوراً بدون انتظار مباراة',
+                            style: TextStyle(color: Color(0xFF9CA3AF), fontSize: 10.5),
+                          ),
+                        ],
+                      ),
+                    ),
+                    ElevatedButton(
+                      onPressed: () {
+                        final stadium = _selectedStadium ?? PresetStadiumData.allStadiums.first;
+                        final sector = _selectedSector ?? stadium.sectors.first;
+                        Navigator.of(context).push(
+                          MaterialPageRoute(
+                            builder: (_) => LiveTifoScreen(
+                              sector: sector,
+                              seatRow: '12',
+                              seatNumber: '45',
+                              startInDemo: true,
+                            ),
+                          ),
+                        );
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: const Color(0xFF10B981),
+                        foregroundColor: Colors.black,
+                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                      ),
+                      child: const Text('تجربة الآن', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12)),
+                    ),
+                  ],
+                ),
+              ),
+
               // Dropdown Stadium Selection
               const Text(
                 'اختر ملعب المباراة الحالية 🏟️:',

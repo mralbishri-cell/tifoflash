@@ -8,7 +8,7 @@
         ".validate": "newData.exists() && $match_id.matches(/^match_[a-zA-Z0-9_]{1,50}$/)",
 
         "live_action": {
-          ".read": true,
+          ".read": "auth != null",
           ".write": "auth != null",
 
           ".validate": "newData.hasChildren(['action_id', 'type', 'timestamp', 'target_type'])",
@@ -36,7 +36,7 @@
               ".validate": "newData.isNumber() && newData.val() >= 80 && newData.val() <= 1000"
             },
             "duration_seconds": {
-              ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 30"
+              ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 300"
             },
             "text_char": {
               ".validate": "newData.isString() && newData.val().length <= 200"
@@ -55,11 +55,11 @@
         },
 
         "active_devices": {
-          ".read": true,
+          ".read": "auth != null",
           "$device_id": {
             ".read": true,
             ".write": true,
-            ".validate": "newData.hasChildren(['sector_id', 'joined_at']) && newData.child('sector_id').isString() && newData.child('sector_id').val().length <= 30"
+            ".validate": "newData.hasChildren(['device_id', 'sector_id', 'joined_at']) && newData.child('device_id').isString() && newData.child('device_id').val().length >= 8 && newData.child('device_id').val().length <= 40 && newData.child('sector_id').isString() && newData.child('sector_id').val().length <= 30 && $device_id == newData.child('device_id').val()"
           }
         }
       }

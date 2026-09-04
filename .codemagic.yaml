@@ -39,7 +39,7 @@ workflows:
       - name: Build & Sign iOS IPA Package
         script: |
           cd tifoflash_app
-          flutter build ipa --release
+          flutter build ipa --release --build-name=1.0.0 --build-number=${BUILD_NUMBER:-6}
 
     artifacts:
       - tifoflash_app/build/ios/ipa/*.ipa

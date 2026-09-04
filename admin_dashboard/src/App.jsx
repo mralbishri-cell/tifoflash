@@ -3,13 +3,18 @@ import { StadiumMatrix, SECTORS_LIST } from './components/StadiumMatrix';
 import { ActionControls } from './components/ActionControls';
 import { LiveLogStream } from './components/LiveLogStream';
 import { broadcastLiveAction, MATCH_ID } from './services/firebaseAdminService';
-import { Zap, Radio, Shield, Users } from 'lucide-react';
+import { Zap, Radio, Users, Sparkles } from 'lucide-react';
 
 export default function App() {
   const [selectedSectors, setSelectedSectors] = useState(SECTORS_LIST.map((s) => s.id));
   const [activeAction, setActiveAction] = useState(null);
   const [logs, setLogs] = useState([]);
   const [isBroadcasting, setIsBroadcasting] = useState(false);
+
+  // Sector Color Painter State
+  const [matrixMode, setMatrixMode] = useState('SELECT'); // 'SELECT' | 'PAINTER'
+  const [selectedBrush, setSelectedBrush] = useState('#00E676');
+  const [sectorColors, setSectorColors] = useState({});
 
   const handleToggleSector = (id) => {
     setSelectedSectors((prev) =>
@@ -19,6 +24,40 @@ export default function App() {
 
   const handleSelectAll = () => setSelectedSectors(SECTORS_LIST.map((s) => s.id));
   const handleClearAll = () => setSelectedSectors([]);
+
+  const handleSectorColorChange = (sectorId, colorHex) => {
+    setSectorColors((prev) => ({
+      ...prev,
+      [sectorId]: colorHex,
+    }));
+  };
+
+  const handleApplyPreset = (presetName) => {
+    if (presetName === 'RESET') {
+      setSectorColors({});
+      return;
+    }
+
+    const updated = {};
+    if (presetName === 'TEAM') {
+      // Saudi / Team Colors (Alternating Green & White)
+      SECTORS_LIST.forEach((sec, idx) => {
+        updated[sec.id] = idx % 2 === 0 ? '#00E676' : '#FFFFFF';
+      });
+    } else if (presetName === 'ALL_WHITE') {
+      // Flash All White
+      SECTORS_LIST.forEach((sec) => {
+        updated[sec.id] = '#FFFFFF';
+      });
+    } else if (presetName === 'RAINBOW') {
+      const colors = ['#00E676', '#00E5FF', '#D500F9', '#FFD600', '#FF1744', '#FF9100'];
+      SECTORS_LIST.forEach((sec, idx) => {
+        updated[sec.id] = colors[idx % colors.length];
+      });
+    }
+
+    setSectorColors(updated);
+  };
 
   const handleTriggerAction = async (payloadData) => {
     setIsBroadcasting(true);
@@ -46,15 +85,18 @@ export default function App() {
       {/* Top Header */}
       <header className="max-w-7xl mx-auto mb-8 flex flex-wrap items-center justify-between gap-4 glass-panel p-6 rounded-2xl border border-slate-800">
         <div className="flex items-center gap-4">
-          <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-emerald-500 to-cyan-400 flex items-center justify-center shadow-lg shadow-emerald-500/20">
+          <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-emerald-500 via-cyan-400 to-purple-500 flex items-center justify-center shadow-lg shadow-emerald-500/20">
             <Zap className="w-7 h-7 text-black stroke-[2.5]" />
           </div>
           <div>
             <h1 className="text-2xl font-black tracking-tight text-white flex items-center gap-2">
-              TIFO FLASH <span className="text-xs bg-emerald-500/20 text-emerald-400 px-2.5 py-1 rounded-full border border-emerald-500/30">ADMIN V2.5</span>
+              TIFO FLASH{' '}
+              <span className="text-xs bg-emerald-500/20 text-emerald-400 px-2.5 py-1 rounded-full border border-emerald-500/30 font-mono">
+                ADMIN V3.0 STUDIO
+              </span>
             </h1>
             <p className="text-xs text-slate-400 mt-0.5">
-              نظام التحكم الضوئي التزامني فائق السرعة للجماهير | Ultra-Low Latency Stadium Control
+              غرفة تحكم التيفو الضوئي التفاعلي والمباشر في الملعب | Interactive Stadium Tifo & Strobe Control
             </p>
           </div>
         </div>
@@ -88,12 +130,20 @@ export default function App() {
             onSelectAll={handleSelectAll}
             onClearAll={handleClearAll}
             activeAction={activeAction}
+            sectorColors={sectorColors}
+            onSectorColorChange={handleSectorColorChange}
+            activeMode={matrixMode}
+            onChangeMode={setMatrixMode}
+            selectedBrush={selectedBrush}
+            onSelectBrush={setSelectedBrush}
+            onApplyPreset={handleApplyPreset}
           />
 
           <ActionControls
             selectedSectors={selectedSectors}
             onTriggerAction={handleTriggerAction}
             isBroadcasting={isBroadcasting}
+            sectorColors={sectorColors}
           />
         </div>
 

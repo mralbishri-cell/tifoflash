@@ -41,7 +41,8 @@ export async function broadcastLiveAction(payload) {
       duration_seconds: payload.duration_seconds || 10,
       text_char: payload.text_char || "",
       wave_delay_step_ms: payload.wave_delay_step_ms || 250,
-      sponsor: payload.sponsor || null
+      sponsor: payload.sponsor || null,
+      sector_colors: payload.sector_colors || null
     }
   };
 

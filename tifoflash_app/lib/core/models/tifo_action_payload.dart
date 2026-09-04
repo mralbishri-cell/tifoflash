@@ -147,6 +147,7 @@ class TifoActionPayload {
   final List<String> lyricsLines;
   final Map<String, dynamic>? pixelMatrixMap;
   final Map<String, String>? sectorColors;
+  final String targetRowFilter;
 
   SponsorInfo? get sponsor => sponsors.isNotEmpty ? sponsors.first : null;
 
@@ -169,6 +170,7 @@ class TifoActionPayload {
     this.lyricsLines = const [],
     this.pixelMatrixMap,
     this.sectorColors,
+    this.targetRowFilter = 'ALL',
   });
 
   factory TifoActionPayload.fromJson(Map<String, dynamic> json) {
@@ -218,7 +220,7 @@ class TifoActionPayload {
       targetIds: parsedTargetIds,
       colorHex: PayloadSanitizer.sanitizeColorHex(payloadMap['color_hex'] as String?),
       flashFrequencyMs: PayloadSanitizer.clampInt(payloadMap['flash_frequency_ms'], 150, 80, 1000),
-      durationSeconds: PayloadSanitizer.clampInt(payloadMap['duration_seconds'], 10, 0, 30),
+      durationSeconds: PayloadSanitizer.clampInt(payloadMap['duration_seconds'], 10, 0, 300),
       textChar: PayloadSanitizer.sanitizeText(payloadMap['text_char'] as String?, maxLength: 200),
       waveDelayStepMs: PayloadSanitizer.clampInt(payloadMap['wave_delay_step_ms'], 250, 40, 2000),
       waveDirection: payloadMap['wave_direction']?.toString() ?? 'L2R',
@@ -231,6 +233,7 @@ class TifoActionPayload {
           ? Map<String, dynamic>.from(payloadMap['pixel_matrix'])
           : null,
       sectorColors: parsedSectorColors,
+      targetRowFilter: payloadMap['target_row_filter']?.toString() ?? 'ALL',
     );
   }
 

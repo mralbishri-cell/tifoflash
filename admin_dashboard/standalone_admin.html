@@ -3,8 +3,13 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+  <meta http-equiv="Pragma" content="no-cache">
+  <meta http-equiv="Expires" content="0">
   <!-- M-2: Content Security Policy (permissive for local dev, tighten in production) -->
-  <meta http-equiv="Content-Security-Policy" content="default-src * 'unsafe-inline' 'unsafe-eval' data: blob:; script-src * 'unsafe-inline' 'unsafe-eval'; style-src * 'unsafe-inline'; font-src *; connect-src *; img-src * data: blob:;">
+  <!-- M-2: Content Security Policy — tightened for production -->
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdn.tailwindcss.com https://www.gstatic.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; connect-src 'self' https://*.firebaseio.com https://*.firebasedatabase.app https://*.googleapis.com https://*.firebaseapp.com wss://*.firebaseio.com; img-src 'self' data: blob: https:;">
+  <link rel="manifest" href="/manifest.json">
   <title>TifoFlash Stadium Admin Control | لوحة التحكم السلسة فائقة السرعة</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <!-- C-2: Firebase Auth & Database SDK -->
@@ -15,26 +20,66 @@
   <style>
     body {
       font-family: 'Cairo', 'Outfit', sans-serif;
-      background-color: #090d16;
+      background-color: #060913;
       color: #f8fafc;
+      background-image: 
+        radial-gradient(at 10% 10%, rgba(16, 185, 129, 0.07) 0px, transparent 50%),
+        radial-gradient(at 90% 10%, rgba(6, 182, 212, 0.07) 0px, transparent 50%),
+        radial-gradient(at 50% 90%, rgba(168, 85, 247, 0.06) 0px, transparent 50%);
+      background-attachment: fixed;
     }
     .glass-panel {
-      background: rgba(15, 23, 42, 0.75);
-      backdrop-filter: blur(16px);
+      background: rgba(13, 20, 36, 0.85);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
       border: 1px solid rgba(255, 255, 255, 0.08);
+      box-shadow: 0 20px 40px -15px rgba(0, 0, 0, 0.5);
+    }
+    .glass-card {
+      background: rgba(18, 28, 51, 0.7);
+      backdrop-filter: blur(12px);
+      border: 1px solid rgba(255, 255, 255, 0.06);
+    }
+    .glow-emerald {
+      box-shadow: 0 0 25px rgba(0, 230, 118, 0.25);
+    }
+    .glow-cyan {
+      box-shadow: 0 0 25px rgba(0, 229, 255, 0.25);
+    }
+    .glow-amber {
+      box-shadow: 0 0 25px rgba(255, 215, 0, 0.25);
+    }
+    .glow-ruby {
+      box-shadow: 0 0 25px rgba(255, 45, 85, 0.25);
     }
     .sector-btn {
       transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
     }
     .sector-btn:active {
-      transform: scale(0.96);
+      transform: scale(0.95);
+    }
+    /* Custom Luxury Scrollbars */
+    ::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #090d16;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #1e293b;
+      border-radius: 999px;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: #334155;
     }
   </style>
 </head>
 <body class="p-4 md:p-8">
 
   <!-- C-2: Admin Login Gate Overlay -->
-  <div id="authOverlay" class="fixed inset-0 bg-black/95 backdrop-blur-xl z-[9999] flex items-center justify-center p-4">
+  <div id="authOverlay" style="display:flex;" class="fixed inset-0 bg-black/95 backdrop-blur-xl z-[9999] flex items-center justify-center p-4">
     <div class="bg-slate-950 border border-slate-800 rounded-3xl max-w-md w-full p-8 space-y-6 shadow-2xl">
       <div class="text-center">
         <div class="w-16 h-16 mx-auto rounded-2xl bg-gradient-to-tr from-emerald-500 to-cyan-400 flex items-center justify-center text-black font-black text-3xl shadow-lg shadow-emerald-500/20 mb-4">🔒</div>
@@ -55,7 +100,7 @@
     </div>
   </div>
 
-  <div id="mainDashboard" class="w-full max-w-[1550px] mx-auto px-4 space-y-6" style="display:none;">
+  <div id="mainDashboard" class="w-full max-w-full px-2 sm:px-4 md:px-6 space-y-6" style="display:none;">
     <!-- Header -->
     <header class="glass-panel p-6 rounded-2xl flex flex-wrap items-center justify-between gap-4 border border-slate-800">
       <div class="flex items-center gap-4">
@@ -86,8 +131,8 @@
 
     <!-- Main Content Grid -->
     <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
-      <!-- Sector Matrix & Trigger Controls (8 Cols) -->
-      <div class="lg:col-span-8 space-y-6">
+      <!-- Sector Matrix & Trigger Controls (7 Cols) -->
+      <div class="lg:col-span-7 space-y-6">
         <!-- Stadium Matrix & Quick Group Filters -->
         <div class="glass-panel p-6 rounded-2xl border border-slate-800 space-y-4">
           <div class="flex flex-wrap items-center justify-between gap-3">
@@ -222,6 +267,34 @@
               </div>
             </div>
           </div>
+
+          <!-- Row Target Filter & Hardware Target Bar -->
+          <div class="bg-slate-950 p-4 rounded-xl border border-slate-800 space-y-3 text-xs">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <!-- Row Target Filter -->
+              <div>
+                <label class="text-cyan-300 font-bold block mb-1">🎟️ تصفية استهداف الصفوف (Row Target Filter):</label>
+                <select id="rowFilterSelect" class="w-full px-3 py-2 bg-slate-900 border border-slate-700 rounded-xl text-white font-bold text-xs focus:border-cyan-400 outline-none cursor-pointer">
+                  <option value="ALL">🌟 جميع الصفوف (All Rows)</option>
+                  <option value="EVEN">🏁 الصفوف الزوجية (Even Rows 2,4,6...)</option>
+                  <option value="ODD">🏁 الصفوف الفردية (Odd Rows 1,3,5...)</option>
+                  <option value="LOWER">🔽 الصفوف السفلية (Lower Rows 1-15)</option>
+                  <option value="UPPER">🔼 الصفوف العلوية (Upper Rows 16+)</option>
+                </select>
+              </div>
+
+              <!-- Hardware Target Selector -->
+              <div>
+                <label class="text-emerald-300 font-bold block mb-1">⚡ مصدر الإضاءة المستهدف بالجوال (Hardware Target):</label>
+                <select id="hardwareTargetSelect" class="w-full px-3 py-2 bg-slate-900 border border-slate-700 rounded-xl text-white font-bold text-xs focus:border-emerald-400 outline-none cursor-pointer">
+                  <option value="BOTH">🔄 كلاهما (الفلاش الخلفي + شاشة الجوال)</option>
+                  <option value="LED_ONLY">⚡ الفلاش الخلفي فقط (Rear Camera LED Only)</option>
+                  <option value="SCREEN_ONLY">📱 شاشة الجوال فقط (Screen Display Only)</option>
+                </select>
+              </div>
+            </div>
+          </div>
+
           <!-- Live Custom Text & Chant Lyrics Writing Box -->
           <div class="bg-slate-950 p-4 rounded-xl border border-slate-800 space-y-3 text-xs">
             <div class="flex items-center justify-between border-b border-slate-900 pb-2">
@@ -264,21 +337,21 @@
                 <input type="text" id="customLyricsInput" value="يا فخر الوطن صول وجول 🌊, معك للمنصة نكتب التاريخ 🏆, رفعنا الراية بعالي الصريخ ⚡" placeholder="افصل بين أسطر الأهزوجة بفصلة ," class="w-full px-3 py-2 bg-slate-900 border border-slate-700 rounded-xl text-white text-xs focus:border-cyan-400 outline-none">
               </div>
             </div>
-          <!-- Multi-Sponsor Pop-up & Banner Manager (Appears ONLY by Choice) -->
+          </div>
+
+          <!-- Multi-Sponsor Pop-up & Banner Manager -->
           <div class="bg-slate-950 p-4 rounded-xl border border-amber-500/30 space-y-3 text-xs">
             <div class="flex flex-wrap items-center justify-between gap-2 border-b border-slate-900 pb-2">
               <div class="flex items-center gap-2">
                 <input type="checkbox" id="enableSponsorToggle" onchange="toggleSponsorInputs(this.checked)" class="w-4 h-4 rounded accent-amber-400 bg-slate-900 border-slate-700 cursor-pointer">
                 <label for="enableSponsorToggle" class="text-amber-300 font-bold flex items-center gap-1.5 cursor-pointer text-sm">
-                  <span>📢</span> إرفاق بنرات الرعاة الرسميين (Multi-Sponsor Banners & Popups)
+                  <span>📢</span> إرفاق بنرات الرعاة الرسميين (Multi-Sponsor Banners)
                 </label>
               </div>
-              <span class="text-[10px] text-amber-400/80 font-mono bg-amber-500/10 px-2 py-0.5 rounded border border-amber-500/20">يدعم راعي واحد أو عدة رعاة يتنقل بينهم المشجع 📱</span>
+              <span class="text-[10px] text-amber-400/80 font-mono bg-amber-500/10 px-2 py-0.5 rounded border border-amber-500/20">يدعم عدة رعاة يتنقل بينهم المشجع 📱</span>
             </div>
 
-            <!-- Sponsor Inputs & List Container (Visible only when toggled) -->
             <div id="sponsorFieldsContainer" class="hidden space-y-3 pt-1">
-              <!-- Quick Preset Actions & Add Sponsor Button -->
               <div class="flex items-center justify-between gap-2 flex-wrap">
                 <div class="flex items-center gap-1.5 flex-wrap">
                   <span class="text-slate-400 text-[10px] font-bold">إضافة رعاة جاهزين:</span>
@@ -293,32 +366,8 @@
                 </button>
               </div>
 
-              <!-- List of Active Sponsors -->
               <div id="sponsorsCardsList" class="space-y-2 max-h-60 overflow-y-auto pr-1">
-                <!-- Dynamically populated by renderSponsorsList() -->
-              </div>
-
-              <!-- Live Mobile Sponsor Carousel Preview in Dashboard -->
-              <div class="p-3 bg-slate-900/90 rounded-xl border border-slate-800 flex items-center justify-between gap-4">
-                <div class="flex items-center gap-3 flex-1 min-w-0">
-                  <img id="sponsorPreviewImg" src="https://images.unsplash.com/photo-1513151233558-d860c5398176?w=600&auto=format&fit=crop&q=80" class="w-14 h-14 rounded-lg object-cover border border-amber-500/30 shrink-0" alt="Preview">
-                  <div class="min-w-0">
-                    <div class="text-[10px] text-amber-400 font-bold flex items-center gap-1.5">
-                      <span>معاينة في جوال المشجع 📱</span>
-                      <span id="sponsorPreviewPageIndicator" class="bg-amber-500/20 text-amber-300 px-1.5 py-0.2 rounded text-[9px] font-mono">1 / 1</span>
-                    </div>
-                    <div id="sponsorPreviewTitle" class="text-white font-extrabold text-xs truncate">عرض خاص من الراعي الرسمي</div>
-                    <div class="text-[10px] text-slate-400 mt-0.5">كود الخصم: <span id="sponsorPreviewCode" class="text-amber-300 font-mono font-bold">MATCH2026</span></div>
-                  </div>
-                </div>
-
-                <div class="flex items-center gap-2 shrink-0">
-                  <button type="button" onclick="prevSponsorPreview()" class="w-7 h-7 rounded-lg bg-slate-800 hover:bg-slate-700 text-white flex items-center justify-center text-xs">◀</button>
-                  <button type="button" onclick="nextSponsorPreview()" class="w-7 h-7 rounded-lg bg-slate-800 hover:bg-slate-700 text-white flex items-center justify-center text-xs">▶</button>
-                  <button type="button" onclick="triggerAction('SPONSOR_POPUP')" class="px-4 py-2 bg-gradient-to-r from-amber-500 to-yellow-500 text-black font-extrabold text-xs rounded-xl hover:opacity-90 transition shadow-lg shadow-amber-500/20">
-                    🚀 بث العروض لجميع الجوالات
-                  </button>
-                </div>
+                <!-- Dynamically populated -->
               </div>
             </div>
           </div>
@@ -350,242 +399,29 @@
                 <span>أزرق ملكي 🔵</span>
               </button>
 
-              <button type="button" onclick="selectColor('#FFD700', 'ذهبي بطولات')" class="color-swatch-btn px-3 py-1.5 rounded-xl border border-yellow-400/50 bg-yellow-400 text-black font-black text-xs flex items-center gap-1.5 shadow-lg shadow-yellow-400/20 hover:scale-105 transition cursor-pointer">
-                <span class="w-3 h-3 rounded-full bg-black/40 shadow-sm"></span>
-                <span>ذهبي / أصفر 🟡</span>
-              </button>
-
-              <button type="button" onclick="selectColor('#FF1744', 'أحمر ناري')" class="color-swatch-btn px-3 py-1.5 rounded-xl border border-red-500/50 bg-red-500 text-white font-black text-xs flex items-center gap-1.5 shadow-lg shadow-red-500/20 hover:scale-105 transition cursor-pointer">
-                <span class="w-3 h-3 rounded-full bg-white shadow-sm"></span>
-                <span>أحمر ناري 🔴</span>
-              </button>
-
-              <button type="button" onclick="selectColor('#D500F9', 'بنفسجي نيون')" class="color-swatch-btn px-3 py-1.5 rounded-xl border border-fuchsia-500/50 bg-fuchsia-500 text-white font-black text-xs flex items-center gap-1.5 shadow-lg shadow-fuchsia-500/20 hover:scale-105 transition cursor-pointer">
-                <span class="w-3 h-3 rounded-full bg-white shadow-sm"></span>
-                <span>بنفسجي نيون 🟣</span>
-              </button>
-
-              <button type="button" onclick="selectColor('#FFFFFF', 'أبيض ناصع')" class="color-swatch-btn px-3 py-1.5 rounded-xl border border-white/60 bg-white text-black font-black text-xs flex items-center gap-1.5 shadow-lg shadow-white/20 hover:scale-105 transition cursor-pointer">
-                <span class="w-3 h-3 rounded-full bg-slate-400 shadow-sm"></span>
+              <button type="button" onclick="selectColor('#FFFFFF', 'أبيض ناصع')" class="color-swatch-btn px-3 py-1.5 rounded-xl border border-slate-300 bg-white text-black font-black text-xs flex items-center gap-1.5 shadow-lg shadow-white/20 hover:scale-105 transition cursor-pointer">
+                <span class="w-3 h-3 rounded-full bg-slate-300 shadow-sm"></span>
                 <span>أبيض ناصع ⚪</span>
               </button>
 
-              <!-- Custom Color Picker Input -->
-              <div class="flex items-center gap-1.5 bg-slate-900 px-3 py-1 rounded-xl border border-slate-700 hover:border-cyan-400 transition">
-                <span class="text-slate-300 font-bold text-[11px]">لون مخصص:</span>
-                <input type="color" id="activeColorPicker" value="#00E676" oninput="selectColor(this.value, 'مخصص')" class="w-6 h-6 rounded border-0 bg-transparent cursor-pointer">
-              </div>
-            </div>
+              <button type="button" onclick="selectColor('#FFD700', 'أصفر ذهبي')" class="color-swatch-btn px-3 py-1.5 rounded-xl border border-amber-400/50 bg-amber-400 text-black font-black text-xs flex items-center gap-1.5 shadow-lg shadow-amber-400/20 hover:scale-105 transition cursor-pointer">
+                <span class="w-3 h-3 rounded-full bg-white shadow-sm"></span>
+                <span>أصفر ذهبي 🟡</span>
+              </button>
 
-            <!-- Action Helpers: Paint All Selected vs Paint by Click -->
-            <div class="flex flex-wrap items-center gap-2 pt-1 border-t border-slate-900 text-[11px]">
-              <span class="text-slate-400 font-bold">طريقة التلوين:</span>
-              <button type="button" onclick="applyColorToAllSelected()" class="px-3 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-cyan-300 font-bold border border-cyan-500/30 transition">
-                🖌️ تلوين جميع المربعات المحددة بهذا اللون
+              <button type="button" onclick="selectColor('#A855F7', 'بنفسجي ارجواني')" class="color-swatch-btn px-3 py-1.5 rounded-xl border border-purple-400/50 bg-purple-500 text-white font-black text-xs flex items-center gap-1.5 shadow-lg shadow-purple-500/20 hover:scale-105 transition cursor-pointer">
+                <span class="w-3 h-3 rounded-full bg-white shadow-sm"></span>
+                <span>بنفسجي 🟣</span>
               </button>
-              <button type="button" onclick="resetAllSectorColors()" class="px-3 py-1 rounded-lg bg-slate-900 hover:bg-slate-800 text-slate-400 border border-slate-800 transition">
-                🔄 إعادة تعيين ألوان المربعات
+
+              <button type="button" onclick="selectColor('#FF2D55', 'أحمر فاقع')" class="color-swatch-btn px-3 py-1.5 rounded-xl border border-red-400/50 bg-red-500 text-white font-black text-xs flex items-center gap-1.5 shadow-lg shadow-red-500/20 hover:scale-105 transition cursor-pointer">
+                <span class="w-3 h-3 rounded-full bg-white shadow-sm"></span>
+                <span>أحمر فاقع 🔴</span>
               </button>
-              <span class="text-slate-500 mr-auto text-[10px]">💡 نصيحة: اختر لوناً ثم اضغط على أي مربع في خريطة الملعب لتلوينه بشكل مستقل!</span>
             </div>
           </div>
-          <!-- =================== PRESETS & CELEBRATION LIBRARY =================== -->
-          <div class="bg-slate-950 rounded-2xl border border-slate-800 overflow-hidden text-xs">
-            
-            <!-- Tabs -->
-            <div class="flex border-b border-slate-800">
-              <button id="tabPresets" onclick="switchPresetTab('presets')" class="flex-1 py-2.5 px-4 font-bold text-xs text-emerald-400 border-b-2 border-emerald-400 bg-emerald-500/5 transition">
-                💾 تصاميمي المحفوظة
-              </button>
-              <button id="tabCelebrations" onclick="switchPresetTab('celebrations')" class="flex-1 py-2.5 px-4 font-bold text-xs text-slate-400 border-b-2 border-transparent hover:text-slate-200 transition">
-                🎉 مكتبة الاحتفالات الجاهزة
-              </button>
-            </div>
 
-            <!-- Tab: My Saved Presets -->
-            <div id="panelPresets" class="p-4 space-y-3">
-              <!-- Save Current Design -->
-              <div class="flex items-center gap-2 flex-wrap">
-                <span class="text-slate-300 font-bold text-[11px]">💾 حفظ التصميم الحالي:</span>
-                <input type="text" id="presetNameInput" placeholder="اسم التصميم... مثل: تيفو الهلال الذهبي" class="flex-1 min-w-[200px] px-3 py-1.5 bg-slate-900 border border-slate-700 rounded-xl text-white text-xs focus:border-emerald-400 outline-none placeholder:text-slate-600">
-                <button onclick="saveCurrentPreset()" class="px-4 py-1.5 rounded-xl bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-400 font-bold border border-emerald-500/40 transition">
-                  💾 حفظ
-                </button>
-              </div>
-
-              <!-- Saved Presets List -->
-              <div id="savedPresetsList" class="space-y-1.5">
-                <!-- populated by JS -->
-                <div class="text-slate-600 text-center py-4 text-xs">لا توجد تصاميم محفوظة بعد — صمّم ملعبك واحفظه!</div>
-              </div>
-            </div>
-
-            <!-- Tab: Celebration Library -->
-            <div id="panelCelebrations" class="p-4 space-y-2.5 hidden">
-              <p class="text-slate-400 text-[10px]">🎯 اضغط على أي احتفال لتطبيقه فوراً على الملعب وإرساله لجميع الشاشات</p>
-
-              <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
-
-                <!-- 1. هدف مدوّي -->
-                <button onclick="launchCelebration('GOAL')" class="group p-3 rounded-xl bg-gradient-to-br from-red-950/60 to-orange-950/40 border border-red-500/40 hover:border-red-400 hover:scale-[1.02] transition-all duration-200 text-right">
-                  <div class="flex items-center gap-2 mb-1">
-                    <span class="text-2xl">⚽🔥</span>
-                    <div>
-                      <div class="font-black text-red-300 text-[13px]">هدف مدوّي!</div>
-                      <div class="text-[9px] text-red-400/70 font-mono">GOAL CELEBRATION</div>
-                    </div>
-                  </div>
-                  <div class="text-[10px] text-slate-400 leading-relaxed">فلاش أحمر ذهبي متفجر + وميض سريع 80ms + موجة كاملة في الملعب</div>
-                  <div class="mt-1.5 flex gap-1">
-                    <span class="w-3 h-3 rounded-full bg-red-500 inline-block shadow shadow-red-500/50"></span>
-                    <span class="w-3 h-3 rounded-full bg-orange-400 inline-block"></span>
-                    <span class="w-3 h-3 rounded-full bg-yellow-400 inline-block"></span>
-                  </div>
-                </button>
-
-                <!-- 2. بطولة & تتويج -->
-                <button onclick="launchCelebration('CHAMPIONSHIP')" class="group p-3 rounded-xl bg-gradient-to-br from-yellow-950/60 to-amber-950/40 border border-yellow-500/40 hover:border-yellow-400 hover:scale-[1.02] transition-all duration-200 text-right">
-                  <div class="flex items-center gap-2 mb-1">
-                    <span class="text-2xl">🏆👑</span>
-                    <div>
-                      <div class="font-black text-yellow-300 text-[13px]">تتويج البطولة!</div>
-                      <div class="text-[9px] text-yellow-400/70 font-mono">CHAMPIONSHIP TIFO</div>
-                    </div>
-                  </div>
-                  <div class="text-[10px] text-slate-400 leading-relaxed">ذهبي ملكي كامل + موجة بطيئة احتفالية + نص CHAMPIONS عملاق</div>
-                  <div class="mt-1.5 flex gap-1">
-                    <span class="w-3 h-3 rounded-full bg-yellow-400 inline-block shadow shadow-yellow-400/50"></span>
-                    <span class="w-3 h-3 rounded-full bg-amber-300 inline-block"></span>
-                    <span class="w-3 h-3 rounded-full bg-white inline-block"></span>
-                  </div>
-                </button>
-
-                <!-- 3. تيفو الهلال -->
-                <button onclick="launchCelebration('HILAL_TIFO')" class="group p-3 rounded-xl bg-gradient-to-br from-blue-950/60 to-cyan-950/40 border border-blue-500/40 hover:border-blue-400 hover:scale-[1.02] transition-all duration-200 text-right">
-                  <div class="flex items-center gap-2 mb-1">
-                    <span class="text-2xl">💙🌙</span>
-                    <div>
-                      <div class="font-black text-blue-300 text-[13px]">تيفو الهلال الملكي</div>
-                      <div class="text-[9px] text-blue-400/70 font-mono">AL-HILAL ROYAL TIFO</div>
-                    </div>
-                  </div>
-                  <div class="text-[10px] text-slate-400 leading-relaxed">أزرق ملكي كامل + موجة الهلال من الشرق للغرب</div>
-                  <div class="mt-1.5 flex gap-1">
-                    <span class="w-3 h-3 rounded-full bg-blue-500 inline-block shadow shadow-blue-500/50"></span>
-                    <span class="w-3 h-3 rounded-full bg-cyan-400 inline-block"></span>
-                    <span class="w-3 h-3 rounded-full bg-white inline-block"></span>
-                  </div>
-                </button>
-
-                <!-- 4. تيفو النصر -->
-                <button onclick="launchCelebration('NASSR_TIFO')" class="group p-3 rounded-xl bg-gradient-to-br from-yellow-950/60 to-slate-900/60 border border-yellow-600/40 hover:border-yellow-500 hover:scale-[1.02] transition-all duration-200 text-right">
-                  <div class="flex items-center gap-2 mb-1">
-                    <span class="text-2xl">💛⚡</span>
-                    <div>
-                      <div class="font-black text-yellow-300 text-[13px]">تيفو النصر الأسطوري</div>
-                      <div class="text-[9px] text-yellow-400/70 font-mono">AL-NASSR LEGEND TIFO</div>
-                    </div>
-                  </div>
-                  <div class="text-[10px] text-slate-400 leading-relaxed">أصفر ذهبي + أسود + موجة من الشمال للجنوب</div>
-                  <div class="mt-1.5 flex gap-1">
-                    <span class="w-3 h-3 rounded-full bg-yellow-400 inline-block shadow shadow-yellow-400/50"></span>
-                    <span class="w-3 h-3 rounded-full bg-yellow-600 inline-block"></span>
-                    <span class="w-3 h-3 rounded-full bg-slate-700 inline-block border border-slate-600"></span>
-                  </div>
-                </button>
-
-                <!-- 5. موجة الأولتراس -->
-                <button onclick="launchCelebration('ULTRAS_WAVE')" class="group p-3 rounded-xl bg-gradient-to-br from-emerald-950/60 to-teal-950/40 border border-emerald-500/40 hover:border-emerald-400 hover:scale-[1.02] transition-all duration-200 text-right">
-                  <div class="flex items-center gap-2 mb-1">
-                    <span class="text-2xl">🌊⚡</span>
-                    <div>
-                      <div class="font-black text-emerald-300 text-[13px]">موجة الأولتراس</div>
-                      <div class="text-[9px] text-emerald-400/70 font-mono">ULTRAS WAVE SWEEP</div>
-                    </div>
-                  </div>
-                  <div class="text-[10px] text-slate-400 leading-relaxed">موجة خضراء متدرجة تجتاح الملعب من اليسار لليمين بسرعة</div>
-                  <div class="mt-1.5 flex gap-1">
-                    <span class="w-3 h-3 rounded-full bg-emerald-500 inline-block shadow shadow-emerald-500/50"></span>
-                    <span class="w-3 h-3 rounded-full bg-teal-400 inline-block"></span>
-                    <span class="w-3 h-3 rounded-full bg-green-300 inline-block"></span>
-                  </div>
-                </button>
-
-                <!-- 6. الاحتفال الأبيض الناصع -->
-                <button onclick="launchCelebration('WHITE_OUT')" class="group p-3 rounded-xl bg-gradient-to-br from-slate-800/60 to-slate-700/40 border border-white/20 hover:border-white/50 hover:scale-[1.02] transition-all duration-200 text-right">
-                  <div class="flex items-center gap-2 mb-1">
-                    <span class="text-2xl">⚪✨</span>
-                    <div>
-                      <div class="font-black text-white text-[13px]">الفلاش الأبيض</div>
-                      <div class="text-[9px] text-slate-400/70 font-mono">WHITE OUT FLASH</div>
-                    </div>
-                  </div>
-                  <div class="text-[10px] text-slate-400 leading-relaxed">أبيض ناصع متزامن كامل — كأن الملعب يشتعل بياضاً</div>
-                  <div class="mt-1.5 flex gap-1">
-                    <span class="w-3 h-3 rounded-full bg-white inline-block shadow shadow-white/50"></span>
-                    <span class="w-3 h-3 rounded-full bg-slate-200 inline-block"></span>
-                    <span class="w-3 h-3 rounded-full bg-slate-400 inline-block"></span>
-                  </div>
-                </button>
-
-                <!-- 7. تيفو البنفسجي النيون -->
-                <button onclick="launchCelebration('NEON_PURPLE')" class="group p-3 rounded-xl bg-gradient-to-br from-purple-950/60 to-fuchsia-950/40 border border-purple-500/40 hover:border-purple-400 hover:scale-[1.02] transition-all duration-200 text-right">
-                  <div class="flex items-center gap-2 mb-1">
-                    <span class="text-2xl">💜🌈</span>
-                    <div>
-                      <div class="font-black text-purple-300 text-[13px]">نيون بنفسجي كوني</div>
-                      <div class="text-[9px] text-purple-400/70 font-mono">NEON PURPLE WAVE</div>
-                    </div>
-                  </div>
-                  <div class="text-[10px] text-slate-400 leading-relaxed">بنفسجي نيوني ساطع + موجة من الجنوب للشمال</div>
-                  <div class="mt-1.5 flex gap-1">
-                    <span class="w-3 h-3 rounded-full bg-purple-500 inline-block shadow shadow-purple-500/50"></span>
-                    <span class="w-3 h-3 rounded-full bg-fuchsia-400 inline-block"></span>
-                    <span class="w-3 h-3 rounded-full bg-pink-400 inline-block"></span>
-                  </div>
-                </button>
-
-                <!-- 8. استقبال النجم -->
-                <button onclick="launchCelebration('STAR_WELCOME')" class="group p-3 rounded-xl bg-gradient-to-br from-amber-950/60 to-yellow-950/40 border border-amber-400/40 hover:border-amber-300 hover:scale-[1.02] transition-all duration-200 text-right">
-                  <div class="flex items-center gap-2 mb-1">
-                    <span class="text-2xl">⭐🎤</span>
-                    <div>
-                      <div class="font-black text-amber-300 text-[13px]">استقبال النجم</div>
-                      <div class="text-[9px] text-amber-400/70 font-mono">STAR WELCOME SHOW</div>
-                    </div>
-                  </div>
-                  <div class="text-[10px] text-slate-400 leading-relaxed">ذهبي + نجمة ★ عملاقة + موجة ترحيبية من الأطراف للمنتصف</div>
-                  <div class="mt-1.5 flex gap-1">
-                    <span class="w-3 h-3 rounded-full bg-amber-400 inline-block shadow shadow-amber-400/50"></span>
-                    <span class="w-3 h-3 rounded-full bg-yellow-300 inline-block"></span>
-                    <span class="w-3 h-3 rounded-full bg-white inline-block"></span>
-                  </div>
-                </button>
-
-                <!-- 9. دوري روشن (أخضر إماراتي) -->
-                <button onclick="launchCelebration('ROSHN_LEAGUE')" class="group p-3 rounded-xl bg-gradient-to-br from-green-950/60 to-emerald-950/40 border border-green-500/40 hover:border-green-400 hover:scale-[1.02] transition-all duration-200 text-right">
-                  <div class="flex items-center gap-2 mb-1">
-                    <span class="text-2xl">🇸🇦🏅</span>
-                    <div>
-                      <div class="font-black text-green-300 text-[13px]">دوري روشن للمحترفين</div>
-                      <div class="text-[9px] text-green-400/70 font-mono">ROSHN LEAGUE SPL</div>
-                    </div>
-                  </div>
-                  <div class="text-[10px] text-slate-400 leading-relaxed">أخضر الوطن الفاخر + موجة إسلامية هادئة + نص SPL</div>
-                  <div class="mt-1.5 flex gap-1">
-                    <span class="w-3 h-3 rounded-full bg-green-500 inline-block shadow shadow-green-500/50"></span>
-                    <span class="w-3 h-3 rounded-full bg-emerald-400 inline-block"></span>
-                    <span class="w-3 h-3 rounded-full bg-white inline-block"></span>
-                  </div>
-                </button>
-
-              </div>
-            </div>
-          </div>
-          <!-- =================== END PRESETS =================== -->
-
-
-          <!-- Live Trigger Buttons -->
+          <!-- Live Trigger Buttons Grid -->
           <div class="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-7 gap-3">
             <button onclick="triggerAction('STROBE')" class="p-3 bg-emerald-500/20 hover:bg-emerald-500/30 border border-emerald-500/50 rounded-xl font-bold text-xs text-emerald-400 flex flex-col items-center gap-1 transition shadow-lg shadow-emerald-500/10">
               <span class="text-lg">⚡</span>
@@ -629,6 +465,306 @@
               <span class="text-[10px] opacity-60 font-normal">بث كارت الهدية</span>
             </button>
           </div>
+        </div>
+      </div>
+
+      <!-- Left Control Center Sidebar (5 Cols): Push Notifications + Show Planner + Mic Sync + Presets + Devices + Log Stream -->
+      <div class="lg:col-span-5 space-y-6 flex flex-col">
+
+        <!-- Instant Push Notification Sender Bar -->
+        <div class="glass-panel p-5 rounded-2xl border border-red-500/30 space-y-3 text-xs">
+          <div class="flex flex-wrap items-center justify-between border-b border-slate-900 pb-2 gap-2">
+            <span class="text-red-400 font-bold flex items-center gap-1.5 text-sm">
+              <span>🔔</span> إرسال الإشعارات الفورية لشاشات القفل (Lockscreen Push Notifications):
+            </span>
+            <span class="text-[10px] text-slate-400 font-mono">يصل لشاشات القفل والجوالات المغلقة فوراً</span>
+          </div>
+
+          <div class="space-y-3">
+            <div class="flex flex-wrap gap-2">
+              <button type="button" onclick="sendQuickPushNotification('GOAL')" class="px-3 py-1.5 rounded-xl bg-red-600 hover:bg-red-500 text-white font-extrabold text-xs shadow-md flex items-center gap-1 transition">
+                ⚽ إشعار الهدف الفوري
+              </button>
+              <button type="button" onclick="sendQuickPushNotification('TIFO')" class="px-3 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-extrabold text-xs shadow-md flex items-center gap-1 transition">
+                🇸🇦 إشعار بداية التيفو
+              </button>
+              <button type="button" onclick="sendQuickPushNotification('WAVE')" class="px-3 py-1.5 rounded-xl bg-cyan-600 hover:bg-cyan-500 text-white font-extrabold text-xs shadow-md flex items-center gap-1 transition">
+                🌊 إشعار الموجة
+              </button>
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-12 gap-2 pt-2 border-t border-slate-900">
+              <input type="text" id="customPushTitleInput" placeholder="عنوان الإشعار (مثال: سحب الجوائز 🎁)" class="sm:col-span-4 bg-slate-900 border border-slate-800 rounded-xl px-3 py-1.5 text-white font-bold text-xs outline-none focus:border-red-500">
+              <input type="text" id="customPushBodyInput" placeholder="نص الرسالة (مثال: افتح التطبيق للانضمام)" class="sm:col-span-5 bg-slate-900 border border-slate-800 rounded-xl px-3 py-1.5 text-white text-xs outline-none focus:border-red-500">
+              <button type="button" onclick="sendCustomPushNotification()" class="sm:col-span-3 py-1.5 bg-gradient-to-r from-red-500 to-pink-500 text-white font-extrabold text-xs rounded-xl shadow-md hover:opacity-90 transition">
+                🔔 إرسال الإشعار
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Show Sequence Planner & Timeline Controller -->
+        <div class="glass-panel p-5 rounded-2xl border border-amber-500/30 space-y-4 text-xs">
+          <div class="flex flex-wrap items-center justify-between border-b border-slate-900 pb-2 gap-2">
+            <span class="text-amber-300 font-bold flex items-center gap-1.5 text-sm">
+              <span>🎬</span> مُخطط ومُصمّم العروض المجدولة (Custom Show Builder):
+            </span>
+            <div class="flex items-center gap-2 text-[11px]">
+              <button type="button" onclick="clearSequencePlan()" class="px-2 py-1 rounded bg-red-950/60 hover:bg-red-900/80 text-red-300 border border-red-500/30 font-bold">🔄 تفريغ</button>
+              <button type="button" onclick="loadSequencePreset('KICKOFF')" class="px-2 py-1 rounded bg-slate-900 hover:bg-slate-800 text-emerald-400 border border-emerald-500/30 font-bold">🇸🇦 دخلة المباراة</button>
+              <button type="button" onclick="loadSequencePreset('VICTORY')" class="px-2 py-1 rounded bg-slate-900 hover:bg-slate-800 text-amber-300 border border-amber-500/30 font-bold">🏆 التتويج</button>
+            </div>
+          </div>
+
+          <div id="sequenceTimelinePlayerBox" class="p-3 bg-slate-900/90 rounded-xl border border-slate-800 flex flex-wrap items-center justify-between gap-3">
+            <div>
+              <div class="text-[10px] text-slate-400 font-bold">الخطوة الحالية في العرض:</div>
+              <div id="seqCurrentStepTitle" class="text-white font-black text-sm text-emerald-400">جاهز لبدء العرض المجدول</div>
+            </div>
+            <div class="flex items-center gap-2">
+              <div class="text-center font-mono">
+                <div class="text-[10px] text-slate-400">المتبقي</div>
+                <div id="seqTimeLeftVal" class="text-base font-bold text-amber-400">0s</div>
+              </div>
+              <button type="button" onclick="startSequenceAutoPlay()" class="px-3 py-1.5 bg-emerald-500 hover:bg-emerald-400 text-black font-extrabold rounded-xl text-xs shadow-md">▶️ بدء</button>
+              <button type="button" onclick="nextSequenceStep()" class="px-2.5 py-1.5 bg-cyan-500 hover:bg-cyan-400 text-black font-bold rounded-xl text-xs shadow-md">التالي ⏭️</button>
+              <button type="button" onclick="stopSequenceAutoPlay()" class="px-2.5 py-1.5 bg-red-950 hover:bg-red-900 text-red-400 border border-red-500/30 rounded-xl font-bold text-xs">إيقاف ⏹️</button>
+            </div>
+          </div>
+
+          <div class="space-y-2">
+            <div class="text-[11px] font-bold text-slate-300 flex justify-between">
+              <span>📋 خطوات العرض المخصصة:</span>
+              <span id="seqStepsCountBadge" class="text-amber-400 font-mono">4 خطوات</span>
+            </div>
+            <div id="seqStepsListContainer" class="space-y-1.5 max-h-40 overflow-y-auto pr-1">
+              <!-- Rendered dynamically -->
+            </div>
+          </div>
+
+          <div class="p-3 bg-slate-900/80 rounded-xl border border-slate-800 space-y-2">
+            <span class="text-amber-300 font-bold block text-[11px]">+ إضافة خطوة جديدة لخطتك:</span>
+            <div class="grid grid-cols-1 sm:grid-cols-12 gap-2">
+              <input type="text" id="addSeqNameInput" placeholder="عنوان الخطوة (1. دخلة الجمهور)" class="sm:col-span-4 bg-slate-950 border border-slate-700 rounded-lg px-2.5 py-1 text-white font-bold text-xs outline-none">
+              <select id="addSeqTypeSelect" class="sm:col-span-3 bg-slate-950 border border-slate-700 rounded-lg px-2 py-1 text-white font-bold text-xs outline-none">
+                <option value="STROBE">⚡ ومضات فلاش</option>
+                <option value="WAVE">🌊 موجة الملعب</option>
+                <option value="GOAL_CELEBRATION">⚽ احتفالية الهدف</option>
+                <option value="SPONSOR_POPUP">🎁 إعلان الراعي</option>
+                <option value="CHANT_LYRICS">🎵 أهزوجة المشجعين</option>
+                <option value="TEXT_DISPLAY">🔤 كلمة تيفو</option>
+              </select>
+              <input type="number" id="addSeqDurationInput" min="2" max="120" value="10" placeholder="المدة" class="sm:col-span-2 bg-slate-950 border border-slate-700 rounded-lg px-2 py-1 text-white font-bold text-xs outline-none">
+              <button type="button" onclick="addCustomSequenceStep()" class="sm:col-span-3 py-1 bg-amber-500 hover:bg-amber-400 text-black font-extrabold text-xs rounded-lg transition shadow-md">
+                + إضافة
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Quick Celebration Presets Grid (9 Presets) -->
+        <div class="glass-panel p-5 rounded-2xl border border-emerald-500/30 space-y-3 text-xs">
+          <div class="flex items-center justify-between border-b border-slate-900 pb-2">
+            <h2 class="text-sm font-bold text-white flex items-center gap-2">
+              <span>🎉</span> قوالب واحتفاليات التيفو الجاهزة (Celebration Presets)
+            </h2>
+            <span class="text-[10px] text-emerald-400 font-mono bg-emerald-500/10 px-2 py-0.5 rounded border border-emerald-500/20">جاهز للبث الفوري ⚡</span>
+          </div>
+
+          <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2.5 max-h-72 overflow-y-auto pr-1">
+            <!-- 1. تيفو دخلة الوطن (علم السعودية) -->
+            <button onclick="launchCelebration('SAUDI_FLAG_TIFO')" class="group p-3 rounded-xl bg-gradient-to-br from-emerald-950/80 to-slate-900 border border-emerald-500/40 hover:border-emerald-400 hover:scale-[1.02] transition-all duration-200 text-right">
+              <div class="flex items-center gap-2 mb-1">
+                <span class="text-2xl">🇸🇦👑</span>
+                <div>
+                  <div class="font-black text-emerald-300 text-xs">تيفو دخلة الوطن</div>
+                  <div class="text-[9px] text-emerald-400/70 font-mono">SAUDI FLAG TIFO</div>
+                </div>
+              </div>
+              <div class="text-[10px] text-slate-400 leading-relaxed">أخضر زمردي + سيفين ونخلة باللون الأبيض الناصع</div>
+              <div class="mt-1.5 flex gap-1">
+                <span class="w-3 h-3 rounded-full bg-emerald-500 inline-block shadow shadow-emerald-500/50"></span>
+                <span class="w-3 h-3 rounded-full bg-white inline-block"></span>
+              </div>
+            </button>
+
+            <!-- 2. احتفالية التتويج -->
+            <button onclick="launchCelebration('VICTORY_TROPHY')" class="group p-3 rounded-xl bg-gradient-to-br from-amber-950/80 to-slate-900 border border-amber-500/40 hover:border-amber-400 hover:scale-[1.02] transition-all duration-200 text-right">
+              <div class="flex items-center gap-2 mb-1">
+                <span class="text-2xl">🏆✨</span>
+                <div>
+                  <div class="font-black text-amber-300 text-xs">احتفالية التتويج والكأس</div>
+                  <div class="text-[9px] text-amber-400/70 font-mono">CHAMPIONS TROPHY SHOW</div>
+                </div>
+              </div>
+              <div class="text-[10px] text-slate-400 leading-relaxed">ذهبي ملكي كامل + موجة احتفالية + نص CHAMPIONS</div>
+              <div class="mt-1.5 flex gap-1">
+                <span class="w-3 h-3 rounded-full bg-amber-400 inline-block shadow shadow-amber-400/50"></span>
+                <span class="w-3 h-3 rounded-full bg-yellow-300 inline-block"></span>
+                <span class="w-3 h-3 rounded-full bg-white inline-block"></span>
+              </div>
+            </button>
+
+            <!-- 3. تيفو الهلال -->
+            <button onclick="launchCelebration('HILAL_TIFO')" class="group p-3 rounded-xl bg-gradient-to-br from-blue-950/80 to-slate-900 border border-blue-500/40 hover:border-blue-400 hover:scale-[1.02] transition-all duration-200 text-right">
+              <div class="flex items-center gap-2 mb-1">
+                <span class="text-2xl">💙🌙</span>
+                <div>
+                  <div class="font-black text-blue-300 text-xs">تيفو الهلال الملكي</div>
+                  <div class="text-[9px] text-blue-400/70 font-mono">AL-HILAL ROYAL TIFO</div>
+                </div>
+              </div>
+              <div class="text-[10px] text-slate-400 leading-relaxed">أزرق ملكي + موجة الهلال من الشرق للغرب</div>
+              <div class="mt-1.5 flex gap-1">
+                <span class="w-3 h-3 rounded-full bg-blue-500 inline-block shadow shadow-blue-500/50"></span>
+                <span class="w-3 h-3 rounded-full bg-cyan-400 inline-block"></span>
+              </div>
+            </button>
+
+            <!-- 4. تيفو النصر -->
+            <button onclick="launchCelebration('NASSR_TIFO')" class="group p-3 rounded-xl bg-gradient-to-br from-yellow-950/80 to-slate-900 border border-yellow-500/40 hover:border-yellow-400 hover:scale-[1.02] transition-all duration-200 text-right">
+              <div class="flex items-center gap-2 mb-1">
+                <span class="text-2xl">💛⚡</span>
+                <div>
+                  <div class="font-black text-yellow-300 text-xs">تيفو النصر الأسطوري</div>
+                  <div class="text-[9px] text-yellow-400/70 font-mono">AL-NASSR LEGEND TIFO</div>
+                </div>
+              </div>
+              <div class="text-[10px] text-slate-400 leading-relaxed">أصفر ذهبي + أزرق + موجة من الشمال للجنوب</div>
+              <div class="mt-1.5 flex gap-1">
+                <span class="w-3 h-3 rounded-full bg-yellow-400 inline-block shadow shadow-yellow-400/50"></span>
+                <span class="w-3 h-3 rounded-full bg-blue-500 inline-block"></span>
+              </div>
+            </button>
+
+            <!-- 5. موجة الأولتراس -->
+            <button onclick="launchCelebration('ULTRAS_WAVE')" class="group p-3 rounded-xl bg-gradient-to-br from-cyan-950/80 to-slate-900 border border-cyan-500/40 hover:border-cyan-400 hover:scale-[1.02] transition-all duration-200 text-right">
+              <div class="flex items-center gap-2 mb-1">
+                <span class="text-2xl">🌊⚡</span>
+                <div>
+                  <div class="font-black text-cyan-300 text-xs">موجة الأولتراس</div>
+                  <div class="text-[9px] text-cyan-400/70 font-mono">ULTRAS WAVE SWEEP</div>
+                </div>
+              </div>
+              <div class="text-[10px] text-slate-400 leading-relaxed">موجة تتابع فائقة السرعة من اليسار لليمين</div>
+              <div class="mt-1.5 flex gap-1">
+                <span class="w-3 h-3 rounded-full bg-cyan-400 inline-block shadow shadow-cyan-400/50"></span>
+                <span class="w-3 h-3 rounded-full bg-emerald-400 inline-block"></span>
+              </div>
+            </button>
+
+            <!-- 6. استقبال النجم -->
+            <button onclick="launchCelebration('STAR_WELCOME')" class="group p-3 rounded-xl bg-gradient-to-br from-purple-950/80 to-slate-900 border border-purple-500/40 hover:border-purple-400 hover:scale-[1.02] transition-all duration-200 text-right">
+              <div class="flex items-center gap-2 mb-1">
+                <span class="text-2xl">⭐🎤</span>
+                <div>
+                  <div class="font-black text-purple-300 text-xs">استقبال النجم</div>
+                  <div class="text-[9px] text-purple-400/70 font-mono">STAR WELCOME SHOW</div>
+                </div>
+              </div>
+              <div class="text-[10px] text-slate-400 leading-relaxed">بنفسجي نيون + نجمة ★ عملاقة وموجة ترحيبية</div>
+              <div class="mt-1.5 flex gap-1">
+                <span class="w-3 h-3 rounded-full bg-purple-500 inline-block shadow shadow-purple-500/50"></span>
+                <span class="w-3 h-3 rounded-full bg-amber-300 inline-block"></span>
+              </div>
+            </button>
+
+            <!-- 7. طواف الصاعقة 360° الدائري -->
+            <button onclick="triggerOrbitWave()" class="group p-3 rounded-xl bg-gradient-to-br from-amber-950/90 via-orange-950/50 to-slate-900 border border-amber-400/60 hover:border-amber-300 hover:scale-[1.02] transition-all duration-200 text-right shadow-lg shadow-amber-500/15">
+              <div class="flex items-center gap-2 mb-1">
+                <span class="text-2xl animate-pulse">⚡💫</span>
+                <div>
+                  <div class="font-black text-amber-300 text-xs">طواف الصاعقة 360°</div>
+                  <div class="text-[9px] text-amber-400/80 font-mono">360° ORBIT LIGHT RING</div>
+                </div>
+              </div>
+              <div class="text-[10px] text-slate-300 leading-relaxed">حلقة وميض تدور حول كامل محيط الملعب بسرعة صاروخية</div>
+              <div class="mt-1.5 flex gap-1 items-center">
+                <span class="w-3 h-3 rounded-full bg-amber-400 inline-block shadow shadow-amber-400/50"></span>
+                <span class="w-3 h-3 rounded-full bg-cyan-400 inline-block"></span>
+                <span class="text-[9px] text-amber-300 font-bold mr-1">دورة كاملة &lt; 1 ثانية 🚀</span>
+              </div>
+            </button>
+
+            <!-- 8. الفلاش الأبيض الشامل -->
+            <button onclick="launchCelebration('WHITE_OUT')" class="group p-3 rounded-xl bg-gradient-to-br from-slate-900 to-slate-800 border border-white/40 hover:border-white hover:scale-[1.02] transition-all duration-200 text-right shadow-lg shadow-white/10">
+              <div class="flex items-center gap-2 mb-1">
+                <span class="text-2xl">⚪✨</span>
+                <div>
+                  <div class="font-black text-white text-xs">الفلاش الأبيض الشامل</div>
+                  <div class="text-[9px] text-slate-400 font-mono">WHITE OUT STROBE</div>
+                </div>
+              </div>
+              <div class="text-[10px] text-slate-400 leading-relaxed">عاصفة وميض ثلجية لجميع الجوالات تضيء سماء الاستاد</div>
+              <div class="mt-1.5 flex gap-1">
+                <span class="w-3 h-3 rounded-full bg-white inline-block shadow shadow-white/80"></span>
+                <span class="w-3 h-3 rounded-full bg-slate-300 inline-block"></span>
+              </div>
+            </button>
+
+            <!-- 9. دوري روشن للمحترفين -->
+            <button onclick="launchCelebration('ROSHN_LEAGUE')" class="group p-3 rounded-xl bg-gradient-to-br from-emerald-950/90 via-slate-900 to-slate-900 border border-emerald-500/40 hover:border-emerald-400 hover:scale-[1.02] transition-all duration-200 text-right">
+              <div class="flex items-center gap-2 mb-1">
+                <span class="text-2xl">🇸🇦🏅</span>
+                <div>
+                  <div class="font-black text-emerald-300 text-xs">دوري روشن السعودي</div>
+                  <div class="text-[9px] text-emerald-400/70 font-mono">ROSHN SAUDI LEAGUE</div>
+                </div>
+              </div>
+              <div class="text-[10px] text-slate-400 leading-relaxed">أخضر مع أبيض تناوبي يعكس هوية الدوري الرسمية</div>
+              <div class="mt-1.5 flex gap-1">
+                <span class="w-3 h-3 rounded-full bg-emerald-500 inline-block shadow shadow-emerald-500/50"></span>
+                <span class="w-3 h-3 rounded-full bg-white inline-block"></span>
+              </div>
+            </button>
+
+            <!-- 10. نيون بنفسجي كوني -->
+            <button onclick="launchCelebration('NEON_PURPLE')" class="group p-3 rounded-xl bg-gradient-to-br from-fuchsia-950/90 via-purple-950/60 to-slate-900 border border-fuchsia-500/40 hover:border-fuchsia-400 hover:scale-[1.02] transition-all duration-200 text-right">
+              <div class="flex items-center gap-2 mb-1">
+                <span class="text-2xl">💜🌈</span>
+                <div>
+                  <div class="font-black text-fuchsia-300 text-xs">نيون بنفسجي كوني</div>
+                  <div class="text-[9px] text-fuchsia-400/70 font-mono">COSMIC NEON SHOW</div>
+                </div>
+              </div>
+              <div class="text-[10px] text-slate-400 leading-relaxed">أجواء كرنفالية بنفسجية ووردية للحفلات والافتتاح</div>
+              <div class="mt-1.5 flex gap-1">
+                <span class="w-3 h-3 rounded-full bg-purple-500 inline-block shadow shadow-purple-500/50"></span>
+                <span class="w-3 h-3 rounded-full bg-fuchsia-400 inline-block"></span>
+                <span class="w-3 h-3 rounded-full bg-pink-500 inline-block"></span>
+              </div>
+            </button>
+          </div>
+        </div>
+
+        <!-- Music & Live Mic Beat Sync Box -->
+        <div class="glass-panel p-5 rounded-2xl border border-cyan-500/30 space-y-3 text-xs">
+          <div class="flex flex-wrap items-center justify-between border-b border-slate-900 pb-2 gap-2">
+            <span class="text-cyan-300 font-bold flex items-center gap-1.5 text-sm">
+              <span>🎵</span> التفاعل مع الموسيقى والإيقاع (Music & Beat Sync):
+            </span>
+            <button type="button" onclick="toggleStudioMic()" id="btnStudioMic" class="px-3 py-1.5 rounded-xl bg-cyan-500 text-black font-extrabold text-xs shadow-md shadow-cyan-500/20">🎙️ تشغيل ميكروفون غرفة التحكم</button>
+          </div>
+
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+              <div class="flex justify-between text-slate-300 mb-1 font-bold">
+                <span>🔊 مستوى الصوت المباشر:</span>
+                <span id="micVolVal" class="font-mono text-cyan-400 font-bold">0%</span>
+              </div>
+              <div class="relative w-full h-4 bg-slate-900 rounded-lg overflow-hidden border border-slate-800">
+                <div id="micVolBar" class="h-full bg-gradient-to-r from-emerald-500 to-cyan-400 transition-all duration-75" style="width:0%;"></div>
+              </div>
+            </div>
+            <div>
+              <div class="flex justify-between text-slate-300 mb-1 font-bold">
+                <span>🎚️ حساسية الالتقاط:</span>
+                <span id="micSensVal" class="font-mono text-amber-400 font-bold">65%</span>
+              </div>
+              <input type="range" id="micSensInput" min="20" max="95" value="65" oninput="document.getElementById('micSensVal').innerText = this.value + '%'" class="w-full accent-amber-400 bg-slate-900 rounded-lg cursor-pointer">
+            </div>
+          </div>
+        </div>
 
           <!-- Timeline Sequence Builder Control -->
           <div class="mt-4 p-4 bg-slate-950 rounded-xl border border-slate-800 flex flex-wrap items-center justify-between gap-3 text-xs">
@@ -776,27 +912,22 @@
         return;
       }
 
-      // ── Local Dev Bypass (password: tifo2026) ────────────────────────────────
-      if (password === 'tifo2026') {
-        document.getElementById('authOverlay').style.display = 'none';
-        document.getElementById('mainDashboard').style.display = 'block';
-        console.log('[Auth] Local bypass — skipping Firebase Auth');
-        startLivePresenceTracking();
-        return;
-      }
+      // ── [SECURITY FIX] Local Dev Bypass REMOVED for production ──────────────
+      // Password bypass has been removed. Use Firebase Auth only.
 
       // ── Firebase Auth ─────────────────────────────────────────────────
       if (loginBtn) { loginBtn.disabled = true; loginBtn.textContent = '⏳ جاري تسجيل الدخول...'; }
 
       try {
         if (typeof firebase === 'undefined' || !firebase.auth) {
-          throw { code: 'auth/unavailable', message: 'Firebase غير متاح — استخدم كلمة السر: tifo2026' };
+          throw { code: 'auth/unavailable', message: 'Firebase غير متاح — تحقق من اتصالك بالإنترنت' };
         }
         const userCredential = await firebase.auth().signInWithEmailAndPassword(email, password);
         currentAdminUser = userCredential.user;
         authIdToken = await currentAdminUser.getIdToken();
         document.getElementById('authOverlay').style.display = 'none';
         document.getElementById('mainDashboard').style.display = 'block';
+        if (document.getElementById('broadcastDock')) document.getElementById('broadcastDock').style.display = 'block';
         console.log('[Auth] Admin signed in:', currentAdminUser.email);
         startLivePresenceTracking();
       } catch (err) {
@@ -809,7 +940,7 @@
         else if (err.code === 'auth/too-many-requests') msg = '⚠️ تم إيقاف الحساب مؤقتاً — حاول لاحقاً';
         else if (err.code === 'auth/network-request-failed') msg = '⚠️ لا يوجد اتصال بالإنترنت';
         else if (err.code === 'auth/unavailable')      msg = err.message;
-        else msg = `❌ ${err.code || ''}: ${err.message || ''} | أو ادخل كلمة السر: tifo2026`;
+        else msg = `❌ ${err.code || ''}: ${err.message || ''} | تأكد من بيانات الدخول`;
         errorDiv.textContent = msg;
         errorDiv.classList.remove('hidden');
       } finally {
@@ -825,10 +956,24 @@
           authIdToken = await user.getIdToken();
           document.getElementById('authOverlay').style.display = 'none';
           document.getElementById('mainDashboard').style.display = 'block';
+          if (document.getElementById('broadcastDock')) document.getElementById('broadcastDock').style.display = 'block';
           startLivePresenceTracking();
         }
       });
     }
+
+    // ===== [SECURITY FIX] Auto-refresh Firebase Auth Token every 50 minutes =====
+    // Firebase ID tokens expire after 60 min. This prevents REST API failures mid-match.
+    setInterval(async () => {
+      if (currentAdminUser) {
+        try {
+          authIdToken = await currentAdminUser.getIdToken(true);
+          console.log('[Auth] Token refreshed successfully at', new Date().toLocaleTimeString());
+        } catch (e) {
+          console.warn('[Auth] Token refresh failed:', e);
+        }
+      }
+    }, 50 * 60 * 1000); // Every 50 minutes
 
     // ===== Live Device Presence Real-Time Tracker =====
     let activeDevicesMap = {};
@@ -2923,7 +3068,10 @@
         text_char: type === 'TEXT_DISPLAY' ? customWord : '',
         wave_delay_step_ms: waveSpeedMs,
         sponsor: sponsorPayload,
-        sponsors: sponsorsPayloadList
+        sponsors: sponsorsPayloadList,
+        target_row_filter: document.getElementById('rowFilterSelect')?.value || 'ALL',
+        hardware_target: document.getElementById('hardwareTargetSelect')?.value || 'BOTH',
+        target_ids: targetSectorsOrdered
       };
 
       if (type === 'CHANT_LYRICS') {
@@ -2939,10 +3087,12 @@
         };
       }
 
+      // [STABILITY FIX] Use server-aware timestamp for Firebase Rules validation
+      const serverAwareTimestamp = Date.now(); // Client clock (validated by Firebase ±60s window)
       const payload = {
-        action_id: 'act_' + Date.now(),
-        timestamp: Date.now(),
-        type: type,
+        action_id: 'act_' + serverAwareTimestamp,
+        timestamp: serverAwareTimestamp,
+        type: type === 'STOP_ALL' ? 'IDLE' : type,
         target_type: selectedSectors.length === SECTORS.length ? 'ALL' : 'SECTOR',
         target_ids: targetSectorsOrdered,
         payload: payloadData
@@ -3036,8 +3186,21 @@
 
     document.getElementById('btnStop').onclick = () => triggerAction('IDLE');
 
-    renderMatrix();
-    updateWordLetterDistribution();
+    function initPageRendering() {
+      try {
+        renderMatrix();
+        updateWordLetterDistribution();
+      } catch (err) {
+        console.error('Error rendering stadium matrix:', err);
+      }
+    }
+
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', initPageRendering);
+    } else {
+      initPageRendering();
+    }
+    window.addEventListener('load', initPageRendering);
     // Allow Enter key to submit login
     document.getElementById('authPassword')?.addEventListener('keydown', (e) => {
       if (e.key === 'Enter') adminLogin();
@@ -3204,14 +3367,31 @@
 
     // ── Celebration Library ───────────────────────────────────────────────
     const CELEBRATION_PRESETS = {
-      GOAL: {
-        name: '⚽🔥 هدف مدوّي!',
-        primaryColor: '#FF3A1F',
-        action: 'STROBE',
+      SAUDI_FLAG_TIFO: {
+        name: '🇸🇦👑 تيفو دخلة الوطن (علم السعودية)',
+        primaryColor: '#007A3D',
+        action: 'WAVE',
+        buildColors: (sectors) => {
+          const cols = {};
+          sectors.forEach((id) => {
+            // Center facing / VIP sectors get white (emblem/swords), rest get Saudi Green
+            if (id.includes('114') || id.includes('314') || id.includes('VIP') || id.includes('CENTER') || id.includes('STAGE') || id.includes('EAST_PITCH')) {
+              cols[id] = '#FFFFFF';
+            } else {
+              cols[id] = '#007A3D';
+            }
+          });
+          return cols;
+        }
+      },
+      VICTORY_TROPHY: {
+        name: '🏆✨ احتفالية التتويج والكأس',
+        primaryColor: '#FFD700',
+        action: 'WAVE',
         buildColors: (sectors) => {
           const cols = {};
           sectors.forEach((id, i) => {
-            cols[id] = (i % 3 === 0) ? '#FF3A1F' : (i % 3 === 1) ? '#FF7A00' : '#FFD700';
+            cols[id] = (i % 2 === 0) ? '#FFD700' : '#FFF7C0';
           });
           return cols;
         }
@@ -3228,26 +3408,39 @@
           return cols;
         }
       },
+      GOAL: {
+        name: '⚽🔥 هدف مدوّي!',
+        primaryColor: '#FF3A1F',
+        action: 'STROBE',
+        buildColors: (sectors) => {
+          const cols = {};
+          sectors.forEach((id, i) => {
+            cols[id] = (i % 3 === 0) ? '#FF3A1F' : (i % 3 === 1) ? '#FF7A00' : '#FFD700';
+          });
+          return cols;
+        }
+      },
       HILAL_TIFO: {
         name: '💙🌙 تيفو الهلال الملكي',
-        primaryColor: '#0057B8',
+        primaryColor: '#0047AB',
         action: 'WAVE',
         buildColors: (sectors) => {
           const cols = {};
           sectors.forEach((id, i) => {
-            cols[id] = (i % 3 === 0) ? '#003087' : (i % 3 === 1) ? '#0057B8' : '#00B2FF';
+            cols[id] = (i % 3 === 0) ? '#002277' : (i % 3 === 1) ? '#0047AB' : '#00E5FF';
           });
           return cols;
         }
       },
       NASSR_TIFO: {
         name: '💛⚡ تيفو النصر الأسطوري',
-        primaryColor: '#F5D000',
+        primaryColor: '#FFD700',
         action: 'WAVE',
         buildColors: (sectors) => {
           const cols = {};
           sectors.forEach((id, i) => {
-            cols[id] = (i % 2 === 0) ? '#F5D000' : '#1A1A1A';
+            // Official Al-Nassr Yellow & Blue
+            cols[id] = (i % 2 === 0) ? '#FFD700' : '#003399';
           });
           return cols;
         }
@@ -3292,12 +3485,12 @@
       },
       STAR_WELCOME: {
         name: '⭐🎤 استقبال النجم',
-        primaryColor: '#F59E0B',
+        primaryColor: '#8B5CF6',
         action: 'WAVE',
         buildColors: (sectors) => {
           const cols = {};
           sectors.forEach((id, i) => {
-            cols[id] = (i % 3 === 0) ? '#F59E0B' : (i % 3 === 1) ? '#FDE68A' : '#FFFFFF';
+            cols[id] = (i % 3 === 0) ? '#8B5CF6' : (i % 3 === 1) ? '#FFD700' : '#F43F5E';
           });
           return cols;
         }
@@ -3314,15 +3507,120 @@
           return cols;
         }
       },
+      ORBIT_RING_360: {
+        name: '⚡💫 طواف الصاعقة 360° الدائري',
+        primaryColor: '#FFD700',
+        action: 'WAVE',
+        buildColors: (sectors) => {
+          const cols = {};
+          sectors.forEach((id, i) => {
+            cols[id] = (i % 2 === 0) ? '#FFD700' : '#00E5FF';
+          });
+          return cols;
+        }
+      },
     };
 
+    // ── Genuine 360° Geometric Perimeter Circuit Order ──
+    function getStadium360Order(stadiumKey) {
+      if (stadiumKey === 'jawhara') {
+        // True 360° Circular Perimeter Loop (North -> North-East -> East -> South-East -> South -> South-West -> West -> North-West)
+        return [
+          'JAW_N_120', 'JAW_N_320',      // North (12 o'clock)
+          'JAW_E_112', 'JAW_E_312',      // North-East (2 o'clock)
+          'JAW_E_114', 'JAW_E_314',      // East Midfield (3 o'clock)
+          'JAW_E_116', 'JAW_E_316',      // South-East (4 o'clock)
+          'JAW_S_130', 'JAW_S_330',      // South Goal (6 o'clock)
+          'JAW_W_107', 'JAW_W_106',      // South-West (8 o'clock)
+          'JAW_W_105', 'JAW_W_104',      // West Midfield (9 o'clock)
+          'JAW_VIP_102', 'JAW_VIP_101'   // North-West VIP (10 o'clock)
+        ];
+      } else if (stadiumKey === 'kingdom_arena') {
+        // 360° Closed loop around Kingdom Arena
+        return [
+          'KA_NORTH_STAND',
+          'KA_BLUE_WALL',
+          'KA_SOUTH_STAND',
+          'KA_CORNER_SW',
+          'KA_CLUB_VIEW',
+          'KA_VIP_SUITES',
+          'KA_CORNER_NW'
+        ];
+      } else if (stadiumKey === 'alawwal_park') {
+        // 360° Closed loop around Al-Awwal Park
+        return [
+          'AP_YELLOW_WALL',
+          'AP_CORNER_NE',
+          'AP_EAST_STAND',
+          'AP_CORNER_SE',
+          'AP_SOUTH_STAND',
+          'AP_CORNER_SW',
+          'AP_WEST_STAND',
+          'AP_VIP_CABINS',
+          'AP_CORNER_NW'
+        ];
+      } else if (stadiumKey === 'aramco') {
+        // 360° Closed loop around Aramco Stadium
+        return [
+          'ARM_NORTH_WAVE',
+          'ARM_CORNER_NE',
+          'ARM_EAST_PITCH',
+          'ARM_CORNER_SE',
+          'ARM_SOUTH_ULTRAS',
+          'ARM_CORNER_SW',
+          'ARM_WEST_STAND',
+          'ARM_VIP_SKYBOX',
+          'ARM_CORNER_NW'
+        ];
+      }
+      return (STADIUMS[stadiumKey]?.sectors || []).map(s => s.id);
+    }
+
+    async function triggerOrbitWave() {
+      // 1. Arrange sectors in pure 360° geometric circular perimeter sequence
+      const ring360 = getStadium360Order(activeStadiumKey);
+      selectedSectors = [...ring360];
+
+      // 2. Set Row Filter to lower ring (Row 1-15 ring)
+      const rowSelect = document.getElementById('rowFilterSelect');
+      if (rowSelect) rowSelect.value = 'LOWER';
+
+      // 3. Set ultra-fast wave delay (60ms) and flash strobe (80ms)
+      const waveInput = document.getElementById('waveSpeedInput');
+      if (waveInput) {
+        waveInput.value = '60';
+        const valSpan = document.getElementById('waveSpeedVal');
+        if (valSpan) valSpan.innerText = '60 ملي ثانية ⚡';
+      }
+
+      const flashInput = document.getElementById('flashSpeedInput');
+      if (flashInput) {
+        flashInput.value = '80';
+        const valSpan = document.getElementById('flashSpeedVal');
+        if (valSpan) valSpan.innerText = '80 ملي ثانية ⚡';
+      }
+
+      // 4. Electric gold and cyan ring colors
+      const colors = {};
+      selectedSectors.forEach((secId, i) => {
+        colors[secId] = (i % 2 === 0) ? '#FFD700' : '#00E5FF';
+      });
+      sectorCustomColors = colors;
+      selectColor('#FFD700');
+      renderMatrix();
+
+      showToast('⚡ إطلاق طواف الصاعقة 360° الدائري حول كامل محيط الملعب!');
+      await triggerAction('WAVE');
+    }
+
     async function launchCelebration(key) {
-      const cel = CELEBRATION_PRESETS[key];
+      const cel = CELEBRATION_PRESETS[key] || CELEBRATION_PRESETS.VICTORY_TROPHY || CELEBRATION_PRESETS.CHAMPIONSHIP;
       if (!cel) return;
 
-      const allSectors = SECTORS.map(s => s.id);
-      selectedSectors = [...allSectors];
-      sectorCustomColors = cel.buildColors(allSectors);
+      // Use true 360° geometric circular perimeter sequence for all celebrations
+      const perimeterOrder = getStadium360Order(activeStadiumKey);
+      selectedSectors = [...perimeterOrder];
+      sectorCustomColors = cel.buildColors(perimeterOrder);
 
       // Set the active brush color to match the celebration theme
       const primaryCol = cel.primaryColor || Object.values(sectorCustomColors)[0] || '#00E676';
@@ -3338,6 +3636,346 @@
     // ── Init presets on load ──────────────────────────────────────────────
     renderSavedPresets();
 
+    // ── SHOW SEQUENCE PLANNER LOGIC ──
+    const SEQUENCE_PRESETS = {
+      KICKOFF: [
+        { title: '1. انطلاق التيفو الملون', type: 'STROBE', duration: 15 },
+        { title: '2. موجة الملعب المتتابعة', type: 'WAVE', duration: 10 },
+        { title: '3. ومضات الفلاش السريعة', type: 'GOAL_CELEBRATION', duration: 8 },
+        { title: '4. عرض الراعي الرسمي', type: 'SPONSOR_POPUP', duration: 5 }
+      ],
+      VICTORY: [
+        { title: '1. ومضات الذهبية الاحتفالية', type: 'GOAL_CELEBRATION', duration: 12 },
+        { title: '2. موجة النصر السريعة', type: 'WAVE', duration: 10 },
+        { title: '3. عاصفة الفلاش المضيء', type: 'STROBE', duration: 15 }
+      ]
+    };
+
+    let currentSeqSteps = [...SEQUENCE_PRESETS.KICKOFF];
+    let currentSeqIdx = 0;
+    let seqTimer = null;
+    let seqTimeLeft = 0;
+
+    // [BUG FIX] Called AFTER dependencies are declared
+    renderSeqStepsList();
+
+    function renderSeqStepsList() {
+      const container = document.getElementById('seqStepsListContainer');
+      const countBadge = document.getElementById('seqStepsCountBadge');
+      if (countBadge) countBadge.innerText = `${currentSeqSteps.length} خطوات`;
+      if (!container) return;
+
+      if (currentSeqSteps.length === 0) {
+        container.innerHTML = `<div class="p-3 bg-slate-900/60 rounded-xl text-center text-slate-500 text-xs">لا توجد خطوات في خطتك حالياً. استخدم النموذج أدناه لإضافة خطتك المخصصة!</div>`;
+        return;
+      }
+
+      container.innerHTML = currentSeqSteps.map((step, idx) => {
+        const isPlayingThis = (seqTimer !== null && currentSeqIdx === idx);
+        return `
+          <div class="p-2.5 rounded-xl border flex items-center justify-between gap-2 transition ${isPlayingThis ? 'bg-emerald-950/70 border-emerald-500 shadow-md' : 'bg-slate-900 border-slate-800'}">
+            <div class="flex items-center gap-2">
+              <span class="w-6 h-6 rounded-full flex items-center justify-center font-bold text-xs ${isPlayingThis ? 'bg-emerald-500 text-black' : 'bg-slate-800 text-slate-400'}">${idx + 1}</span>
+              <div>
+                <span class="font-bold text-white">${step.title}</span>
+                <span class="text-[10px] text-cyan-400 font-mono bg-cyan-950/60 px-1.5 py-0.5 rounded border border-cyan-500/20 mr-2">${step.type}</span>
+                <span class="text-[10px] text-amber-400 font-mono mr-2">⏱️ ${step.duration}s</span>
+              </div>
+            </div>
+            <div class="flex items-center gap-1">
+              <button type="button" onclick="runSingleSeqStep(${idx})" class="px-2 py-1 rounded bg-slate-800 hover:bg-slate-700 text-emerald-400 text-[11px] font-bold">▶️ تشغيل</button>
+              <button type="button" onclick="deleteSeqStep(${idx})" class="p-1 rounded bg-slate-800 hover:bg-red-950 text-slate-400 hover:text-red-400 text-[11px]">🗑️</button>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    function addCustomSequenceStep() {
+      const nameInput = document.getElementById('addSeqNameInput');
+      const typeSelect = document.getElementById('addSeqTypeSelect');
+      const durationInput = document.getElementById('addSeqDurationInput');
+
+      const name = nameInput?.value?.trim();
+      const type = typeSelect?.value || 'STROBE';
+      const duration = parseInt(durationInput?.value || '10', 10);
+
+      if (!name) {
+        alert('⚠️ يرجى كتابة عنوان للخطوة أولاً (مثال: 1. دخلة الجمهور)');
+        return;
+      }
+
+      currentSeqSteps.push({
+        title: name,
+        type: type,
+        duration: Math.max(2, Math.min(120, duration))
+      });
+
+      if (nameInput) nameInput.value = '';
+      renderSeqStepsList();
+      showToast(`✅ تم إضافة الخطوة: ${name}`);
+    }
+
+    function deleteSeqStep(idx) {
+      currentSeqSteps.splice(idx, 1);
+      renderSeqStepsList();
+    }
+
+    function clearSequencePlan() {
+      stopSequenceAutoPlay();
+      currentSeqSteps = [];
+      renderSeqStepsList();
+      document.getElementById('seqCurrentStepTitle').innerText = 'خطة فارغة (جاهز لبناء خطتك المخصصة)';
+      showToast('🔄 تم تفريغ خطة العرض. ابدأ بإضافة خطوتك الأولى!');
+    }
+
+    function runSingleSeqStep(idx) {
+      if (idx >= 0 && idx < currentSeqSteps.length) {
+        currentSeqIdx = idx;
+        const step = currentSeqSteps[idx];
+        document.getElementById('seqCurrentStepTitle').innerText = step.title;
+        triggerAction(step.type);
+        showToast(`▶️ تشغيل الخطوة ${idx + 1}: ${step.title}`);
+      }
+    }
+
+    function loadSequencePreset(key) {
+      if (SEQUENCE_PRESETS[key]) {
+        stopSequenceAutoPlay();
+        currentSeqSteps = [...SEQUENCE_PRESETS[key]];
+        currentSeqIdx = 0;
+        renderSeqStepsList();
+        document.getElementById('seqCurrentStepTitle').innerText = currentSeqSteps[0].title;
+        document.getElementById('seqTimeLeftVal').innerText = currentSeqSteps[0].duration + 's';
+        showToast(`🎬 تم تحميل خطة: ${key === 'KICKOFF' ? 'دخلة المباراة' : 'التتويج بالفوز'}`);
+      }
+    }
+
+    function startSequenceAutoPlay() {
+      if (currentSeqSteps.length === 0) return;
+      stopSequenceAutoPlay();
+
+      function playStep(idx) {
+        if (idx >= currentSeqSteps.length) {
+          stopSequenceAutoPlay();
+          document.getElementById('seqCurrentStepTitle').innerText = 'تم اكتمال العرض المجدول 🏁';
+          triggerAction('IDLE');
+          return;
+        }
+        currentSeqIdx = idx;
+        const step = currentSeqSteps[idx];
+        document.getElementById('seqCurrentStepTitle').innerText = step.title;
+        seqTimeLeft = step.duration;
+        document.getElementById('seqTimeLeftVal').innerText = seqTimeLeft + 's';
+
+        triggerAction(step.type);
+
+        seqTimer = setInterval(() => {
+          seqTimeLeft--;
+          if (seqTimeLeft <= 0) {
+            clearInterval(seqTimer);
+            playStep(idx + 1);
+          } else {
+            document.getElementById('seqTimeLeftVal').innerText = seqTimeLeft + 's';
+          }
+        }, 1000);
+      }
+
+      playStep(currentSeqIdx);
+    }
+
+    function nextSequenceStep() {
+      if (seqTimer) clearInterval(seqTimer);
+      const nextIdx = currentSeqIdx + 1;
+      if (nextIdx < currentSeqSteps.length) {
+        currentSeqIdx = nextIdx;
+        startSequenceAutoPlay();
+      } else {
+        stopSequenceAutoPlay();
+        triggerAction('IDLE');
+      }
+    }
+
+    function stopSequenceAutoPlay() {
+      if (seqTimer) clearInterval(seqTimer);
+      seqTimer = null;
+      seqTimeLeft = 0;
+      document.getElementById('seqCurrentStepTitle').innerText = 'جاهز لبدء العرض المجدول';
+      document.getElementById('seqTimeLeftVal').innerText = '0s';
+      triggerAction('IDLE');
+    }
+
+    // ── LIVE MIC & AUDIO BEAT SYNC LOGIC ──
+    let micAudioCtx = null;
+    let micAnalyser = null;
+    let micStream = null;
+    let isMicListening = false;
+    let micAnimId = null;
+    let lastMicBeatTime = 0;
+
+    async function toggleStudioMic() {
+      const btn = document.getElementById('btnStudioMic');
+      if (isMicListening) {
+        if (micAnimId) cancelAnimationFrame(micAnimId);
+        if (micStream) micStream.getTracks().forEach(t => t.stop());
+        if (micAudioCtx) micAudioCtx.close();
+        isMicListening = false;
+        btn.innerText = '🎙️ تشغيل ميكروفون غرفة التحكم';
+        btn.className = 'px-3 py-1.5 rounded-xl bg-cyan-500 text-black font-extrabold text-xs shadow-md shadow-cyan-500/20';
+        document.getElementById('micVolBar').style.width = '0%';
+        document.getElementById('micVolVal').innerText = '0%';
+        showToast('⏹️ تم إيقاف ميكروفون غرفة التحكم');
+      } else {
+        try {
+          micStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+          const AudioCtx = window.AudioContext || window.webkitAudioContext;
+          micAudioCtx = new AudioCtx();
+          micAnalyser = micAudioCtx.createAnalyser();
+          micAnalyser.fftSize = 256;
+
+          const source = micAudioCtx.createMediaStreamSource(micStream);
+          source.connect(micAnalyser);
+
+          isMicListening = true;
+          btn.innerText = '⏹️ إيقاف الميكروفون المباشر';
+          btn.className = 'px-3 py-1.5 rounded-xl bg-red-600 text-white font-extrabold text-xs shadow-md';
+          showToast('🎙️ تم تفعيل ميكروفون استشعار الموسيقى والإيقاع حياً!');
+
+          analyzeMicAudio();
+        } catch (err) {
+          alert('⚠️ تعذر تشغيل الميكروفون. يرجى إعطاء تصريح الميكروفون للمتصفح.');
+        }
+      }
+    }
+
+    function analyzeMicAudio() {
+      if (!micAnalyser) return;
+      const bufferLen = micAnalyser.frequencyBinCount;
+      const dataArray = new Uint8Array(bufferLen);
+
+      function loop() {
+        if (!isMicListening || !micAnalyser) return;
+        micAnalyser.getByteFrequencyData(dataArray);
+
+        let sum = 0;
+        const bassCount = Math.min(12, bufferLen);
+        for (let i = 0; i < bassCount; i++) sum += dataArray[i];
+        const avg = sum / bassCount;
+        const vol = Math.min(100, Math.round((avg / 255) * 100));
+
+        document.getElementById('micVolBar').style.width = vol + '%';
+        document.getElementById('micVolVal').innerText = vol + '%';
+
+        const sens = parseInt(document.getElementById('micSensInput')?.value || '65', 10);
+        const now = Date.now();
+        if (vol >= sens && now - lastMicBeatTime > 180) {
+          lastMicBeatTime = now;
+          triggerAction('STROBE');
+        }
+
+        micAnimId = requestAnimationFrame(loop);
+      }
+      loop();
+    }
+
+    // ── STUDIO KEYBOARD HOTKEYS ──
+    window.addEventListener('keydown', (e) => {
+      if (['INPUT', 'TEXTAREA', 'SELECT'].includes(e.target.tagName)) return;
+      if (e.code === 'Space') {
+        e.preventDefault();
+        triggerAction('IDLE');
+      } else if (e.code === 'F1' || e.code === 'KeyG') {
+        e.preventDefault();
+        triggerAction('STROBE');
+      } else if (e.code === 'F2' || e.code === 'KeyW') {
+        e.preventDefault();
+        triggerAction('WAVE');
+      } else if (e.code === 'F4' || e.code === 'KeyE') {
+        e.preventDefault();
+        triggerAction('SOLID');
+      }
+    });
+
+    // ── INSTANT PUSH NOTIFICATION LOGIC ──
+    async function sendQuickPushNotification(type) {
+      let title = '';
+      let body = '';
+
+      if (type === 'GOAL') {
+        title = '⚽ هدكككككف! احتفالية ضوئية حية 🔥';
+        body = 'انقر هنا فوراً للانضمام لاحتفالية الفلاش الضوئي والموجات الحماسية 🚀';
+        triggerAction('GOAL_CELEBRATION');
+      } else if (type === 'TIFO') {
+        title = '🇸🇦 انطلاق التيفو الملون في الملعب الآن!';
+        body = 'ارفع جوالك فوراً للمشاركة في لوحة التيفو الملونة مع المشجعين ⚡';
+        triggerAction('STROBE');
+      } else if (type === 'WAVE') {
+        title = '🌊 موجة الملعب المتتابعة بدأت!';
+        body = 'شارك في موجة الضوء المتتابعة عبر مدرجات الملعب الآن 🏟️';
+        triggerAction('WAVE');
+      }
+
+      showToast(`🔔 تم إرسال الإشعار الفوري لشاشات القفل: ${title}`);
+    }
+
+    async function sendCustomPushNotification() {
+      const title = sanitizeText(document.getElementById('customPushTitleInput')?.value?.trim(), 100) || 'تنبيه من إدارة المباراة 📣';
+      const body = sanitizeText(document.getElementById('customPushBodyInput')?.value?.trim(), 200) || 'انقر هنا للفتح والانضمام للعرض المباشر ⚡';
+      const fullTextMsg = `${title}: ${body}`;
+
+      const textInput = document.getElementById('customTextInput');
+      if (textInput) {
+        textInput.value = fullTextMsg;
+        updateWordLetterDistribution();
+      }
+
+      showToast(`🔔 تم بث الإشعار المخصص للشاشات: ${title}`);
+      await triggerAction('TEXT_DISPLAY');
+    }
   </script>
+
+  <!-- Sticky Floating Broadcast Console Dock (pinned to bottom of viewport) -->
+  <div id="broadcastDock" class="fixed bottom-3 left-2 right-2 sm:left-6 sm:right-6 z-[999] pointer-events-none" style="display:none;">
+    <div class="glass-panel p-3 rounded-2xl border border-emerald-500/40 bg-slate-950/95 backdrop-blur-2xl shadow-2xl max-w-5xl mx-auto pointer-events-auto flex flex-wrap items-center justify-between gap-2 border border-slate-700/80">
+      
+      <div class="flex items-center gap-2">
+        <span class="w-3 h-3 rounded-full bg-emerald-400 animate-ping"></span>
+        <span class="text-xs font-black text-white hidden sm:inline">🚀 البث السريع المباشر:</span>
+      </div>
+
+      <!-- Quick Launch Buttons Bar -->
+      <div class="flex flex-wrap items-center gap-1.5 text-xs">
+        <button onclick="triggerAction('PIXEL_MATRIX')" class="px-3.5 py-2 bg-gradient-to-r from-emerald-500 to-teal-400 text-black font-black rounded-xl hover:scale-105 transition shadow-lg shadow-emerald-500/20 flex items-center gap-1">
+          <span>🎨</span> <span>بث التيفو النقطي</span>
+        </button>
+
+        <button onclick="triggerAction('TEXT_DISPLAY')" class="px-3.5 py-2 bg-gradient-to-r from-cyan-500 to-blue-500 text-black font-black rounded-xl hover:scale-105 transition shadow-lg shadow-cyan-500/20 flex items-center gap-1">
+          <span>🔤</span> <span>بث النص المكتوب</span>
+        </button>
+
+        <button onclick="triggerAction('STROBE')" class="px-3 py-2 bg-amber-500 text-black font-extrabold rounded-xl hover:scale-105 transition shadow-md flex items-center gap-1">
+          <span>⚡</span> <span>وميض</span>
+        </button>
+
+        <button onclick="triggerAction('GOAL_CELEBRATION')" class="px-3 py-2 bg-red-600 text-white font-extrabold rounded-xl hover:scale-105 transition shadow-md flex items-center gap-1">
+          <span>⚽</span> <span>الهدف 🔥</span>
+        </button>
+
+        <button onclick="triggerOrbitWave()" class="px-3.5 py-2 bg-gradient-to-r from-amber-400 via-orange-500 to-yellow-400 text-black font-black rounded-xl hover:scale-105 transition shadow-lg shadow-amber-500/30 flex items-center gap-1 border border-amber-300">
+          <span>⚡</span> <span>طواف 360°</span>
+        </button>
+
+        <button onclick="triggerAction('WAVE')" class="px-3 py-2 bg-blue-600 text-white font-extrabold rounded-xl hover:scale-105 transition shadow-md flex items-center gap-1">
+          <span>🌊</span> <span>الموجة</span>
+        </button>
+
+        <button onclick="triggerAction('IDLE')" class="px-3.5 py-2 bg-red-950 text-red-400 border border-red-500/50 font-black rounded-xl hover:bg-red-900 transition flex items-center gap-1">
+          <span>🛑</span> <span>إيقاف شامل</span>
+        </button>
+      </div>
+
+    </div>
+  </div>
+
 </body>
 </html>
