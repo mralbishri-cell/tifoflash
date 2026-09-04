@@ -323,6 +323,20 @@ class SyncEngineService {
   }
 
   bool isFanTargeted(TifoActionPayload action) {
+    // 1. Row-level filter check (applies across all targets if row is specified)
+    if (action.targetRowFilter != 'ALL' && _seatRow.isNotEmpty) {
+      final row = int.tryParse(_seatRow) ?? 1;
+      if (action.targetRowFilter == 'EVEN' && row % 2 != 0) return false;
+      if (action.targetRowFilter == 'ODD' && row % 2 == 0) return false;
+      if (action.targetRowFilter == 'LOWER' && row > 15) return false;
+      if (action.targetRowFilter == 'UPPER' && row <= 15) return false;
+      if (action.targetRowFilter.startsWith('ROW_')) {
+        final targetRow = action.targetRowFilter.replaceFirst('ROW_', '');
+        if (_seatRow != targetRow) return false;
+      }
+    }
+
+    // 2. Target type and ID check
     if (action.targetType == TargetType.all) return true;
     if (action.targetIds.isEmpty || action.targetIds.contains('ALL')) return true;
 
@@ -337,19 +351,6 @@ class SyncEngineService {
       return action.targetIds.contains(userSeatId) ||
           action.targetIds.contains(_deviceId) ||
           action.targetIds.contains(_selectedSector.id);
-    }
-
-    // Row-level filter check (supports 360 ring orbit, lower ring, alternating rows)
-    if (action.targetRowFilter != 'ALL' && _seatRow.isNotEmpty) {
-      final row = int.tryParse(_seatRow) ?? 1;
-      if (action.targetRowFilter == 'EVEN' && row % 2 != 0) return false;
-      if (action.targetRowFilter == 'ODD' && row % 2 == 0) return false;
-      if (action.targetRowFilter == 'LOWER' && row > 15) return false;
-      if (action.targetRowFilter == 'UPPER' && row <= 15) return false;
-      if (action.targetRowFilter.startsWith('ROW_')) {
-        final targetRow = action.targetRowFilter.replaceFirst('ROW_', '');
-        if (_seatRow != targetRow) return false;
-      }
     }
 
     return true;
@@ -384,6 +385,17 @@ class SyncEngineService {
     _waveCycleTimer?.cancel();
     _wavePulseOffTimer?.cancel();
     _actionDurationTimer?.cancel();
+
+    // Ensure immediate clean standby state while awaiting wave crest
+    FlashControllerService().stopStrobe();
+    FlashControllerService().turnOff();
+    ScreenLightService().setDimmedStandby();
+
+    _updateState(_state.copyWith(
+      currentAction: action,
+      isActionActive: false,
+      statusMessageAr: 'طواف الصاعقة 360° يقترب من مدرجك... 🌊⚡',
+    ));
 
     final totalSectors = action.targetIds.isNotEmpty ? action.targetIds.length : 10;
     int sectorIndex = action.targetIds.indexOf(_selectedSector.id);
@@ -426,15 +438,21 @@ class SyncEngineService {
         return;
       }
 
-      // 1. Activate pulse when wave passes this sector
+      // 1. Activate pulse when wave crest reaches this seat
       if (allowScreen) {
         ScreenLightService().maximizeBrightness();
+      } else {
+        ScreenLightService().setDimmedStandby();
       }
+
       if (allowLed) {
         FlashControllerService().startStrobe(
           frequencyMs: action.flashFrequencyMs > 0 ? action.flashFrequencyMs : 80,
           durationSeconds: 0,
         );
+      } else {
+        FlashControllerService().stopStrobe();
+        FlashControllerService().turnOff();
       }
 
       Vibration.hasVibrator().then((hasVib) {
@@ -451,16 +469,13 @@ class SyncEngineService {
         statusMessageAr: 'موجة الصاعقة تعبر مقعدك الآن! ⚡🌊',
       ));
 
-      // 2. Shut off immediately after crest passes this sector
+      // 2. Shut off immediately after crest passes this seat
       _wavePulseOffTimer?.cancel();
       _wavePulseOffTimer = Timer(Duration(milliseconds: crestDurationMs), () {
-        if (allowLed) {
-          FlashControllerService().stopStrobe();
-          FlashControllerService().turnOff();
-        }
-        if (allowScreen) {
-          ScreenLightService().setDimmedStandby();
-        }
+        FlashControllerService().stopStrobe();
+        FlashControllerService().turnOff();
+        ScreenLightService().setDimmedStandby();
+
         _updateState(_state.copyWith(
           isActionActive: false,
           statusMessageAr: 'طواف الصاعقة مستمر حول المدرج... 🌊',
@@ -515,6 +530,9 @@ class SyncEngineService {
         );
       } else if (action.type == TifoActionType.solidColor) {
         await FlashControllerService().turnOn();
+      } else {
+        await FlashControllerService().stopStrobe();
+        await FlashControllerService().turnOff();
       }
     } else {
       await FlashControllerService().stopStrobe();
