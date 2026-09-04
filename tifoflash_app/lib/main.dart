@@ -3,7 +3,6 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import 'core/services/push_notification_service.dart';
 import 'core/theme/tifo_theme.dart';
 import 'features/stadium/presentation/sector_selector_screen.dart';
 import 'firebase_options.dart';
@@ -17,9 +16,6 @@ void main() async {
       options: DefaultFirebaseOptions.currentPlatform,
     );
     debugPrint('[Firebase] Initialized successfully');
-
-    // Initialize FCM Lockscreen Push Notifications
-    await PushNotificationService.initialize();
   } catch (e) {
     debugPrint('[Firebase] Init warning/fallback: $e');
   }
