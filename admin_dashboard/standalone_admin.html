@@ -831,6 +831,59 @@
           </div>
         </div>
 
+        <!-- 🎁 Lucky Fan Draw & Single Winner Spotlight (السحب على الجوائز ومراسلة مشجع محدد) -->
+        <div class="glass-panel p-5 rounded-2xl border border-amber-500/40 bg-gradient-to-b from-amber-950/30 to-slate-950/90 space-y-3.5 shadow-xl shadow-amber-950/20">
+          <div class="flex items-center justify-between">
+            <div class="flex items-center gap-2">
+              <span class="text-2xl animate-bounce">🎁</span>
+              <div>
+                <h2 class="text-sm font-black text-amber-300">السحب على الجوائز واختيار المشجع الفائز</h2>
+                <p class="text-[10.5px] text-slate-400">إجراء قرعة عشوائية وإرسال احتفالية الجائزة لشاشة جوال المشجع الفائز فقط 🎯</p>
+              </div>
+            </div>
+            <span class="px-2.5 py-1 rounded-full bg-amber-500/20 text-amber-300 text-[10px] font-extrabold border border-amber-500/40">VIP SPOTLIGHT</span>
+          </div>
+
+          <!-- Quick Random Draw Button & Winner Reveal -->
+          <div class="p-3 bg-slate-900/90 rounded-xl border border-slate-800 space-y-2.5">
+            <button onclick="drawRandomWinner()" class="w-full py-2.5 px-4 bg-gradient-to-r from-amber-500 to-yellow-400 hover:from-amber-400 hover:to-yellow-300 text-slate-950 font-black rounded-xl text-xs flex items-center justify-center gap-2 shadow-lg shadow-amber-500/20 transition-all active:scale-95 cursor-pointer">
+              <span>🎲</span> سحب عشوائي فوري لاختيار فائز من الجمهور
+            </button>
+
+            <!-- Winner Device Info Display -->
+            <div id="winnerDisplayBox" class="hidden p-2.5 bg-amber-950/60 border border-amber-400/60 rounded-xl text-xs text-amber-200 flex items-center justify-between animate-fade-in">
+              <div class="flex items-center gap-2">
+                <span class="text-xl">🏆</span>
+                <div>
+                  <div class="font-extrabold text-white text-[11px]" id="winnerDeviceTitle">المشجع الفائز</div>
+                  <div class="text-[9.5px] text-amber-300/80 font-mono" id="winnerDeviceSub">dev_...</div>
+                </div>
+              </div>
+              <span class="px-2 py-0.5 rounded bg-amber-400/20 text-amber-300 font-bold text-[9px] border border-amber-400/30">فائز محدد 🎯</span>
+            </div>
+          </div>
+
+          <!-- Device Selector & Custom Message -->
+          <div class="space-y-2 text-xs">
+            <div>
+              <label class="block text-[10.5px] font-bold text-slate-300 mb-1">📱 اختيار المشجع المستهدف:</label>
+              <select id="winnerDeviceSelect" onchange="onWinnerSelectChange(this.value)" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-xs text-white focus:border-amber-400 focus:outline-none">
+                <option value="">-- اضغط (سحب عشوائي) أو اختر جهازاً متصلاً --</option>
+              </select>
+            </div>
+
+            <div>
+              <label class="block text-[10.5px] font-bold text-slate-300 mb-1">✍️ نص رسالة الجائزة على شاشة الفائز:</label>
+              <input type="text" id="winnerCustomMessage" value="🎉 مبروك! لقد ربحت معنا الجائزة الكبرى 🚗🎁" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-xs text-amber-300 font-bold focus:border-amber-400 focus:outline-none" placeholder="اكتب نص رسالة الجائزة هنا...">
+            </div>
+
+            <!-- Send Action Button -->
+            <button onclick="sendWinnerSpotlight()" class="w-full py-2.5 bg-gradient-to-r from-emerald-500 to-teal-400 hover:from-emerald-400 hover:to-teal-300 text-slate-950 font-black rounded-xl text-xs flex items-center justify-center gap-2 shadow-lg shadow-emerald-500/20 transition-all active:scale-95 cursor-pointer">
+              <span>🚀</span> إرسال الاحتفال والرسالة لشاشة المشجع الفائز فقط!
+            </button>
+          </div>
+        </div>
+
         <!-- Live Stream Log -->
         <div class="glass-panel p-6 rounded-2xl border border-slate-800 flex-1 flex flex-col">
           <h2 class="text-base font-bold text-white mb-3 flex items-center gap-2">
@@ -1073,6 +1126,132 @@
             return `<span class="px-2 py-0.5 rounded-lg bg-slate-800 text-[10px] text-slate-200 font-bold border border-slate-700">${medals[i]} ${escapeHtml(sec.name)} <span class="text-cyan-400">${fmt(sec.count)}</span></span>`;
           }).join('');
         }
+      }
+
+      // ── Populate Winner Device Selector ──────────────────────────────
+      const winSelect = document.getElementById('winnerDeviceSelect');
+      if (winSelect && deviceKeys.length > 0) {
+        const curVal = winSelect.value;
+        winSelect.innerHTML = '<option value="">-- اضغط (سحب عشوائي) أو اختر جهازاً متصلاً --</option>' +
+          deviceKeys.map(k => {
+            const d = activeDevicesMap[k] || {};
+            return `<option value="${k}">${escapeHtml(d.sector_name || d.sector_id || 'المدرج')} (صف ${d.seat_row || '-'} / مقعد ${d.seat_number || '-'}) - ${k}</option>`;
+          }).join('');
+        if (curVal && deviceKeys.includes(curVal)) {
+          winSelect.value = curVal;
+        }
+      }
+    }
+
+    // ===== 🎁 Lucky Fan Draw & Single Winner Spotlight Logic =====
+    let selectedWinnerDeviceId = null;
+
+    function onWinnerSelectChange(devId) {
+      selectedWinnerDeviceId = devId;
+      const box = document.getElementById('winnerDisplayBox');
+      if (devId && activeDevicesMap[devId]) {
+        const d = activeDevicesMap[devId];
+        document.getElementById('winnerDeviceTitle').innerText = `المشجع في: ${d.sector_name || d.sector_id} (صف ${d.seat_row || '-'} / مقعد ${d.seat_number || '-'})`;
+        document.getElementById('winnerDeviceSub').innerText = devId;
+        box.classList.remove('hidden');
+      } else if (devId) {
+        document.getElementById('winnerDeviceTitle').innerText = `المشجع الفائز: ${devId}`;
+        document.getElementById('winnerDeviceSub').innerText = devId;
+        box.classList.remove('hidden');
+      } else {
+        if (box) box.classList.add('hidden');
+      }
+    }
+
+    function drawRandomWinner() {
+      const keys = Object.keys(activeDevicesMap);
+      const box = document.getElementById('winnerDisplayBox');
+      if (box) box.classList.remove('hidden');
+
+      const titleEl = document.getElementById('winnerDeviceTitle');
+      const subEl = document.getElementById('winnerDeviceSub');
+      if (titleEl) titleEl.innerText = '⏳ جاري تدوير القرعة واختيار الفائز...';
+      if (subEl) subEl.innerText = '🎲 السحب المباشر قيد التشغيل...';
+
+      let rollCount = 0;
+      const interval = setInterval(() => {
+        rollCount++;
+        if (keys.length > 0) {
+          const randomKey = keys[Math.floor(Math.random() * keys.length)];
+          const d = activeDevicesMap[randomKey] || {};
+          if (titleEl) titleEl.innerText = `🎲 ${d.sector_name || d.sector_id || 'المدرج'} (صف ${d.seat_row || '-'} / مقعد ${d.seat_number || '-'})`;
+          if (subEl) subEl.innerText = randomKey;
+        } else {
+          // Live Stadium Blueprint fallback when testing before match
+          const randomSec = SECTORS[Math.floor(Math.random() * SECTORS.length)];
+          const randomRow = Math.floor(Math.random() * 20) + 1;
+          const randomSeat = Math.floor(Math.random() * 30) + 1;
+          if (titleEl) titleEl.innerText = `🎲 ${randomSec.name} (صف ${randomRow} / مقعد ${randomSeat})`;
+          if (subEl) subEl.innerText = `${randomSec.id}_R${randomRow}_S${randomSeat}`;
+        }
+
+        if (rollCount > 10) {
+          clearInterval(interval);
+          if (keys.length > 0) {
+            const finalKey = keys[Math.floor(Math.random() * keys.length)];
+            selectedWinnerDeviceId = finalKey;
+            const winnerDev = activeDevicesMap[finalKey] || {};
+            if (titleEl) titleEl.innerText = `🎉 الفائز: ${winnerDev.sector_name || winnerDev.sector_id || 'المدرج'} (صف ${winnerDev.seat_row || '-'} / مقعد ${winnerDev.seat_number || '-'})`;
+            if (subEl) subEl.innerText = `معرف الجهاز: ${finalKey}`;
+            const select = document.getElementById('winnerDeviceSelect');
+            if (select) select.value = finalKey;
+          } else {
+            const finalSec = SECTORS[Math.floor(Math.random() * SECTORS.length)];
+            const finalRow = Math.floor(Math.random() * 15) + 1;
+            const finalSeat = Math.floor(Math.random() * 25) + 1;
+            selectedWinnerDeviceId = `${finalSec.id}_R${finalRow}_S${finalSeat}`;
+            if (titleEl) titleEl.innerText = `🎉 الفائز بالسحب: ${finalSec.name} (صف ${finalRow} / مقعد ${finalSeat})`;
+            if (subEl) subEl.innerText = `رمز المقعد: ${selectedWinnerDeviceId}`;
+          }
+          showToast('🎉 تم اختيار المشجع الفائز بالسحب بنجاح!');
+        }
+      }, 90);
+    }
+
+    async function sendWinnerSpotlight() {
+      let targetId = selectedWinnerDeviceId || document.getElementById('winnerDeviceSelect')?.value;
+      if (!targetId) {
+        drawRandomWinner();
+        return;
+      }
+
+      const msg = document.getElementById('winnerCustomMessage')?.value?.trim() || '🎉 مبروك! لقد ربحت معنا الجائزة الكبرى 🚗🎁';
+      const devInfo = activeDevicesMap[targetId] || {};
+      const secId = devInfo.sector_id || targetId.split('_')[0] || 'ALL';
+
+      const payload = {
+        action_id: 'winner_' + Date.now(),
+        type: 'TEXT_DISPLAY',
+        timestamp: Date.now(),
+        target_type: 'SEAT',
+        target_ids: [targetId, `${secId}_R${devInfo.seat_row || 1}_S${devInfo.seat_number || 1}`],
+        payload: {
+          color_hex: '#FFD700',
+          duration_seconds: 30,
+          flash_frequency_ms: 100,
+          text_char: msg,
+          wave_delay_step_ms: 80,
+          hardware_target: 'BOTH'
+        }
+      };
+
+      try {
+        if (typeof firebase !== 'undefined' && firebase.database) {
+          await firebase.database().ref(`/matches/${MATCH_ID}/live_action`).set(payload);
+        }
+        await fetch(`${FIREBASE_DB_URL}/matches/${MATCH_ID}/live_action.json`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+        showToast('🚀 تم إرسال رسالة الجائزة والاحتفال إلى شاشة المشجع الفائز فقط!');
+      } catch (e) {
+        console.error('Winner spotlight error:', e);
       }
     }
 

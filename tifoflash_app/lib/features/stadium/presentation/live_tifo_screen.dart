@@ -12,6 +12,7 @@ import '../../../core/theme/tifo_theme.dart';
 import 'widgets/chant_lyrics_widget.dart';
 import 'widgets/goal_celebration_overlay.dart';
 import 'widgets/sponsor_popup_dialog.dart';
+import 'widgets/winner_celebration_overlay.dart';
 
 class LiveTifoScreen extends StatefulWidget {
   final StadiumSector sector;
@@ -383,6 +384,32 @@ class _LiveTifoScreenState extends State<LiveTifoScreen> with SingleTickerProvid
 
     if (isActive && currentType == TifoActionType.goalCelebration) {
       return GoalCelebrationOverlay(
+        onClose: () {
+          setState(() {
+            _syncEngine.simulateAction(const TifoActionPayload(
+              actionId: 'stop',
+              timestamp: 0,
+              type: TifoActionType.idle,
+              targetType: TargetType.all,
+              targetIds: [],
+              colorHex: '#008000',
+              flashFrequencyMs: 100,
+              durationSeconds: 0,
+              textChar: '',
+              waveDelayStepMs: 0,
+            ));
+          });
+        },
+      );
+    }
+
+    final isWinnerAction = _syncState.currentAction?.actionId.startsWith('winner_') == true;
+    if (isActive && isWinnerAction) {
+      final winnerText = _syncState.currentAction?.textChar.isNotEmpty == true
+          ? _syncState.currentAction!.textChar
+          : '🎉 مبروك! لقد ربحت معنا الجائزة الكبرى 🚗🎁';
+      return WinnerCelebrationOverlay(
+        message: winnerText,
         onClose: () {
           setState(() {
             _syncEngine.simulateAction(const TifoActionPayload(
