@@ -39,11 +39,34 @@ class ActiveMatchInfo {
       awayTeam: map['away_team']?.toString() ?? map['awayTeam']?.toString() ?? 'النصر',
       homeLogo: map['home_logo']?.toString() ?? map['homeLogo']?.toString() ?? '⚽',
       awayLogo: map['away_logo']?.toString() ?? map['awayLogo']?.toString() ?? '🏆',
-      stadiumName: map['stadium_name']?.toString() ?? map['stadiumName']?.toString() ?? 'استاد جامعة الملك سعود (الأول بارك)',
-      statusText: map['status_text']?.toString() ?? map['statusText']?.toString() ?? 'مباشر الان 🔥',
+      stadiumName: map['stadium_name']?.toString().trim() ?? map['stadiumName']?.toString().trim() ?? 'استاد جامعة الملك سعود (الأول بارك)',
+      statusText: map['status_text']?.toString().trim() ?? map['statusText']?.toString().trim() ?? 'مباشر الان 🔥',
       isLive: map['is_live'] == true || map['isLive'] == true,
     );
   }
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is ActiveMatchInfo &&
+          runtimeType == other.runtimeType &&
+          homeTeam == other.homeTeam &&
+          awayTeam == other.awayTeam &&
+          homeLogo == other.homeLogo &&
+          awayLogo == other.awayLogo &&
+          stadiumName == other.stadiumName &&
+          statusText == other.statusText &&
+          isLive == other.isLive;
+
+  @override
+  int get hashCode =>
+      homeTeam.hashCode ^
+      awayTeam.hashCode ^
+      homeLogo.hashCode ^
+      awayLogo.hashCode ^
+      stadiumName.hashCode ^
+      statusText.hashCode ^
+      isLive.hashCode;
 }
 
 class SyncEngineState {
@@ -312,12 +335,9 @@ class SyncEngineService {
         final decoded = json.decode(res.body);
         if (decoded is Map) {
           final info = ActiveMatchInfo.fromMap(decoded);
-          if (info.homeTeam != _state.activeMatch.homeTeam ||
-              info.awayTeam != _state.activeMatch.awayTeam ||
-              info.statusText != _state.activeMatch.statusText ||
-              info.stadiumName != _state.activeMatch.stadiumName) {
+          if (info != _state.activeMatch) {
             _updateState(_state.copyWith(activeMatch: info));
-            debugPrint('[SyncEngine] Synced match info: ${info.homeTeam} vs ${info.awayTeam}');
+            debugPrint('[SyncEngine] Synced match info: ${info.homeTeam} (${info.homeLogo}) vs ${info.awayTeam} (${info.awayLogo})');
           }
         }
       }

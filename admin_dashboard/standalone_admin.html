@@ -151,20 +151,40 @@
 
       <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-12 gap-4 items-end">
         <!-- Home Team -->
-        <div class="lg:col-span-3">
-          <label class="text-slate-300 font-extrabold block mb-1.5 text-xs">الفريق الأول (المستضيف):</label>
+        <div class="lg:col-span-3 space-y-1">
+          <label class="text-slate-300 font-extrabold block text-xs">الفريق الأول (المستضيف):</label>
           <div class="flex gap-2">
             <input type="text" id="matchHomeTeamInput" value="الهلال" placeholder="اسم النادي" class="flex-1 px-3.5 py-2.5 bg-slate-900 border border-slate-700 rounded-xl text-white font-black text-sm outline-none focus:border-amber-400 shadow-inner">
-            <input type="text" id="matchHomeLogoInput" value="⚽" title="رمز/شعار الفريق" placeholder="شعار" class="w-12 text-center px-1 py-2.5 bg-slate-900 border border-slate-700 rounded-xl text-white font-bold text-sm outline-none focus:border-amber-400">
+            <input type="text" id="matchHomeLogoInput" value="⚽" title="رمز أو رابط شعار الفريق" placeholder="رمز/رابط" class="w-20 text-center px-1 py-2.5 bg-slate-900 border border-slate-700 rounded-xl text-white font-bold text-sm outline-none focus:border-amber-400">
+          </div>
+          <div class="flex gap-1 text-xs opacity-75">
+            <span class="text-[10px] text-slate-500 self-center">رموز:</span>
+            <button type="button" onclick="document.getElementById('matchHomeLogoInput').value='⚽'" class="hover:scale-125 transition">⚽</button>
+            <button type="button" onclick="document.getElementById('matchHomeLogoInput').value='🔵'" class="hover:scale-125 transition">🔵</button>
+            <button type="button" onclick="document.getElementById('matchHomeLogoInput').value='🟢'" class="hover:scale-125 transition">🟢</button>
+            <button type="button" onclick="document.getElementById('matchHomeLogoInput').value='🔴'" class="hover:scale-125 transition">🔴</button>
+            <button type="button" onclick="document.getElementById('matchHomeLogoInput').value='🦅'" class="hover:scale-125 transition">🦅</button>
+            <button type="button" onclick="document.getElementById('matchHomeLogoInput').value='🦁'" class="hover:scale-125 transition">🦁</button>
+            <button type="button" onclick="document.getElementById('matchHomeLogoInput').value='👑'" class="hover:scale-125 transition">👑</button>
           </div>
         </div>
 
         <!-- Away Team -->
-        <div class="lg:col-span-3">
-          <label class="text-slate-300 font-extrabold block mb-1.5 text-xs">الفريق الثاني (الضيف):</label>
+        <div class="lg:col-span-3 space-y-1">
+          <label class="text-slate-300 font-extrabold block text-xs">الفريق الثاني (الضيف):</label>
           <div class="flex gap-2">
             <input type="text" id="matchAwayTeamInput" value="النصر" placeholder="اسم النادي" class="flex-1 px-3.5 py-2.5 bg-slate-900 border border-slate-700 rounded-xl text-white font-black text-sm outline-none focus:border-amber-400 shadow-inner">
-            <input type="text" id="matchAwayLogoInput" value="🏆" title="رمز/شعار الفريق" placeholder="شعار" class="w-12 text-center px-1 py-2.5 bg-slate-900 border border-slate-700 rounded-xl text-white font-bold text-sm outline-none focus:border-amber-400">
+            <input type="text" id="matchAwayLogoInput" value="🏆" title="رمز أو رابط شعار الفريق" placeholder="رمز/رابط" class="w-20 text-center px-1 py-2.5 bg-slate-900 border border-slate-700 rounded-xl text-white font-bold text-sm outline-none focus:border-amber-400">
+          </div>
+          <div class="flex gap-1 text-xs opacity-75">
+            <span class="text-[10px] text-slate-500 self-center">رموز:</span>
+            <button type="button" onclick="document.getElementById('matchAwayLogoInput').value='🏆'" class="hover:scale-125 transition">🏆</button>
+            <button type="button" onclick="document.getElementById('matchAwayLogoInput').value='🟡'" class="hover:scale-125 transition">🟡</button>
+            <button type="button" onclick="document.getElementById('matchAwayLogoInput').value='⚪'" class="hover:scale-125 transition">⚪</button>
+            <button type="button" onclick="document.getElementById('matchAwayLogoInput').value='🔴'" class="hover:scale-125 transition">🔴</button>
+            <button type="button" onclick="document.getElementById('matchAwayLogoInput').value='🏹'" class="hover:scale-125 transition">🏹</button>
+            <button type="button" onclick="document.getElementById('matchAwayLogoInput').value='🐅'" class="hover:scale-125 transition">🐅</button>
+            <button type="button" onclick="document.getElementById('matchAwayLogoInput').value='⚡'" class="hover:scale-125 transition">⚡</button>
           </div>
         </div>
 
@@ -4238,9 +4258,9 @@
     // ── ACTIVE MATCH & TEAMS LOGIC ──
     async function broadcastActiveMatchInfo() {
       const homeTeam = sanitizeText(document.getElementById('matchHomeTeamInput')?.value?.trim(), 50) || 'الهلال';
-      const homeLogo = sanitizeText(document.getElementById('matchHomeLogoInput')?.value?.trim(), 10) || '⚽';
+      const homeLogo = sanitizeText(document.getElementById('matchHomeLogoInput')?.value?.trim(), 500) || '⚽';
       const awayTeam = sanitizeText(document.getElementById('matchAwayTeamInput')?.value?.trim(), 50) || 'النصر';
-      const awayLogo = sanitizeText(document.getElementById('matchAwayLogoInput')?.value?.trim(), 10) || '🏆';
+      const awayLogo = sanitizeText(document.getElementById('matchAwayLogoInput')?.value?.trim(), 500) || '🏆';
       const stadiumName = sanitizeText(document.getElementById('matchStadiumInput')?.value?.trim(), 100) || 'استاد جامعة الملك سعود (الأول بارك)';
       const statusText = sanitizeText(document.getElementById('matchStatusTextInput')?.value?.trim(), 50) || 'مباشر الان 🔥';
 

@@ -513,22 +513,28 @@ class _MatchdayHubScreenState extends State<MatchdayHubScreen> {
           Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Text(activeMatch.homeLogo, style: const TextStyle(fontSize: 26)),
-              const SizedBox(width: 6),
-              Text(
-                activeMatch.homeTeam,
-                style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 16),
+              _buildLogoWidget(activeMatch.homeLogo),
+              const SizedBox(width: 8),
+              Flexible(
+                child: Text(
+                  activeMatch.homeTeam,
+                  style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 16),
+                  overflow: TextOverflow.ellipsis,
+                ),
               ),
               const Padding(
-                padding: EdgeInsets.symmetric(horizontal: 12),
+                padding: EdgeInsets.symmetric(horizontal: 10),
                 child: Text('🆚', style: TextStyle(fontSize: 18)),
               ),
-              Text(
-                activeMatch.awayTeam,
-                style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 16),
+              Flexible(
+                child: Text(
+                  activeMatch.awayTeam,
+                  style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 16),
+                  overflow: TextOverflow.ellipsis,
+                ),
               ),
-              const SizedBox(width: 6),
-              Text(activeMatch.awayLogo, style: const TextStyle(fontSize: 26)),
+              const SizedBox(width: 8),
+              _buildLogoWidget(activeMatch.awayLogo),
             ],
           ),
           const SizedBox(height: 6),
@@ -540,6 +546,26 @@ class _MatchdayHubScreenState extends State<MatchdayHubScreen> {
           ),
         ],
       ),
+    );
+  }
+
+  Widget _buildLogoWidget(String logo) {
+    final trimmed = logo.trim();
+    if (trimmed.startsWith('http://') || trimmed.startsWith('https://')) {
+      return ClipRRect(
+        borderRadius: BorderRadius.circular(8),
+        child: Image.network(
+          trimmed,
+          width: 32,
+          height: 32,
+          fit: BoxFit.contain,
+          errorBuilder: (_, __, ___) => const Text('⚽', style: TextStyle(fontSize: 24)),
+        ),
+      );
+    }
+    return Text(
+      trimmed.isNotEmpty ? trimmed : '⚽',
+      style: const TextStyle(fontSize: 26),
     );
   }
 }
