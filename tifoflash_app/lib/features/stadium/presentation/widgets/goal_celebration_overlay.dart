@@ -16,6 +16,7 @@ class _GoalCelebrationOverlayState extends State<GoalCelebrationOverlay>
   late AnimationController _pulseController;
   late Animation<double> _scaleAnimation;
   Timer? _autoCloseTimer;
+  Timer? _colorCycleTimer;
   int _colorIndex = 0;
 
   final List<Color> _partyColors = [
@@ -39,7 +40,7 @@ class _GoalCelebrationOverlayState extends State<GoalCelebrationOverlay>
     );
 
     // Color cycling timer
-    Timer.periodic(const Duration(milliseconds: 250), (timer) {
+    _colorCycleTimer = Timer.periodic(const Duration(milliseconds: 250), (timer) {
       if (mounted) {
         setState(() {
           _colorIndex = (_colorIndex + 1) % _partyColors.length;
@@ -56,6 +57,7 @@ class _GoalCelebrationOverlayState extends State<GoalCelebrationOverlay>
   void dispose() {
     _pulseController.dispose();
     _autoCloseTimer?.cancel();
+    _colorCycleTimer?.cancel();
     super.dispose();
   }
 

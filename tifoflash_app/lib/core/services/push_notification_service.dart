@@ -45,9 +45,11 @@ class PushNotificationService {
         debugPrint('[FCM Foreground] Push received: ${message.notification?.title} - ${message.notification?.body}');
       });
 
-      // 5. Get FCM Token for testing
-      String? token = await _fcm.getToken();
-      debugPrint('[FCM Token] $token');
+      // 5. Get FCM Token for testing (debug only)
+      if (kDebugMode) {
+        String? token = await _fcm.getToken();
+        debugPrint('[FCM Token] $token');
+      }
     } catch (e) {
       debugPrint('[FCM Error] Failed to initialize push notifications: $e');
     }

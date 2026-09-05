@@ -17,8 +17,8 @@ class MatchdayHubScreen extends StatefulWidget {
 class _MatchdayHubScreenState extends State<MatchdayHubScreen> {
   StadiumProfile _selectedStadium = PresetStadiumData.kingdomArena;
   late StadiumSector _selectedSector;
-  final TextEditingController _rowController = TextEditingController(text: '12');
-  final TextEditingController _seatController = TextEditingController(text: '45');
+  final TextEditingController _rowController = TextEditingController();
+  final TextEditingController _seatController = TextEditingController();
 
   final SyncEngineService _syncEngine = SyncEngineService();
   StreamSubscription<SyncEngineState>? _syncSubscription;
