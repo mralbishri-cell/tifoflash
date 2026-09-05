@@ -73,8 +73,8 @@ class PresetStadiumData {
 
   static const StadiumProfile kingdomArena = StadiumProfile(
     id: 'stadium_kingdom_arena',
-    nameAr: 'أرينا العاصمة المغطاة (Capital Indoor Arena)',
-    nameEn: 'Capital Indoor Arena (Riyadh)',
+    nameAr: 'المملكة أرينا (Kingdom Arena)',
+    nameEn: 'Kingdom Arena (Riyadh)',
     cityAr: 'الرياض',
     capacity: '30,000 مقعد مغلق بكامل الزوايا 360°',
     homeClub: 'المدرج الأزرق (Blue Stand)',
@@ -92,8 +92,8 @@ class PresetStadiumData {
 
   static const StadiumProfile alawwalPark = StadiumProfile(
     id: 'stadium_alawwal_park',
-    nameAr: 'استاد العاصمة الدولي (Capital Stadium)',
-    nameEn: 'Capital Stadium (Riyadh)',
+    nameAr: 'استاد جامعة الملك سعود (الأول بارك)',
+    nameEn: 'King Saud University Stadium (Al-Awwal Park)',
     cityAr: 'الرياض',
     capacity: '25,000 مقعد مكشوف بكامل الزوايا 360°',
     homeClub: 'المدرج الأصفر (Yellow Stand)',

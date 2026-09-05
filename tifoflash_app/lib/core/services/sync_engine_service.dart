@@ -28,7 +28,7 @@ class ActiveMatchInfo {
     this.awayTeam = 'النصر',
     this.homeLogo = '⚽',
     this.awayLogo = '🏆',
-    this.stadiumName = 'أرينا العاصمة المغطاة',
+    this.stadiumName = 'استاد جامعة الملك سعود (الأول بارك)',
     this.statusText = 'مباشر الان 🔥',
     this.isLive = true,
   });
@@ -39,7 +39,7 @@ class ActiveMatchInfo {
       awayTeam: map['away_team']?.toString() ?? map['awayTeam']?.toString() ?? 'النصر',
       homeLogo: map['home_logo']?.toString() ?? map['homeLogo']?.toString() ?? '⚽',
       awayLogo: map['away_logo']?.toString() ?? map['awayLogo']?.toString() ?? '🏆',
-      stadiumName: map['stadium_name']?.toString() ?? map['stadiumName']?.toString() ?? 'أرينا العاصمة المغطاة',
+      stadiumName: map['stadium_name']?.toString() ?? map['stadiumName']?.toString() ?? 'استاد جامعة الملك سعود (الأول بارك)',
       statusText: map['status_text']?.toString() ?? map['statusText']?.toString() ?? 'مباشر الان 🔥',
       isLive: map['is_live'] == true || map['isLive'] == true,
     );

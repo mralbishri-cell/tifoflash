@@ -75,7 +75,7 @@ export async function updateActiveMatchInfo(matchInfo) {
     away_team: matchInfo.awayTeam || "النصر",
     home_logo: matchInfo.homeLogo || "⚽",
     away_logo: matchInfo.awayLogo || "🏆",
-    stadium_name: matchInfo.stadiumName || "أرينا العاصمة المغطاة",
+    stadium_name: matchInfo.stadiumName || "استاد جامعة الملك سعود (الأول بارك)",
     status_text: matchInfo.statusText || "مباشر الان 🔥",
     is_live: matchInfo.isLive !== false,
     updated_at: Date.now()

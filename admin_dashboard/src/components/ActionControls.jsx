@@ -23,7 +23,7 @@ export function ActionControls({ onTriggerAction, selectedSectors, isBroadcastin
   // Active Match Manager State
   const [homeTeam, setHomeTeam] = useState('الهلال');
   const [awayTeam, setAwayTeam] = useState('النصر');
-  const [stadiumName, setStadiumName] = useState('أرينا العاصمة المغطاة');
+  const [stadiumName, setStadiumName] = useState('استاد جامعة الملك سعود (الأول بارك)');
   const [statusText, setStatusText] = useState('مباشر الان 🔥');
   const [matchUpdateNotice, setMatchUpdateNotice] = useState('');
 
