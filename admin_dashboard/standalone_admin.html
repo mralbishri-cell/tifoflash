@@ -129,6 +129,67 @@
       </div>
     </header>
 
+    <!-- Top Prominent Full-Width Match & Teams Control Bar (شريط إدارة الفرق والمباراة المباشرة) -->
+    <div class="glass-panel p-5 rounded-2xl border-2 border-amber-500/60 bg-gradient-to-r from-slate-950 via-slate-900 to-slate-950 shadow-2xl space-y-4">
+      <div class="flex flex-wrap items-center justify-between border-b border-slate-800 pb-3 gap-2">
+        <div class="flex items-center gap-3">
+          <div class="w-10 h-10 rounded-xl bg-amber-500/20 text-amber-400 flex items-center justify-center text-xl font-bold border border-amber-500/40">
+            ⚽
+          </div>
+          <div>
+            <h2 class="text-amber-400 font-black text-base sm:text-lg">إدارة وتعديل أسماء الأندية والمباراة في التطبيق (Match & Teams Hub)</h2>
+            <p class="text-xs text-slate-400">عدّل أسماء الفرق والشعارات والملعب واضغط حفظ ليتم تحديثها فوراً بلحظتها على جوالات جميع المشجعين</p>
+          </div>
+        </div>
+        <div class="flex items-center gap-2">
+          <span class="px-3.5 py-1.5 rounded-full bg-emerald-500/20 text-emerald-400 font-mono text-xs border border-emerald-500/30 animate-pulse font-extrabold flex items-center gap-1.5">
+            <span class="w-2 h-2 rounded-full bg-emerald-400 animate-ping"></span>
+            بث حي مباشر للملعب والجوالات
+          </span>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-12 gap-4 items-end">
+        <!-- Home Team -->
+        <div class="lg:col-span-3">
+          <label class="text-slate-300 font-extrabold block mb-1.5 text-xs">الفريق الأول (المستضيف):</label>
+          <div class="flex gap-2">
+            <input type="text" id="matchHomeTeamInput" value="الهلال" placeholder="اسم النادي" class="flex-1 px-3.5 py-2.5 bg-slate-900 border border-slate-700 rounded-xl text-white font-black text-sm outline-none focus:border-amber-400 shadow-inner">
+            <input type="text" id="matchHomeLogoInput" value="⚽" title="رمز/شعار الفريق" placeholder="شعار" class="w-12 text-center px-1 py-2.5 bg-slate-900 border border-slate-700 rounded-xl text-white font-bold text-sm outline-none focus:border-amber-400">
+          </div>
+        </div>
+
+        <!-- Away Team -->
+        <div class="lg:col-span-3">
+          <label class="text-slate-300 font-extrabold block mb-1.5 text-xs">الفريق الثاني (الضيف):</label>
+          <div class="flex gap-2">
+            <input type="text" id="matchAwayTeamInput" value="النصر" placeholder="اسم النادي" class="flex-1 px-3.5 py-2.5 bg-slate-900 border border-slate-700 rounded-xl text-white font-black text-sm outline-none focus:border-amber-400 shadow-inner">
+            <input type="text" id="matchAwayLogoInput" value="🏆" title="رمز/شعار الفريق" placeholder="شعار" class="w-12 text-center px-1 py-2.5 bg-slate-900 border border-slate-700 rounded-xl text-white font-bold text-sm outline-none focus:border-amber-400">
+          </div>
+        </div>
+
+        <!-- Stadium Name -->
+        <div class="lg:col-span-3">
+          <label class="text-slate-300 font-extrabold block mb-1.5 text-xs">اسم الملعب (Stadium):</label>
+          <input type="text" id="matchStadiumInput" value="استاد جامعة الملك سعود (الأول بارك)" placeholder="اسم الاستاد الرسمي" class="w-full px-3.5 py-2.5 bg-slate-900 border border-slate-700 rounded-xl text-white text-xs outline-none focus:border-amber-400 shadow-inner">
+        </div>
+
+        <!-- Status & Save Button -->
+        <div class="lg:col-span-3 space-y-2">
+          <label class="text-slate-300 font-extrabold block mb-1.5 text-xs">حالة المباراة (Match Status):</label>
+          <div class="flex flex-col sm:flex-row gap-2">
+            <input type="text" id="matchStatusTextInput" value="مباشر الان 🔥" placeholder="الحالة (مباشر الان / الشوط الأول)" class="flex-1 px-3 py-2 bg-slate-900 border border-slate-700 rounded-xl text-white text-xs outline-none focus:border-amber-400 shadow-inner">
+            <button type="button" onclick="broadcastActiveMatchInfo()" class="px-5 py-2.5 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-black font-black text-xs rounded-xl shadow-lg shadow-amber-500/30 transition flex items-center justify-center gap-1.5 whitespace-nowrap hover:scale-105 active:scale-95">
+              <span>💾</span>
+              <span>حفظ وبث للتطبيق فوراً</span>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div id="matchInfoSyncNotice" class="text-xs text-emerald-400 font-bold hidden bg-emerald-950/90 border border-emerald-500/40 p-3 rounded-xl text-center transition"></div>
+    </div>
+
     <!-- Main Content Grid -->
     <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
       <!-- Sector Matrix & Trigger Controls (7 Cols) -->
@@ -470,52 +531,6 @@
 
       <!-- Left Control Center Sidebar (5 Cols): Push Notifications + Show Planner + Mic Sync + Presets + Devices + Log Stream -->
       <div class="lg:col-span-5 space-y-6 flex flex-col">
-
-        <!-- Live Match & Teams Manager (إدارة وتغيير أسماء الفرق والمباراة الحية) -->
-        <div class="glass-panel p-5 rounded-2xl border border-amber-500/40 space-y-4 text-xs shadow-xl shadow-amber-500/5">
-          <div class="flex flex-wrap items-center justify-between border-b border-slate-900 pb-2.5 gap-2">
-            <span class="text-amber-400 font-extrabold flex items-center gap-2 text-sm">
-              <span>⚽</span> إدارة أسماء الفرق والمباراة في التطبيق:
-            </span>
-            <span class="px-2.5 py-0.5 rounded-full bg-amber-500/20 text-amber-300 font-mono text-[10px] border border-amber-500/30 font-bold">بث حي لحظي ⚡</span>
-          </div>
-
-          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            <div>
-              <label class="text-slate-300 font-bold block mb-1">الفريق الأول (المستضيف):</label>
-              <div class="flex gap-1.5">
-                <input type="text" id="matchHomeTeamInput" value="الهلال" placeholder="اسم الفريق" class="flex-1 px-3 py-2 bg-slate-900 border border-slate-700 rounded-xl text-white font-bold text-xs outline-none focus:border-amber-400">
-                <input type="text" id="matchHomeLogoInput" value="⚽" title="شعار/أيقونة الفريق" placeholder="رمز" class="w-12 text-center px-1.5 py-2 bg-slate-900 border border-slate-700 rounded-xl text-white font-bold text-xs outline-none focus:border-amber-400">
-              </div>
-            </div>
-
-            <div>
-              <label class="text-slate-300 font-bold block mb-1">الفريق الثاني (الضيف):</label>
-              <div class="flex gap-1.5">
-                <input type="text" id="matchAwayTeamInput" value="النصر" placeholder="اسم الفريق" class="flex-1 px-3 py-2 bg-slate-900 border border-slate-700 rounded-xl text-white font-bold text-xs outline-none focus:border-amber-400">
-                <input type="text" id="matchAwayLogoInput" value="🏆" title="شعار/أيقونة الفريق" placeholder="رمز" class="w-12 text-center px-1.5 py-2 bg-slate-900 border border-slate-700 rounded-xl text-white font-bold text-xs outline-none focus:border-amber-400">
-              </div>
-            </div>
-
-            <div class="sm:col-span-2">
-              <label class="text-slate-300 font-bold block mb-1">اسم الملعب (Stadium):</label>
-              <input type="text" id="matchStadiumInput" value="استاد جامعة الملك سعود (الأول بارك)" placeholder="اسم الملعب الرسمي" class="w-full px-3 py-2 bg-slate-900 border border-slate-700 rounded-xl text-white text-xs outline-none focus:border-amber-400">
-            </div>
-
-            <div class="sm:col-span-2">
-              <label class="text-slate-300 font-bold block mb-1">نص حالة المباراة (Match Status):</label>
-              <div class="flex flex-col sm:flex-row gap-2">
-                <input type="text" id="matchStatusTextInput" value="مباشر الان 🔥" placeholder="مثال: مباشر الان 🔥 / الشوط الأول" class="flex-1 px-3 py-2 bg-slate-900 border border-slate-700 rounded-xl text-white text-xs outline-none focus:border-amber-400">
-                <button type="button" onclick="broadcastActiveMatchInfo()" class="px-4 py-2.5 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-black font-black text-xs rounded-xl shadow-lg shadow-amber-500/20 transition flex items-center justify-center gap-1.5">
-                  <span>💾</span>
-                  <span>حفظ وبث للتطبيق فوراً</span>
-                </button>
-              </div>
-            </div>
-          </div>
-          
-          <div id="matchInfoSyncNotice" class="text-[11px] text-emerald-400 font-bold hidden bg-emerald-950/60 border border-emerald-500/30 p-2.5 rounded-xl text-center transition"></div>
-        </div>
 
         <!-- Instant Push Notification Sender Bar -->
         <div class="glass-panel p-5 rounded-2xl border border-red-500/30 space-y-3 text-xs">
