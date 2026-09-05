@@ -129,10 +129,34 @@ function startDispatcher(certPath) {
       };
 
       try {
+        // 1. Send to topic all_fans
         const response = await messaging.send(message);
         const time = new Date().toLocaleTimeString('ar-SA');
-        console.log(`🚀 [${time}] تم إرسال وبث الإشعار بنجاح لشاشات القفل لجميع هواتف (Apple و Android)!`);
-        console.log(`   معرف الرسالة في خوادم الإشعارات: ${response}`);
+        console.log(`🚀 [${time}] تم إرسال وبث الإشعار بنجاح لشاشات القفل عبر موضوع all_fans!`);
+        console.log(`   معرف الرسالة: ${response}`);
+
+        // 2. Also send directly to all registered individual device tokens for zero-delay instant lockscreen arrival
+        try {
+          const tokensSnap = await db.ref('/matches/match_2026_final/device_tokens').once('value');
+          const tokensData = tokensSnap.val();
+          if (tokensData) {
+            const rawTokens = Object.values(tokensData).map(v => v.token).filter(Boolean);
+            const uniqueTokens = [...new Set(rawTokens)];
+            if (uniqueTokens.length > 0) {
+              const directMessage = {
+                tokens: uniqueTokens,
+                notification: message.notification,
+                android: message.android,
+                apns: message.apns,
+                data: message.data,
+              };
+              const directRes = await messaging.sendEachForMulticast(directMessage);
+              console.log(`📱 تم تسليم الإشعار المباشر فوراً لـ ${directRes.successCount} هاتف متصل حياً (بدون أي تأخير في موضوع الفايربيس)!`);
+            }
+          }
+        } catch (e) {
+          console.warn('Direct token multicast note:', e.message);
+        }
 
         // Mark as sent and remove from queue
         await queueRef.child(key).remove();

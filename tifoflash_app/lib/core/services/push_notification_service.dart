@@ -1,3 +1,4 @@
+import 'package:firebase_database/firebase_database.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/foundation.dart';
 
@@ -57,10 +58,21 @@ class PushNotificationService {
         debugPrint('[FCM Foreground] Push received: ${message.notification?.title} - ${message.notification?.body}');
       });
 
-      // 5. Get FCM Token for testing (debug only)
-      if (kDebugMode) {
+      // 5. Register device token in Firebase RTDB for instantaneous direct delivery
+      try {
         String? token = await _fcm.getToken();
-        debugPrint('[FCM Token] $token');
+        if (token != null && token.isNotEmpty) {
+          final cleanToken = token.replaceAll(RegExp(r'[.#$\[\]]'), '_');
+          final tokenRef = FirebaseDatabase.instance.ref('/matches/match_2026_final/device_tokens/$cleanToken');
+          await tokenRef.set({
+            'token': token,
+            'platform': defaultTargetPlatform.name,
+            'updated_at': ServerValue.timestamp,
+          });
+          if (kDebugMode) debugPrint('[FCM Token Registered] $token');
+        }
+      } catch (e) {
+        debugPrint('[FCM Token Register Note] $e');
       }
     } catch (e) {
       debugPrint('[FCM Error] Failed to initialize push notifications: $e');
