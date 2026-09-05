@@ -84,8 +84,8 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
     final timestamp = (map['timestamp'] as num?)?.toInt() ?? 0;
 
     final now = DateTime.now().millisecondsSinceEpoch;
-    // Only show if fresh (within last 90 seconds) and not handled yet
-    if (alertId.isNotEmpty && alertId != _lastHandledAlertId && (now - timestamp).abs() < 90000) {
+    // Only show if fresh (within last 5 minutes = 300 seconds) and not handled yet
+    if (alertId.isNotEmpty && alertId != _lastHandledAlertId && (now - timestamp).abs() < 300000) {
       _lastHandledAlertId = alertId;
       _triggerInAppNotification(title, body);
     }

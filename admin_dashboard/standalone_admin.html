@@ -137,7 +137,7 @@
             ⚽
           </div>
           <div>
-            <h2 class="text-amber-400 font-black text-base sm:text-lg">إدارة وتعديل أسماء الأندية والمباراة في التطبيق (Match & Teams Hub)</h2>
+            <h2 id="matchHubHeaderTitle" class="text-amber-400 font-black text-base sm:text-lg">إدارة وتعديل أسماء الأندية والمباراة في التطبيق (Match & Teams Hub)</h2>
             <p class="text-xs text-slate-400">عدّل أسماء الفرق والشعارات والملعب واضغط حفظ ليتم تحديثها فوراً بلحظتها على جوالات جميع المشجعين</p>
           </div>
         </div>
@@ -163,16 +163,18 @@
       </div>
 
       <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-12 gap-4 items-end">
-        <!-- Home Team -->
+        <!-- Home Team / Event Title -->
         <div class="lg:col-span-3 space-y-1">
-          <label class="text-slate-300 font-extrabold block text-xs">الفريق الأول (المستضيف):</label>
+          <label id="matchHomeTeamLabel" class="text-slate-300 font-extrabold block text-xs">الفريق الأول (المستضيف):</label>
           <div class="flex gap-2">
-            <input type="text" id="matchHomeTeamInput" value="الهلال" placeholder="اسم النادي" class="flex-1 px-3.5 py-2.5 bg-slate-900 border border-slate-700 rounded-xl text-white font-black text-sm outline-none focus:border-amber-400 shadow-inner">
+            <input type="text" id="matchHomeTeamInput" value="الهلال" placeholder="اسم النادي أو عنوان الفعالية" class="flex-1 px-3.5 py-2.5 bg-slate-900 border border-slate-700 rounded-xl text-white font-black text-sm outline-none focus:border-amber-400 shadow-inner">
             <input type="text" id="matchHomeLogoInput" value="⚽" title="رمز أو رابط شعار الفريق" placeholder="رمز/رابط" class="w-20 text-center px-1 py-2.5 bg-slate-900 border border-slate-700 rounded-xl text-white font-bold text-sm outline-none focus:border-amber-400">
           </div>
           <div class="flex gap-1 text-xs opacity-75">
             <span class="text-[10px] text-slate-500 self-center">رموز:</span>
             <button type="button" onclick="document.getElementById('matchHomeLogoInput').value='⚽'" class="hover:scale-125 transition">⚽</button>
+            <button type="button" onclick="document.getElementById('matchHomeLogoInput').value='🎵'" class="hover:scale-125 transition">🎵</button>
+            <button type="button" onclick="document.getElementById('matchHomeLogoInput').value='🇸🇦'" class="hover:scale-125 transition">🇸🇦</button>
             <button type="button" onclick="document.getElementById('matchHomeLogoInput').value='🔵'" class="hover:scale-125 transition">🔵</button>
             <button type="button" onclick="document.getElementById('matchHomeLogoInput').value='🟢'" class="hover:scale-125 transition">🟢</button>
             <button type="button" onclick="document.getElementById('matchHomeLogoInput').value='🔴'" class="hover:scale-125 transition">🔴</button>
@@ -182,14 +184,17 @@
           </div>
         </div>
 
-        <!-- Away Team -->
-        <div class="lg:col-span-3 space-y-1">
-          <label class="text-slate-300 font-extrabold block text-xs">الفريق الثاني (الضيف):</label>
-          <div class="flex gap-2">
-            <input type="text" id="matchAwayTeamInput" value="النصر" placeholder="اسم النادي" class="flex-1 px-3.5 py-2.5 bg-slate-900 border border-slate-700 rounded-xl text-white font-black text-sm outline-none focus:border-amber-400 shadow-inner">
+        <!-- Away Team (Opponent) -->
+        <div id="matchAwayTeamContainer" class="lg:col-span-3 space-y-1">
+          <label id="matchAwayTeamLabel" class="text-slate-300 font-extrabold block text-xs">الفريق الثاني (الضيف):</label>
+          <div id="concertModeBadge" class="hidden p-2.5 bg-cyan-950/80 border border-cyan-500/40 rounded-xl text-cyan-300 text-xs font-bold text-center">
+            🎪 فعالية أحادية (حفل / مهرجان بدون فريق منافس)
+          </div>
+          <div id="matchAwayInputsRow" class="flex gap-2">
+            <input type="text" id="matchAwayTeamInput" value="النصر" placeholder="اسم النادي (اتركه فارغاً للحفلات)" class="flex-1 px-3.5 py-2.5 bg-slate-900 border border-slate-700 rounded-xl text-white font-black text-sm outline-none focus:border-amber-400 shadow-inner">
             <input type="text" id="matchAwayLogoInput" value="🏆" title="رمز أو رابط شعار الفريق" placeholder="رمز/رابط" class="w-20 text-center px-1 py-2.5 bg-slate-900 border border-slate-700 rounded-xl text-white font-bold text-sm outline-none focus:border-amber-400">
           </div>
-          <div class="flex gap-1 text-xs opacity-75">
+          <div id="matchAwayEmojisRow" class="flex gap-1 text-xs opacity-75">
             <span class="text-[10px] text-slate-500 self-center">رموز:</span>
             <button type="button" onclick="document.getElementById('matchAwayLogoInput').value='🏆'" class="hover:scale-125 transition">🏆</button>
             <button type="button" onclick="document.getElementById('matchAwayLogoInput').value='🟡'" class="hover:scale-125 transition">🟡</button>
@@ -580,7 +585,13 @@
                 ⚽ إشعار الهدف الفوري
               </button>
               <button type="button" onclick="sendQuickPushNotification('TIFO')" class="px-3 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-extrabold text-xs shadow-md flex items-center gap-1 transition">
-                🇸🇦 إشعار بداية التيفو
+                ⚡ إشعار بداية التيفو
+              </button>
+              <button type="button" onclick="sendQuickPushNotification('CONCERT')" class="px-3 py-1.5 rounded-xl bg-purple-600 hover:bg-purple-500 text-white font-extrabold text-xs shadow-md flex items-center gap-1 transition">
+                🎵 إشعار الحفل الغنائي
+              </button>
+              <button type="button" onclick="sendQuickPushNotification('NATIONAL')" class="px-3 py-1.5 rounded-xl bg-green-700 hover:bg-green-600 text-white font-extrabold text-xs shadow-md flex items-center gap-1 transition">
+                🇸🇦 إشعار الاحتفالية الوطنية
               </button>
               <button type="button" onclick="sendQuickPushNotification('WAVE')" class="px-3 py-1.5 rounded-xl bg-cyan-600 hover:bg-cyan-500 text-white font-extrabold text-xs shadow-md flex items-center gap-1 transition">
                 🌊 إشعار الموجة
@@ -4269,7 +4280,36 @@
     });
 
     // ── ACTIVE MATCH & EVENT PRESETS LOGIC ──
-    function setEventModePreset(mode) {
+    function _updateEventModeUI(awayTeam) {
+      const isSoloEvent = (awayTeam === '' || awayTeam === null || awayTeam === undefined || (typeof awayTeam === 'string' && awayTeam.trim() === ''));
+      const homeLabel = document.getElementById('matchHomeTeamLabel');
+      const awayInput = document.getElementById('matchAwayTeamInput');
+      const awayLogoInput = document.getElementById('matchAwayLogoInput');
+      const awayInputsRow = document.getElementById('matchAwayInputsRow');
+      const awayEmojisRow = document.getElementById('matchAwayEmojisRow');
+      const soloBadge = document.getElementById('concertModeBadge');
+      const headerTitle = document.getElementById('matchHubHeaderTitle');
+
+      if (isSoloEvent) {
+        if (homeLabel) homeLabel.textContent = '🎤 اسم الحفل أو الفعالية (Event Title):';
+        if (awayInput) { awayInput.disabled = true; awayInput.value = ''; }
+        if (awayLogoInput) { awayLogoInput.disabled = true; awayLogoInput.value = ''; }
+        if (awayInputsRow) awayInputsRow.classList.add('hidden');
+        if (awayEmojisRow) awayEmojisRow.classList.add('hidden');
+        if (soloBadge) soloBadge.classList.remove('hidden');
+        if (headerTitle) headerTitle.textContent = 'إدارة الحفل الغنائي والفعالية المباشرة (Live Event & Concert Hub)';
+      } else {
+        if (homeLabel) homeLabel.textContent = 'الفريق الأول (المستضيف):';
+        if (awayInput) { awayInput.disabled = false; if (!awayInput.value) awayInput.value = 'النصر'; }
+        if (awayLogoInput) { awayLogoInput.disabled = false; if (!awayLogoInput.value) awayLogoInput.value = '🏆'; }
+        if (awayInputsRow) awayInputsRow.classList.remove('hidden');
+        if (awayEmojisRow) awayEmojisRow.classList.remove('hidden');
+        if (soloBadge) soloBadge.classList.add('hidden');
+        if (headerTitle) headerTitle.textContent = 'إدارة وتعديل أسماء الأندية والمباراة في التطبيق (Match & Teams Hub)';
+      }
+    }
+
+    async function setEventModePreset(mode) {
       if (mode === 'CONCERT') {
         document.getElementById('matchHomeTeamInput').value = 'حفل موسم الرياض الغنائي 🎵';
         document.getElementById('matchHomeLogoInput').value = '🎵';
@@ -4278,6 +4318,7 @@
         document.getElementById('matchStadiumInput').value = 'مسرح محمد عبده أرينا (بوليفارد سيتي)';
         document.getElementById('matchStatusTextInput').value = 'العرض الضوئي المباشر نشط الآن ⚡';
         switchStadium('open_hall');
+        _updateEventModeUI('');
       } else if (mode === 'NATIONAL') {
         document.getElementById('matchHomeTeamInput').value = 'احتفالية اليوم الوطني السعودي 🇸🇦';
         document.getElementById('matchHomeLogoInput').value = '🇸🇦';
@@ -4286,6 +4327,7 @@
         document.getElementById('matchStadiumInput').value = 'ساحة الاحتفالات والميدان الكبير';
         document.getElementById('matchStatusTextInput').value = 'عرض الأضواء والراية الخضراء 🇸🇦';
         switchStadium('outdoor_plaza');
+        _updateEventModeUI('');
       } else {
         document.getElementById('matchHomeTeamInput').value = 'الهلال';
         document.getElementById('matchHomeLogoInput').value = '⚽';
@@ -4294,8 +4336,10 @@
         document.getElementById('matchStadiumInput').value = 'استاد جامعة الملك سعود (الأول بارك)';
         document.getElementById('matchStatusTextInput').value = 'مباشر الان 🔥';
         switchStadium('alawwal_park');
+        _updateEventModeUI('النصر');
       }
-      showToast('🎭 تم تبديل نمط الفعالية — اضغط حفظ للبث للتطبيق!');
+      // Broadcast immediately to Firebase so fan phones switch mode instantly!
+      await broadcastActiveMatchInfo();
     }
 
     async function broadcastActiveMatchInfo() {
@@ -4318,28 +4362,49 @@
       };
 
       try {
+        // 1. Non-blocking WebSocket write (fire-and-forget, will never hang execution)
         if (typeof firebase !== 'undefined' && firebase.database) {
           try {
-            await firebase.database().ref(`/matches/${MATCH_ID}/active_info`).set(matchData);
+            firebase.database().ref(`/matches/${MATCH_ID}/active_info`).set(matchData).catch(e => console.warn('Firebase RTDB write note:', e));
           } catch (e) {
             console.warn('Firebase RTDB direct write error:', e);
           }
         }
         
+        // 2. Direct HTTP REST write (reliable fallback)
         let authSuffix = authIdToken ? `?auth=${authIdToken}` : '';
-        await fetch(`${FIREBASE_DB_URL}/matches/${MATCH_ID}/active_info.json${authSuffix}`, {
+        let res = await fetch(`${FIREBASE_DB_URL}/matches/${MATCH_ID}/active_info.json${authSuffix}`, {
           method: 'PUT',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(matchData)
         });
 
+        if (!res.ok && authSuffix) {
+          res = await fetch(`${FIREBASE_DB_URL}/matches/${MATCH_ID}/active_info.json`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(matchData)
+          });
+        }
+
         const noticeEl = document.getElementById('matchInfoSyncNotice');
         if (noticeEl) {
-          noticeEl.textContent = `✨ تم حفظ وبث الفرق: (${homeTeam} ${homeLogo} ضد ${awayTeam} ${awayLogo}) في تطبيق الجوال فوراً!`;
+          if (!awayTeam) {
+            noticeEl.textContent = `✨ تم حفظ وبث الفعالية: (${homeTeam} ${homeLogo}) في تطبيق الجوال كحفل / مهرجان حي!`;
+          } else {
+            noticeEl.textContent = `✨ تم حفظ وبث الفرق: (${homeTeam} ${homeLogo} ضد ${awayTeam} ${awayLogo}) في تطبيق الجوال فوراً!`;
+          }
           noticeEl.classList.remove('hidden');
           setTimeout(() => noticeEl.classList.add('hidden'), 6000);
         }
-        showToast(`✅ تم تحديث بيانات المباراة والفرق في تطبيق المشجعين: ${homeTeam} ضد ${awayTeam}`);
+
+        _updateEventModeUI(awayTeam);
+
+        if (!awayTeam) {
+          showToast(`✅ تم تحديث ونشر الفعالية في تطبيق المشجعين: ${homeTeam}`);
+        } else {
+          showToast(`✅ تم تحديث بيانات المباراة والفرق في تطبيق المشجعين: ${homeTeam} ضد ${awayTeam}`);
+        }
       } catch (err) {
         console.error('Error broadcasting match info:', err);
         showToast('⚠️ حدث خطأ أثناء تحديث بيانات المباراة');
@@ -4352,24 +4417,25 @@
           firebase.database().ref(`/matches/${MATCH_ID}/active_info`).on('value', (snap) => {
             const data = snap.val();
             if (data) {
-              if (data.home_team && document.getElementById('matchHomeTeamInput')) {
+              if (data.home_team !== undefined && document.getElementById('matchHomeTeamInput')) {
                 document.getElementById('matchHomeTeamInput').value = data.home_team;
               }
-              if (data.home_logo && document.getElementById('matchHomeLogoInput')) {
+              if (data.home_logo !== undefined && document.getElementById('matchHomeLogoInput')) {
                 document.getElementById('matchHomeLogoInput').value = data.home_logo;
               }
-              if (data.away_team && document.getElementById('matchAwayTeamInput')) {
-                document.getElementById('matchAwayTeamInput').value = data.away_team;
+              if (data.away_team !== undefined && document.getElementById('matchAwayTeamInput')) {
+                document.getElementById('matchAwayTeamInput').value = data.away_team || '';
               }
-              if (data.away_logo && document.getElementById('matchAwayLogoInput')) {
-                document.getElementById('matchAwayLogoInput').value = data.away_logo;
+              if (data.away_logo !== undefined && document.getElementById('matchAwayLogoInput')) {
+                document.getElementById('matchAwayLogoInput').value = data.away_logo || '';
               }
-              if (data.stadium_name && document.getElementById('matchStadiumInput')) {
+              if (data.stadium_name !== undefined && document.getElementById('matchStadiumInput')) {
                 document.getElementById('matchStadiumInput').value = data.stadium_name;
               }
-              if (data.status_text && document.getElementById('matchStatusTextInput')) {
+              if (data.status_text !== undefined && document.getElementById('matchStatusTextInput')) {
                 document.getElementById('matchStatusTextInput').value = data.status_text;
               }
+              _updateEventModeUI(data.away_team);
             }
           });
         } catch (e) {
@@ -4385,12 +4451,13 @@
         if (res.ok) {
           const data = await res.json();
           if (data) {
-            if (data.home_team && document.getElementById('matchHomeTeamInput')) document.getElementById('matchHomeTeamInput').value = data.home_team;
-            if (data.home_logo && document.getElementById('matchHomeLogoInput')) document.getElementById('matchHomeLogoInput').value = data.home_logo;
-            if (data.away_team && document.getElementById('matchAwayTeamInput')) document.getElementById('matchAwayTeamInput').value = data.away_team;
-            if (data.away_logo && document.getElementById('matchAwayLogoInput')) document.getElementById('matchAwayLogoInput').value = data.away_logo;
-            if (data.stadium_name && document.getElementById('matchStadiumInput')) document.getElementById('matchStadiumInput').value = data.stadium_name;
-            if (data.status_text && document.getElementById('matchStatusTextInput')) document.getElementById('matchStatusTextInput').value = data.status_text;
+            if (data.home_team !== undefined && document.getElementById('matchHomeTeamInput')) document.getElementById('matchHomeTeamInput').value = data.home_team;
+            if (data.home_logo !== undefined && document.getElementById('matchHomeLogoInput')) document.getElementById('matchHomeLogoInput').value = data.home_logo;
+            if (data.away_team !== undefined && document.getElementById('matchAwayTeamInput')) document.getElementById('matchAwayTeamInput').value = data.away_team || '';
+            if (data.away_logo !== undefined && document.getElementById('matchAwayLogoInput')) document.getElementById('matchAwayLogoInput').value = data.away_logo || '';
+            if (data.stadium_name !== undefined && document.getElementById('matchStadiumInput')) document.getElementById('matchStadiumInput').value = data.stadium_name;
+            if (data.status_text !== undefined && document.getElementById('matchStatusTextInput')) document.getElementById('matchStatusTextInput').value = data.status_text;
+            _updateEventModeUI(data.away_team);
           }
         }
       } catch (e) {}
@@ -4407,16 +4474,16 @@
       };
 
       try {
-        // 1. Direct Firebase SDK write for WebSocket instant propagation
+        // 1. Direct Firebase SDK write for WebSocket instant propagation (non-blocking)
         if (typeof firebase !== 'undefined' && firebase.database) {
           try {
-            await firebase.database().ref(`/matches/${MATCH_ID}/live_alert`).set(alertPayload);
-            await firebase.database().ref(`/matches/${MATCH_ID}/push_queue`).push({
+            firebase.database().ref(`/matches/${MATCH_ID}/live_alert`).set(alertPayload).catch(e => console.warn('Alert RTDB write note:', e));
+            firebase.database().ref(`/matches/${MATCH_ID}/push_queue`).push({
               title: title,
               body: body,
               type: type,
               timestamp: Date.now()
-            });
+            }).catch(e => console.warn('Alert push queue note:', e));
           } catch (e) {
             console.warn('Firebase RTDB alert write note:', e);
           }
@@ -4424,15 +4491,24 @@
 
         // 2. Direct REST API write as bulletproof fallback
         let authSuffix = authIdToken ? `?auth=${authIdToken}` : '';
-        await fetch(`${FIREBASE_DB_URL}/matches/${MATCH_ID}/live_alert.json${authSuffix}`, {
+        let res = await fetch(`${FIREBASE_DB_URL}/matches/${MATCH_ID}/live_alert.json${authSuffix}`, {
           method: 'PUT',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(alertPayload)
         });
 
+        if (!res.ok && authSuffix) {
+          res = await fetch(`${FIREBASE_DB_URL}/matches/${MATCH_ID}/live_alert.json`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(alertPayload)
+          });
+        }
+
         showToast(`🔔 تم إرسال وبث الإشعار لجوالات المشجعين فوراً: ${title}`);
       } catch (err) {
         console.error('Error broadcasting stadium alert:', err);
+        showToast('⚠️ حدث خطأ أثناء إرسال الإشعار');
       }
     }
 
@@ -4448,6 +4524,14 @@
         title = '🇸🇦 انطلاق التيفو الملون في الملعب الآن!';
         body = 'ارفع جوالك فوراً للمشاركة في لوحة التيفو الملونة مع المشجعين ⚡';
         triggerAction('STROBE');
+      } else if (type === 'CONCERT') {
+        title = '🎵 انطلاق الحفل الغنائي المباشر الآن!';
+        body = 'ارفع جوالك فوراً وافتحه لتتزامن أضواء الشاشة والفلاش مع موسيقى وأغاني الحفل ⚡';
+        triggerAction('STROBE');
+      } else if (type === 'NATIONAL') {
+        title = '🇸🇦 احتفالية الراية الخضراء بدأت!';
+        body = 'شارك الآن مع الجماهير بأضواء وفلاشات اللون الأخضر والرموز الوطنية 🇸🇦';
+        triggerAction('SOLID');
       } else if (type === 'WAVE') {
         title = '🌊 موجة الملعب المتتابعة بدأت!';
         body = 'شارك في موجة الضوء المتتابعة عبر مدرجات الملعب الآن 🏟️';

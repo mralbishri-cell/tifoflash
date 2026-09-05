@@ -72,9 +72,9 @@ export async function updateActiveMatchInfo(matchInfo) {
   const targetNode = `/matches/${matchId}/active_info`;
   const record = {
     home_team: matchInfo.homeTeam || "الهلال",
-    away_team: matchInfo.awayTeam || "النصر",
+    away_team: matchInfo.awayTeam !== undefined ? matchInfo.awayTeam : "النصر",
     home_logo: matchInfo.homeLogo || "⚽",
-    away_logo: matchInfo.awayLogo || "🏆",
+    away_logo: matchInfo.awayLogo !== undefined ? matchInfo.awayLogo : "🏆",
     stadium_name: matchInfo.stadiumName || "استاد جامعة الملك سعود (الأول بارك)",
     status_text: matchInfo.statusText || "مباشر الان 🔥",
     is_live: matchInfo.isLive !== false,

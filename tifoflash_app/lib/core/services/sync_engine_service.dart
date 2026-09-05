@@ -158,6 +158,7 @@ class SyncEngineService {
   DatabaseReference? _offsetRef;
   StreamSubscription<DatabaseEvent>? _actionSubscription;
   StreamSubscription<DatabaseEvent>? _offsetSubscription;
+  StreamSubscription<DatabaseEvent>? _activeInfoSubscription;
   Timer? _actionDurationTimer;
   Timer? _waveInitialTimer;
   Timer? _waveCycleTimer;
@@ -307,7 +308,8 @@ class SyncEngineService {
       });
 
       // Active Match Info Listener (Synced with Admin Dashboard)
-      db.ref('/matches/$_matchId/active_info').onValue.listen((event) {
+      _activeInfoSubscription?.cancel();
+      _activeInfoSubscription = db.ref('/matches/$_matchId/active_info').onValue.listen((event) {
         if (event.snapshot.value != null && event.snapshot.value is Map) {
           try {
             final matchMap = Map<dynamic, dynamic>.from(event.snapshot.value as Map);
@@ -779,6 +781,7 @@ class SyncEngineService {
     _httpPollTimer?.cancel();
     _actionSubscription?.cancel();
     _offsetSubscription?.cancel();
+    _activeInfoSubscription?.cancel();
     _actionDurationTimer?.cancel();
     _waveInitialTimer?.cancel();
     _waveCycleTimer?.cancel();
