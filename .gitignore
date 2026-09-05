@@ -70,6 +70,7 @@ google-services.json
 GoogleService-Info.plist
 firebase_app_id_file.json
 **/serviceAccountKey*.json
+*fcm_credentials*.js
 firebase-debug.log
 firebase-debug.*.log
 .firebaserc
