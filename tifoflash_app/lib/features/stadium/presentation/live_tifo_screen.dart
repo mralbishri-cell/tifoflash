@@ -808,25 +808,6 @@ class _LiveTifoScreenState extends State<LiveTifoScreen> with SingleTickerProvid
                 ),
               ),
             ),
-            const SizedBox(height: 20),
-            ElevatedButton.icon(
-              onPressed: _startDemoSimulation,
-              icon: const Icon(Icons.play_circle_fill, color: Colors.black, size: 20),
-              label: const Text(
-                '✨ تشغيل العرض التجريبي (Start Demo Show)',
-                style: TextStyle(
-                  color: Colors.black,
-                  fontWeight: FontWeight.w900,
-                  fontSize: 13,
-                ),
-              ),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFF10B981),
-                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
-                elevation: 4,
-              ),
-            ),
           ],
         );
       },
