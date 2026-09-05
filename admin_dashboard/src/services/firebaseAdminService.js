@@ -1,5 +1,5 @@
 import { initializeApp } from 'firebase/app';
-import { getDatabase, ref, set } from 'firebase/database';
+import { getDatabase, ref, set, push } from 'firebase/database';
 
 // Firebase Config linked to user's live Realtime Database
 const firebaseConfig = {
@@ -94,4 +94,32 @@ export async function updateActiveMatchInfo(matchInfo) {
   }
 
   return { success: true, mode: 'SIMULATION', record };
+}
+
+/**
+ * Broadcast Stadium Live In-App Alert and push queue
+ */
+export async function broadcastStadiumLiveAlert(title, body, type = 'ALERT') {
+  const matchId = MATCH_ID;
+  const alertRecord = {
+    id: 'alert_' + Date.now(),
+    title,
+    body,
+    type,
+    timestamp: Date.now()
+  };
+
+  if (db) {
+    try {
+      const alertRef = ref(db, `/matches/${matchId}/live_alert`);
+      await set(alertRef, alertRecord);
+      const queueRef = ref(db, `/matches/${matchId}/push_queue`);
+      await push(queueRef, { title, body, type, timestamp: Date.now() });
+      return { success: true, mode: 'FIREBASE_LIVE', alertRecord };
+    } catch (err) {
+      console.error("[AdminService] Live Alert Error:", err);
+    }
+  }
+
+  return { success: true, mode: 'SIMULATION', alertRecord };
 }

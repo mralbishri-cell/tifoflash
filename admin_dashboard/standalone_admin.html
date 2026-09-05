@@ -4319,7 +4319,46 @@
       } catch (e) {}
     })();
 
-    // ── INSTANT PUSH NOTIFICATION LOGIC ──
+    // ── INSTANT PUSH & STADIUM LIVE ALERT LOGIC ──
+    async function broadcastStadiumLiveAlert(title, body, type) {
+      const alertPayload = {
+        id: 'alert_' + Date.now(),
+        title: title,
+        body: body,
+        type: type,
+        timestamp: Date.now()
+      };
+
+      try {
+        // 1. Direct Firebase SDK write for WebSocket instant propagation
+        if (typeof firebase !== 'undefined' && firebase.database) {
+          try {
+            await firebase.database().ref(`/matches/${MATCH_ID}/live_alert`).set(alertPayload);
+            await firebase.database().ref(`/matches/${MATCH_ID}/push_queue`).push({
+              title: title,
+              body: body,
+              type: type,
+              timestamp: Date.now()
+            });
+          } catch (e) {
+            console.warn('Firebase RTDB alert write note:', e);
+          }
+        }
+
+        // 2. Direct REST API write as bulletproof fallback
+        let authSuffix = authIdToken ? `?auth=${authIdToken}` : '';
+        await fetch(`${FIREBASE_DB_URL}/matches/${MATCH_ID}/live_alert.json${authSuffix}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(alertPayload)
+        });
+
+        showToast(`🔔 تم إرسال وبث الإشعار لجوالات المشجعين فوراً: ${title}`);
+      } catch (err) {
+        console.error('Error broadcasting stadium alert:', err);
+      }
+    }
+
     async function sendQuickPushNotification(type) {
       let title = '';
       let body = '';
@@ -4338,7 +4377,7 @@
         triggerAction('WAVE');
       }
 
-      showToast(`🔔 تم بث التنبيه الفوري للملعب: ${title}`);
+      await broadcastStadiumLiveAlert(title, body, type);
     }
 
     async function sendCustomPushNotification() {
@@ -4352,7 +4391,7 @@
         updateWordLetterDistribution();
       }
 
-      showToast(`🔔 تم بث التنبيه المخصص للشاشات: ${title}`);
+      await broadcastStadiumLiveAlert(title, body, 'CUSTOM_TEXT');
       await triggerAction('TEXT_DISPLAY');
     }
   </script>
