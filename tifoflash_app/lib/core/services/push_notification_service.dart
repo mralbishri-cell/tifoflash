@@ -35,7 +35,19 @@ class PushNotificationService {
       // 2. Register Background Handler
       FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
 
-      // 3. Subscribe to Stadium Topics so all fans get broadcast notifications
+      // 3. Ensure APNs token is ready on iOS before topic subscription
+      if (!kIsWeb && defaultTargetPlatform == TargetPlatform.iOS) {
+        String? apnsToken = await _fcm.getAPNSToken();
+        if (apnsToken == null) {
+          for (int i = 0; i < 6; i++) {
+            await Future.delayed(const Duration(milliseconds: 500));
+            apnsToken = await _fcm.getAPNSToken();
+            if (apnsToken != null) break;
+          }
+        }
+      }
+
+      // 4. Subscribe to Stadium Topics so all fans get broadcast notifications
       await _fcm.subscribeToTopic('all_fans');
       await _fcm.subscribeToTopic('match_2026_final');
       await _fcm.subscribeToTopic('stadium_all');

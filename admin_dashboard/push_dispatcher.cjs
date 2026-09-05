@@ -107,6 +107,7 @@ function startDispatcher(certPath) {
         },
         apns: {
           headers: {
+            'apns-push-type': 'alert',
             'apns-priority': '10',
           },
           payload: {
@@ -117,7 +118,6 @@ function startDispatcher(certPath) {
               },
               sound: 'default',
               badge: 1,
-              'content-available': 1,
             },
           },
         },
