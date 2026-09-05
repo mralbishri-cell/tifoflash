@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'core/theme/tifo_theme.dart';
-import 'features/stadium/presentation/sector_selector_screen.dart';
+import 'features/stadium/presentation/main_navigation_screen.dart';
 import 'firebase_options.dart';
 
 void main() async {
@@ -20,14 +20,14 @@ void main() async {
     debugPrint('[Firebase] Init warning/fallback: $e');
   }
 
-  // L-1: Global Error Boundary — catch all unhandled Flutter errors
+  // Global Error Boundary — catch all unhandled Flutter errors
   FlutterError.onError = (FlutterErrorDetails details) {
     FlutterError.presentError(details);
     debugPrint('[TifoFlash CRASH] Flutter Error: ${details.exceptionAsString()}');
     debugPrint('[TifoFlash CRASH] Stack: ${details.stack}');
   };
 
-  // L-1: Catch async errors not caught by Flutter framework
+  // Catch async errors not caught by Flutter framework
   PlatformDispatcher.instance.onError = (error, stack) {
     debugPrint('[TifoFlash CRASH] Platform Error: $error');
     debugPrint('[TifoFlash CRASH] Stack: $stack');
@@ -78,10 +78,10 @@ class TifoFlashApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'TifoFlash Stadium',
+      title: 'TifoFlash Stadium Companion',
       debugShowCheckedModeBanner: false,
       theme: TifoTheme.darkTheme,
-      home: const SectorSelectorScreen(),
+      home: const MainNavigationScreen(),
     );
   }
 }

@@ -3,43 +3,71 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>سياسة الخصوصية - TifoFlash Privacy Policy</title>
+    <title>سياسة الخصوصية والدعم - TifoFlash Privacy Policy & Support</title>
     <style>
+        :root {
+            --bg-color: #030712;
+            --card-bg: #111827;
+            --border-color: #1f2937;
+            --primary: #10b981;
+            --cyan: #06b6d4;
+            --text: #f3f4f6;
+            --text-muted: #9ca3af;
+        }
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: #030712;
-            color: #f3f4f6;
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text);
             margin: 0;
             padding: 40px 20px;
             line-height: 1.8;
         }
         .container {
-            max-width: 800px;
+            max-width: 840px;
             margin: 0 auto;
-            background: #111827;
+            background: var(--card-bg);
             padding: 40px;
             border-radius: 20px;
-            border: 1px solid #1f2937;
+            border: 1px solid var(--border-color);
             box-shadow: 0 10px 30px rgba(0,0,0,0.5);
         }
+        .top-nav {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: #1e293b;
+            padding: 12px 20px;
+            border-radius: 12px;
+            margin-bottom: 24px;
+            border: 1px solid #334155;
+        }
+        .top-nav a {
+            color: var(--cyan);
+            text-decoration: none;
+            font-weight: bold;
+            font-size: 14px;
+        }
+        .top-nav a:hover {
+            text-decoration: underline;
+        }
         h1 {
-            color: #10b981;
+            color: var(--primary);
             text-align: center;
             font-size: 28px;
-            margin-bottom: 10px;
+            margin-bottom: 8px;
         }
         .subtitle {
             text-align: center;
-            color: #06b6d4;
+            color: var(--cyan);
             font-size: 14px;
             margin-bottom: 30px;
         }
         h2 {
-            color: #06b6d4;
+            color: var(--cyan);
             font-size: 18px;
-            border-bottom: 1px solid #1f2937;
+            border-bottom: 1px solid var(--border-color);
             padding-bottom: 8px;
-            margin-top: 25px;
+            margin-top: 30px;
         }
         p, li {
             color: #d1d5db;
@@ -48,18 +76,45 @@
         ul {
             padding-right: 20px;
         }
+        .contact-box {
+            background: #1e293b;
+            border: 1px solid #334155;
+            border-radius: 14px;
+            padding: 20px;
+            margin: 24px 0;
+            text-align: center;
+        }
+        .contact-box a {
+            color: var(--primary);
+            font-weight: bold;
+            font-size: 18px;
+            text-decoration: none;
+        }
         .footer {
             text-align: center;
             margin-top: 40px;
             padding-top: 20px;
-            border-top: 1px solid #1f2937;
+            border-top: 1px solid var(--border-color);
             color: #6b7280;
             font-size: 12px;
+        }
+        .en-section {
+            direction: ltr;
+            text-align: left;
+            margin-top: 40px;
+            padding-top: 30px;
+            border-top: 2px dashed var(--border-color);
         }
     </style>
 </head>
 <body>
     <div class="container">
+        <!-- Navigation Header -->
+        <div class="top-nav">
+            <span>🔒 سياسة الخصوصية / Privacy Policy</span>
+            <a href="support.html">🎧 مركز الدعم الفني / Support Center &rarr;</a>
+        </div>
+
         <h1>سياسة الخصوصية - TifoFlash</h1>
         <div class="subtitle">تطبيق تزامن الفلاش والتيفو الضوئي للملاعب والفعاليات الرياضية</div>
         
@@ -71,19 +126,41 @@
 
         <h2>3. استخدام صلاحيات الجهاز (Device Permissions)</h2>
         <ul>
-            <li><strong>الكاميرا والفلاش (Camera & Flashlight):</strong> يُستخدم إذن الكاميرا حصرياً للتحكم بفلاش الهواتف الـ LED لتوليد الومضات الضوئية المتزامنة مع المدرج. لا يتم التقاط أو تسجيل أو حفظ أي صور أو فيديوهات إطلاقاً.</li>
+            <li><strong>الكاميرا والفلاش (Camera & Flashlight):</strong> يُستخدم إذن الكاميرا حصرياً للتحكم بفلاش الهواتف الـ LED لتوليد الومضات الضوئية المتزامنة مع المدرج ومسح رمز التذكرة (QR Code). لا يتم التقاط أو تسجيل أو حفظ أي صور أو فيديوهات إطلاقاً.</li>
             <li><strong>مستشعرات الحركة (Gyroscope & Accelerometer):</strong> تُستخدم مستشعرات إمالة الهاتف محلياً داخل الجهاز لمعرفة زاوية توجيه الجوال نحو الملعب لضمان أعلى توهج ضوئي، ولا يتم إرسال أي بيانات حركة لأي سيرفر.</li>
         </ul>
 
         <h2>4. الاتصال والتزامن (Real-time Synchronization)</h2>
         <p>يتصل التطبيق بقواعد بيانات سريعة (Firebase Realtime Database) لقراءة أوامر الألوان والوميض الصادرة من لوحة تحكم المنظمين بالملعب فقط دون إرسال أو تتبع أي بيانات خاصة بمستخدم الجهاز.</p>
 
-        <h2>5. التواصل معنا</h2>
-        <p>إذا كان لديك أي استفسار حول سياسة الخصوصية، يمكنك التواصل معنا عبر البريد الإلكتروني:<br>
-        <strong style="color: #10b981;">shelny.exp@gmail.com</strong></p>
+        <div class="contact-box">
+            <p style="margin: 0 0 8px 0; color: #94a3b8;">لأي استفسار أو طلب دعم فني، يمكنك التواصل مع فريق العمل مباشرة:</p>
+            <a href="mailto:shelny.exp@gmail.com">shelny.exp@gmail.com</a>
+        </div>
+
+        <!-- English Privacy Policy Section -->
+        <div class="en-section">
+            <h1 style="font-size: 24px; text-align: left;">TifoFlash Privacy Policy</h1>
+            <div class="subtitle" style="text-align: left;">Stadium Light & Fan Synchronization Companion Platform</div>
+
+            <h2 style="text-align: left;">1. Introduction</h2>
+            <p>At TifoFlash, we prioritize user privacy. TifoFlash is engineered to enable dynamic audience light shows without collecting, storing, or selling personal data.</p>
+
+            <h2 style="text-align: left;">2. Zero Personal Data Collection</h2>
+            <p>We do not collect names, phone numbers, email addresses, precise GPS coordinates, or any personally identifiable information (PII). No account registration is required to use the app.</p>
+
+            <h2 style="text-align: left;">3. Device Permissions & Usage</h2>
+            <p><strong>Camera & Torch LED:</strong> Access to camera hardware is strictly used to control the rear LED torch strobe for stadium synchronization and to scan ticket QR codes. No pictures or video frames are ever recorded or stored.</p>
+            <p><strong>Sensors (Gyroscope/Accelerometer):</strong> Orientation sensors evaluate local pitch-facing angles locally on the device to boost light emission toward the field. Sensor data never leaves your device.</p>
+
+            <h2 style="text-align: left;">4. Contact & Support</h2>
+            <p>For questions or assistance regarding privacy or app support, reach out to our dedicated team at: <br>
+            <a href="mailto:shelny.exp@gmail.com" style="color: var(--cyan); font-weight: bold;">shelny.exp@gmail.com</a></p>
+        </div>
 
         <div class="footer">
-            جميع الحقوق محفوظة &copy; 2026 TifoFlash Inc.
+            جميع الحقوق محفوظة &copy; 2026 TifoFlash Inc. All Rights Reserved.<br>
+            <a href="support.html" style="color: var(--cyan); text-decoration: none;">الدعم الفني / Support Center</a>
         </div>
     </div>
 </body>

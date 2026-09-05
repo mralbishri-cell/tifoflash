@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>الدعم الفني والمساعدة - TifoFlash Support</title>
+    <title>مركز الدعم الفني والمساعدة - TifoFlash Support Center</title>
     <style>
         :root {
             --bg-color: #030712;
@@ -15,7 +15,7 @@
             --text-muted: #9ca3af;
         }
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
             background-color: var(--bg-color);
             color: var(--text);
             margin: 0;
@@ -31,6 +31,22 @@
             border: 1px solid var(--border-color);
             box-shadow: 0 10px 30px rgba(0,0,0,0.5);
         }
+        .top-nav {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: #1e293b;
+            padding: 12px 20px;
+            border-radius: 12px;
+            margin-bottom: 24px;
+            border: 1px solid #334155;
+        }
+        .top-nav a {
+            color: var(--cyan);
+            text-decoration: none;
+            font-weight: bold;
+            font-size: 14px;
+        }
         .header {
             text-align: center;
             margin-bottom: 30px;
@@ -43,16 +59,6 @@
         .subtitle {
             color: var(--cyan);
             font-size: 15px;
-        }
-        .lang-switch {
-            display: inline-block;
-            margin-top: 10px;
-            padding: 4px 12px;
-            background: #1f2937;
-            border-radius: 20px;
-            font-size: 12px;
-            color: var(--cyan);
-            text-decoration: none;
         }
         h2 {
             color: var(--cyan);
@@ -69,31 +75,32 @@
             background: #1e293b;
             border: 1px solid #334155;
             border-radius: 14px;
-            padding: 20px;
-            margin: 20px 0;
+            padding: 24px;
+            margin: 24px 0;
             text-align: center;
         }
         .contact-box a {
             color: var(--primary);
             font-weight: bold;
-            font-size: 18px;
+            font-size: 20px;
             text-decoration: none;
         }
         .faq-item {
             background: #0f172a;
-            border-radius: 10px;
-            padding: 16px;
-            margin-bottom: 12px;
+            border-radius: 12px;
+            padding: 18px;
+            margin-bottom: 14px;
             border: 1px solid #1e293b;
         }
         .faq-q {
             font-weight: bold;
             color: #fff;
             margin-bottom: 6px;
+            font-size: 15px;
         }
         .faq-a {
             color: var(--text-muted);
-            font-size: 13.5px;
+            font-size: 14px;
             margin: 0;
         }
         .footer {
@@ -109,12 +116,18 @@
             text-align: left;
             margin-top: 40px;
             padding-top: 30px;
-            border-top: 2px dashed #1f2937;
+            border-top: 2px dashed var(--border-color);
         }
     </style>
 </head>
 <body>
     <div class="container">
+        <!-- Top Navigation -->
+        <div class="top-nav">
+            <span>🎧 مركز الدعم الفني / Support Center</span>
+            <a href="privacy.html">🔒 سياسة الخصوصية / Privacy Policy &rarr;</a>
+        </div>
+
         <!-- Arabic Section -->
         <div class="header">
             <h1>مركز المساعدة والدعم الفني - TifoFlash</h1>
@@ -122,36 +135,36 @@
         </div>
 
         <div class="contact-box">
-            <p style="margin: 0 0 8px 0; color: #94a3b8;">لأي استفسارات، بلاغات أو طلبات دعم فني، تواصل معنا عبر البريد الإلكتروني:</p>
+            <p style="margin: 0 0 10px 0; color: #94a3b8; font-size: 15px;">لأي استفسارات، بلاغات أو طلبات دعم فني، تواصل مع فريق التطوير والدعم الفني مباشرة عبر البريد الإلكتروني:</p>
             <a href="mailto:shelny.exp@gmail.com">shelny.exp@gmail.com</a>
-            <p style="margin: 8px 0 0 0; font-size: 13px; color: #64748b;">فريق الدعم الفني متواجد ومتاح للرد خلال 24 ساعة</p>
+            <p style="margin: 10px 0 0 0; font-size: 13px; color: #64748b;">⚡ فريق الدعم الفني متاح 24/7 ولدينا التزام بالرد على كافة الاستفسارات خلال أقل من 24 ساعة.</p>
         </div>
 
         <h2>الأسئلة الشائعة (FAQ)</h2>
         <div class="faq-item">
             <div class="faq-q">1. كيف يعمل تطبيق TifoFlash داخل الملعب؟</div>
-            <p class="faq-a">يقوم المشجع باختيار الملعب والمدرج المخصص له، وعند بدء العرض الضوئي، يتصل التطبيق بنظام التزامن المباشر ليطلق ومضات الفلاش وألوان الشاشة بتوافق ميلي-ثانية مع جميع مقاعد المدرج لتشكيل اللوحات والكلمات (Tifo).</p>
+            <p class="faq-a">يقوم المشجع باختيار المباراة والقطاع المخصص له في المدرج. عند بدء العرض الضوئي، يتصل التطبيق بنظام التزامن المباشر ليطلق ومضات الفلاش وألوان الشاشة بتوافق ميلي-ثانية مع جميع مقاعد المدرج لتشكيل اللوحات والكلمات (Tifo).</p>
         </div>
         <div class="faq-item">
             <div class="faq-q">2. لماذا يطلب التطبيق إذن الكاميرا؟</div>
             <p class="faq-a">يُطلب إذن الكاميرا حصرياً للتحكم بوميض الفلاش (LED Flashlight) ومسح باركود التذكرة لتحديد المقعد. التطبيق لا يلتقط أو يخزن أي صور أو مقاطع فيديو خاصة بك إطلاقاً.</p>
         </div>
         <div class="faq-item">
-            <div class="faq-q">3. هل يمكن تجربة التطبيق إذا لم تكن هناك مباراة جارية؟</div>
-            <p class="faq-a">نعم! يتضمن التطبيق ميزة "العرض التجريبي (Demo Mode)"، حيث يمكنك الضغط عليها في أي وقت لاختبار التزامن ووميض الفلاش والألوان فوراً.</p>
+            <div class="faq-q">3. هل يمكن تجربة التطبيق وميزاته في حال عدم وجود مباراة جارية؟</div>
+            <p class="faq-a">نعم! يتضمن التطبيق "استوديو الإضاءة الضوئي (Light Studio)" و"العرض التجريبي (Demo Mode)" و"أهازيج المدرج"، حيث يمكنك استخدام كافة ميزات التطبيق والتفاعل معها في أي وقت.</p>
         </div>
 
         <!-- English Section for Apple Review Team -->
         <div class="en-section">
             <div class="header" style="text-align: left;">
-                <h1 style="font-size: 24px;">TifoFlash Support & Contact Center</h1>
+                <h1 style="font-size: 24px;">TifoFlash Official Support & Contact Center</h1>
                 <div class="subtitle">Stadium Crowd Light & Tifo Real-time Synchronization App</div>
             </div>
 
             <div class="contact-box" style="text-align: left;">
-                <p style="margin: 0 0 8px 0; color: #94a3b8;">For inquiries, troubleshooting, or support requests, please contact our support team:</p>
+                <p style="margin: 0 0 10px 0; color: #94a3b8; font-size: 15px;">For support, inquiries, feedback, or troubleshooting, please contact our support team:</p>
                 <a href="mailto:shelny.exp@gmail.com">shelny.exp@gmail.com</a>
-                <p style="margin: 8px 0 0 0; font-size: 13px; color: #64748b;">Our support team typically responds within 24 hours.</p>
+                <p style="margin: 10px 0 0 0; font-size: 13px; color: #64748b;">⚡ Customer Support SLA: Our dedicated support team responds within 24 hours.</p>
             </div>
 
             <h2 style="text-align: left;">Frequently Asked Questions (FAQ)</h2>
@@ -165,7 +178,7 @@
             </div>
             <div class="faq-item">
                 <div class="faq-q">3. How can I test the app when no live match is scheduled?</div>
-                <p class="faq-a">Simply open the app, select any arena or tap the "Demo Mode / عرض تجريبي" button on the screen to experience the complete light show simulation instantly.</p>
+                <p class="faq-a">Open the app to access the Matchday Hub, tap "Start Demo Show", or explore the Light Studio tab to test custom color strobes, chant soundboards, and hardware diagnostics anytime.</p>
             </div>
         </div>
 
