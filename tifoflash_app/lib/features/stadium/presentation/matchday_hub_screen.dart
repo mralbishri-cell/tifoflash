@@ -68,13 +68,6 @@ class _MatchdayHubScreenState extends State<MatchdayHubScreen> {
     );
   }
 
-  void _instantAutoJoin() {
-    final hashIndex = DateTime.now().microsecondsSinceEpoch % _selectedStadium.sectors.length;
-    setState(() {
-      _selectedSector = _selectedStadium.sectors[hashIndex];
-    });
-    _enterLiveTifoShow();
-  }
 
   void _showQRScannerModal() {
     showModalBottomSheet(
@@ -453,37 +446,6 @@ class _MatchdayHubScreenState extends State<MatchdayHubScreen> {
                   elevation: 8,
                   shadowColor: TifoTheme.stadiumGreen.withValues(alpha: 0.5),
                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-                ),
-              ),
-            ),
-
-            const SizedBox(height: 12),
-
-            // 1-Click Instant Smart Auto-Join Button
-            GestureDetector(
-              onTap: _instantAutoJoin,
-              child: Container(
-                width: double.infinity,
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                decoration: BoxDecoration(
-                  gradient: const LinearGradient(
-                    colors: [Color(0xFF06B6D4), Color(0xFF0F172A)],
-                  ),
-                  borderRadius: BorderRadius.circular(14),
-                  border: Border.all(color: TifoTheme.stadiumCyan),
-                ),
-                child: const Row(
-                  children: [
-                    Icon(Icons.flash_on, color: TifoTheme.stadiumCyan, size: 20),
-                    SizedBox(width: 10),
-                    Expanded(
-                      child: Text(
-                        '⚡ دخول سريع بالتوزيع التلقائي دون تحديد المقعد',
-                        style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 12),
-                      ),
-                    ),
-                    Icon(Icons.arrow_forward_ios, color: Colors.white70, size: 14),
-                  ],
                 ),
               ),
             ),
