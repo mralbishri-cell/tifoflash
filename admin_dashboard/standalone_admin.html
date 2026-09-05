@@ -471,13 +471,59 @@
       <!-- Left Control Center Sidebar (5 Cols): Push Notifications + Show Planner + Mic Sync + Presets + Devices + Log Stream -->
       <div class="lg:col-span-5 space-y-6 flex flex-col">
 
+        <!-- Live Match & Teams Manager (إدارة وتغيير أسماء الفرق والمباراة الحية) -->
+        <div class="glass-panel p-5 rounded-2xl border border-amber-500/40 space-y-4 text-xs shadow-xl shadow-amber-500/5">
+          <div class="flex flex-wrap items-center justify-between border-b border-slate-900 pb-2.5 gap-2">
+            <span class="text-amber-400 font-extrabold flex items-center gap-2 text-sm">
+              <span>⚽</span> إدارة أسماء الفرق والمباراة في التطبيق:
+            </span>
+            <span class="px-2.5 py-0.5 rounded-full bg-amber-500/20 text-amber-300 font-mono text-[10px] border border-amber-500/30 font-bold">بث حي لحظي ⚡</span>
+          </div>
+
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div>
+              <label class="text-slate-300 font-bold block mb-1">الفريق الأول (المستضيف):</label>
+              <div class="flex gap-1.5">
+                <input type="text" id="matchHomeTeamInput" value="الهلال" placeholder="اسم الفريق" class="flex-1 px-3 py-2 bg-slate-900 border border-slate-700 rounded-xl text-white font-bold text-xs outline-none focus:border-amber-400">
+                <input type="text" id="matchHomeLogoInput" value="⚽" title="شعار/أيقونة الفريق" placeholder="رمز" class="w-12 text-center px-1.5 py-2 bg-slate-900 border border-slate-700 rounded-xl text-white font-bold text-xs outline-none focus:border-amber-400">
+              </div>
+            </div>
+
+            <div>
+              <label class="text-slate-300 font-bold block mb-1">الفريق الثاني (الضيف):</label>
+              <div class="flex gap-1.5">
+                <input type="text" id="matchAwayTeamInput" value="النصر" placeholder="اسم الفريق" class="flex-1 px-3 py-2 bg-slate-900 border border-slate-700 rounded-xl text-white font-bold text-xs outline-none focus:border-amber-400">
+                <input type="text" id="matchAwayLogoInput" value="🏆" title="شعار/أيقونة الفريق" placeholder="رمز" class="w-12 text-center px-1.5 py-2 bg-slate-900 border border-slate-700 rounded-xl text-white font-bold text-xs outline-none focus:border-amber-400">
+              </div>
+            </div>
+
+            <div class="sm:col-span-2">
+              <label class="text-slate-300 font-bold block mb-1">اسم الملعب (Stadium):</label>
+              <input type="text" id="matchStadiumInput" value="استاد جامعة الملك سعود (الأول بارك)" placeholder="اسم الملعب الرسمي" class="w-full px-3 py-2 bg-slate-900 border border-slate-700 rounded-xl text-white text-xs outline-none focus:border-amber-400">
+            </div>
+
+            <div class="sm:col-span-2">
+              <label class="text-slate-300 font-bold block mb-1">نص حالة المباراة (Match Status):</label>
+              <div class="flex flex-col sm:flex-row gap-2">
+                <input type="text" id="matchStatusTextInput" value="مباشر الان 🔥" placeholder="مثال: مباشر الان 🔥 / الشوط الأول" class="flex-1 px-3 py-2 bg-slate-900 border border-slate-700 rounded-xl text-white text-xs outline-none focus:border-amber-400">
+                <button type="button" onclick="broadcastActiveMatchInfo()" class="px-4 py-2.5 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-black font-black text-xs rounded-xl shadow-lg shadow-amber-500/20 transition flex items-center justify-center gap-1.5">
+                  <span>💾</span>
+                  <span>حفظ وبث للتطبيق فوراً</span>
+                </button>
+              </div>
+            </div>
+          </div>
+          
+          <div id="matchInfoSyncNotice" class="text-[11px] text-emerald-400 font-bold hidden bg-emerald-950/60 border border-emerald-500/30 p-2.5 rounded-xl text-center transition"></div>
+        </div>
+
         <!-- Instant Push Notification Sender Bar -->
         <div class="glass-panel p-5 rounded-2xl border border-red-500/30 space-y-3 text-xs">
           <div class="flex flex-wrap items-center justify-between border-b border-slate-900 pb-2 gap-2">
             <span class="text-red-400 font-bold flex items-center gap-1.5 text-sm">
-              <span>🔔</span> إرسال الإشعارات الفورية لشاشات القفل (Lockscreen Push Notifications):
+              <span>🔔</span> إرسال الإشعارات والتنبيهات (Push & In-App Alerts):
             </span>
-            <span class="text-[10px] text-slate-400 font-mono">يصل لشاشات القفل والجوالات المغلقة فوراً</span>
+            <span class="text-[10px] text-slate-400 font-mono">بث حي فوري للمدرجات</span>
           </div>
 
           <div class="space-y-3">
@@ -499,6 +545,16 @@
               <button type="button" onclick="sendCustomPushNotification()" class="sm:col-span-3 py-1.5 bg-gradient-to-r from-red-500 to-pink-500 text-white font-extrabold text-xs rounded-xl shadow-md hover:opacity-90 transition">
                 🔔 إرسال الإشعار
               </button>
+            </div>
+
+            <!-- FCM Direct Guide Note for Apple Lockscreen Push -->
+            <div class="p-3 bg-slate-950/80 rounded-xl border border-red-500/20 text-slate-300 space-y-1 text-[11px] leading-relaxed">
+              <div class="font-bold text-red-400 flex items-center gap-1">
+                <span>📱</span> إرسال إشعار لشاشات القفل المقفلة (Lockscreen Push):
+              </div>
+              <p class="text-slate-400">
+                لإرسال إشعار حقيقي يصل لشاشات الآيفون حتى وهي مقفلة عبر (Apple APNs)، يمكنك الإرسال مباشرة بنقرة زر من <a href="https://console.firebase.google.com/project/tifoflash/messaging" target="_blank" class="text-amber-400 underline font-bold">Firebase Console &gt; Cloud Messaging</a> واختيار الإرسال للموضوع (Topic): <code class="bg-slate-900 px-1 text-emerald-400 font-mono">all_fans</code> ليصل لجميع الجوالات فوراً!
+              </p>
             </div>
           </div>
         </div>
@@ -1030,6 +1086,7 @@
           document.getElementById('mainDashboard').style.display = 'block';
           if (document.getElementById('broadcastDock')) document.getElementById('broadcastDock').style.display = 'block';
           startLivePresenceTracking();
+          listenToActiveMatchInfo();
         }
       });
     }
@@ -4163,6 +4220,105 @@
       }
     });
 
+    // ── ACTIVE MATCH & TEAMS LOGIC ──
+    async function broadcastActiveMatchInfo() {
+      const homeTeam = sanitizeText(document.getElementById('matchHomeTeamInput')?.value?.trim(), 50) || 'الهلال';
+      const homeLogo = sanitizeText(document.getElementById('matchHomeLogoInput')?.value?.trim(), 10) || '⚽';
+      const awayTeam = sanitizeText(document.getElementById('matchAwayTeamInput')?.value?.trim(), 50) || 'النصر';
+      const awayLogo = sanitizeText(document.getElementById('matchAwayLogoInput')?.value?.trim(), 10) || '🏆';
+      const stadiumName = sanitizeText(document.getElementById('matchStadiumInput')?.value?.trim(), 100) || 'استاد جامعة الملك سعود (الأول بارك)';
+      const statusText = sanitizeText(document.getElementById('matchStatusTextInput')?.value?.trim(), 50) || 'مباشر الان 🔥';
+
+      const matchData = {
+        home_team: homeTeam,
+        home_logo: homeLogo,
+        away_team: awayTeam,
+        away_logo: awayLogo,
+        stadium_name: stadiumName,
+        status_text: statusText,
+        is_live: true,
+        updated_at: Date.now()
+      };
+
+      try {
+        if (typeof firebase !== 'undefined' && firebase.database) {
+          try {
+            await firebase.database().ref(`/matches/${MATCH_ID}/active_info`).set(matchData);
+          } catch (e) {
+            console.warn('Firebase RTDB direct write error:', e);
+          }
+        }
+        
+        let authSuffix = authIdToken ? `?auth=${authIdToken}` : '';
+        await fetch(`${FIREBASE_DB_URL}/matches/${MATCH_ID}/active_info.json${authSuffix}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(matchData)
+        });
+
+        const noticeEl = document.getElementById('matchInfoSyncNotice');
+        if (noticeEl) {
+          noticeEl.textContent = `✨ تم حفظ وبث الفرق: (${homeTeam} ${homeLogo} ضد ${awayTeam} ${awayLogo}) في تطبيق الجوال فوراً!`;
+          noticeEl.classList.remove('hidden');
+          setTimeout(() => noticeEl.classList.add('hidden'), 6000);
+        }
+        showToast(`✅ تم تحديث بيانات المباراة والفرق في تطبيق المشجعين: ${homeTeam} ضد ${awayTeam}`);
+      } catch (err) {
+        console.error('Error broadcasting match info:', err);
+        showToast('⚠️ حدث خطأ أثناء تحديث بيانات المباراة');
+      }
+    }
+
+    function listenToActiveMatchInfo() {
+      if (typeof firebase !== 'undefined' && firebase.database) {
+        try {
+          firebase.database().ref(`/matches/${MATCH_ID}/active_info`).on('value', (snap) => {
+            const data = snap.val();
+            if (data) {
+              if (data.home_team && document.getElementById('matchHomeTeamInput')) {
+                document.getElementById('matchHomeTeamInput').value = data.home_team;
+              }
+              if (data.home_logo && document.getElementById('matchHomeLogoInput')) {
+                document.getElementById('matchHomeLogoInput').value = data.home_logo;
+              }
+              if (data.away_team && document.getElementById('matchAwayTeamInput')) {
+                document.getElementById('matchAwayTeamInput').value = data.away_team;
+              }
+              if (data.away_logo && document.getElementById('matchAwayLogoInput')) {
+                document.getElementById('matchAwayLogoInput').value = data.away_logo;
+              }
+              if (data.stadium_name && document.getElementById('matchStadiumInput')) {
+                document.getElementById('matchStadiumInput').value = data.stadium_name;
+              }
+              if (data.status_text && document.getElementById('matchStatusTextInput')) {
+                document.getElementById('matchStatusTextInput').value = data.status_text;
+              }
+            }
+          });
+        } catch (e) {
+          console.warn('Could not listen to active_info:', e);
+        }
+      }
+    }
+
+    // Auto-fetch current match info via REST on startup as fallback
+    (async function prefillMatchInfo() {
+      try {
+        const res = await fetch(`${FIREBASE_DB_URL}/matches/${MATCH_ID}/active_info.json`);
+        if (res.ok) {
+          const data = await res.json();
+          if (data) {
+            if (data.home_team && document.getElementById('matchHomeTeamInput')) document.getElementById('matchHomeTeamInput').value = data.home_team;
+            if (data.home_logo && document.getElementById('matchHomeLogoInput')) document.getElementById('matchHomeLogoInput').value = data.home_logo;
+            if (data.away_team && document.getElementById('matchAwayTeamInput')) document.getElementById('matchAwayTeamInput').value = data.away_team;
+            if (data.away_logo && document.getElementById('matchAwayLogoInput')) document.getElementById('matchAwayLogoInput').value = data.away_logo;
+            if (data.stadium_name && document.getElementById('matchStadiumInput')) document.getElementById('matchStadiumInput').value = data.stadium_name;
+            if (data.status_text && document.getElementById('matchStatusTextInput')) document.getElementById('matchStatusTextInput').value = data.status_text;
+          }
+        }
+      } catch (e) {}
+    })();
+
     // ── INSTANT PUSH NOTIFICATION LOGIC ──
     async function sendQuickPushNotification(type) {
       let title = '';
@@ -4182,7 +4338,7 @@
         triggerAction('WAVE');
       }
 
-      showToast(`🔔 تم إرسال الإشعار الفوري لشاشات القفل: ${title}`);
+      showToast(`🔔 تم بث التنبيه الفوري للملعب: ${title}`);
     }
 
     async function sendCustomPushNotification() {
@@ -4196,7 +4352,7 @@
         updateWordLetterDistribution();
       }
 
-      showToast(`🔔 تم بث الإشعار المخصص للشاشات: ${title}`);
+      showToast(`🔔 تم بث التنبيه المخصص للشاشات: ${title}`);
       await triggerAction('TEXT_DISPLAY');
     }
   </script>

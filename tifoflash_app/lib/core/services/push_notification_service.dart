@@ -25,16 +25,24 @@ class PushNotificationService {
 
       debugPrint('[FCM] Permission status: ${settings.authorizationStatus}');
 
+      // Enable Foreground Presentation for iOS (shows banner, sound, badge even if app is open)
+      await _fcm.setForegroundNotificationPresentationOptions(
+        alert: true,
+        badge: true,
+        sound: true,
+      );
+
       // 2. Register Background Handler
       FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
 
       // 3. Subscribe to Stadium Topics so all fans get broadcast notifications
       await _fcm.subscribeToTopic('all_fans');
       await _fcm.subscribeToTopic('match_2026_final');
+      await _fcm.subscribeToTopic('stadium_all');
 
       // 4. Handle Foreground Messages (if app is open)
       FirebaseMessaging.onMessage.listen((RemoteMessage message) {
-        debugPrint('[FCM Foreground] Push received: ${message.notification?.title}');
+        debugPrint('[FCM Foreground] Push received: ${message.notification?.title} - ${message.notification?.body}');
       });
 
       // 5. Get FCM Token for testing
