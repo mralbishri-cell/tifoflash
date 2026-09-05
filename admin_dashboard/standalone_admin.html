@@ -4505,6 +4505,18 @@
           });
         }
 
+        // 3. Ensure item is also pushed to push_queue via HTTP REST
+        fetch(`${FIREBASE_DB_URL}/matches/${MATCH_ID}/push_queue.json${authSuffix}`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            title: title,
+            body: body,
+            type: type,
+            timestamp: Date.now()
+          })
+        }).catch(() => {});
+
         showToast(`🔔 تم إرسال وبث الإشعار لجوالات المشجعين فوراً: ${title}`);
       } catch (err) {
         console.error('Error broadcasting stadium alert:', err);
