@@ -63,3 +63,35 @@ export async function broadcastLiveAction(payload) {
   // Fallback simulation mode
   return { success: true, mode: 'SIMULATION', record: fullRecord };
 }
+
+/**
+ * Update Active Match Info on Firebase Realtime Database
+ */
+export async function updateActiveMatchInfo(matchInfo) {
+  const matchId = MATCH_ID;
+  const targetNode = `/matches/${matchId}/active_info`;
+  const record = {
+    home_team: matchInfo.homeTeam || "الهلال",
+    away_team: matchInfo.awayTeam || "النصر",
+    home_logo: matchInfo.homeLogo || "⚽",
+    away_logo: matchInfo.awayLogo || "🏆",
+    stadium_name: matchInfo.stadiumName || "أرينا العاصمة المغطاة",
+    status_text: matchInfo.statusText || "مباشر الان 🔥",
+    is_live: matchInfo.isLive !== false,
+    updated_at: Date.now()
+  };
+
+  console.log(`[AdminService] Updating active match info at ${targetNode}:`, record);
+
+  if (db) {
+    try {
+      const matchRef = ref(db, targetNode);
+      await set(matchRef, record);
+      return { success: true, mode: 'FIREBASE_LIVE', record };
+    } catch (err) {
+      console.error("[AdminService] Firebase Write Error:", err);
+    }
+  }
+
+  return { success: true, mode: 'SIMULATION', record };
+}

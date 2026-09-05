@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../../core/models/stadium_sector.dart';
 import '../../../core/theme/tifo_theme.dart';
-import 'widgets/chant_lyrics_widget.dart';
 
 class StadiumGuideScreen extends StatefulWidget {
   const StadiumGuideScreen({super.key});
@@ -12,25 +11,7 @@ class StadiumGuideScreen extends StatefulWidget {
 
 class _StadiumGuideScreenState extends State<StadiumGuideScreen> {
   StadiumProfile _selectedStadium = PresetStadiumData.kingdomArena;
-  int _activeTab = 0; // 0 = Gates & Map, 1 = Chants Library, 2 = Safety Info
-
-  final List<Map<String, String>> _chants = [
-    {
-      'title': 'أهازيج الموج الأزرق 🌊',
-      'team': 'الهلال',
-      'lines': 'أووووه أووووه يا هلالي 💙\nفي كل ملعب رايتك عالية ⭐\nباسمك نغني في كل المدرجات 🔥',
-    },
-    {
-      'title': 'أهازيج العميد والجمهور 🟡',
-      'team': 'الاتحاد',
-      'lines': 'يا اتي يا عميد ناديك في القلب 💛\nجمهورك معاك في الشدة والرخاء 🐯\nوالتيفو يضيء بكامل المدرج ✨',
-    },
-    {
-      'title': 'أهازيج العالمي والذهب 🟡',
-      'team': 'النصر',
-      'lines': 'يا عالمي رايتك شموخ وفخر 🏆\nصوتنا يدوي في كل الملاعب ⭐\nوالفلاش يتلألأ في سماء الرياض 🔥',
-    },
-  ];
+  int _activeTab = 0; // 0 = Gates & Map, 1 = Services, 2 = Safety Info
 
   @override
   Widget build(BuildContext context) {
@@ -44,7 +25,7 @@ class _StadiumGuideScreenState extends State<StadiumGuideScreen> {
             Icon(Icons.map_outlined, color: Color(0xFFF59E0B), size: 22),
             SizedBox(width: 8),
             Text(
-              'دليل الملعب والأهازيج (Stadium Guide)',
+              'دليل الملعب والخدمات (Stadium Guide)',
               style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: Colors.white),
             ),
           ],
@@ -64,10 +45,10 @@ class _StadiumGuideScreenState extends State<StadiumGuideScreen> {
               child: Row(
                 children: [
                   Expanded(
-                    child: _buildSegmentButton(0, 'خريطة البوابات 🗺️'),
+                    child: _buildSegmentButton(0, 'خريطة القطاعات 🗺️'),
                   ),
                   Expanded(
-                    child: _buildSegmentButton(1, 'أهازيج المدرج 🎵'),
+                    child: _buildSegmentButton(1, 'خدمات البوابات 🚪'),
                   ),
                   Expanded(
                     child: _buildSegmentButton(2, 'إرشادات السلامة ⚠️'),
@@ -83,7 +64,7 @@ class _StadiumGuideScreenState extends State<StadiumGuideScreen> {
               child: _activeTab == 0
                   ? _buildGatesAndMapSection()
                   : _activeTab == 1
-                      ? _buildChantsSection()
+                      ? _buildServicesSection()
                       : _buildSafetySection(),
             ),
           ),
@@ -138,7 +119,11 @@ class _StadiumGuideScreenState extends State<StadiumGuideScreen> {
               child: Text('${stadium.nameAr} (${stadium.cityAr})'),
             );
           }).toList(),
-          onChanged: (s) => setState(() => _selectedStadium = s!),
+          onChanged: (s) {
+            if (s != null) {
+              setState(() => _selectedStadium = s);
+            }
+          },
         ),
 
         const SizedBox(height: 16),
@@ -146,7 +131,7 @@ class _StadiumGuideScreenState extends State<StadiumGuideScreen> {
         // Interactive Stadium Map Card
         Container(
           width: double.infinity,
-          height: 220,
+          height: 230,
           decoration: BoxDecoration(
             color: const Color(0xFF0F172A),
             borderRadius: BorderRadius.circular(16),
@@ -201,14 +186,46 @@ class _StadiumGuideScreenState extends State<StadiumGuideScreen> {
 
         const SizedBox(height: 16),
 
-        // Gates & Amenities Cards
-        const Text('خدمات وبوابات الملعب 🚪', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 14)),
+        const Text('قطاعات الملعب المتوفرة 🎟️', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 14)),
         const SizedBox(height: 8),
 
-        _buildServiceTile(Icons.door_sliding_outlined, 'بوابات الدخول الرئيسية', 'بوابة 1-4 للعائلات • بوابة 5-8 للأفراد'),
-        _buildServiceTile(Icons.local_parking_rounded, 'مواقف السيارات', 'مواقف A و B متاحة لحاملي التذاكر الرقمية'),
-        _buildServiceTile(Icons.fastfood_rounded, 'منطقة المأكولات والمشروبات', 'متوفرة خلف القطاعات 102، 106، 204'),
-        _buildServiceTile(Icons.medical_services_outlined, 'العيادة والإسعافات الأولية', 'بجوار البوابة الرقمية 3'),
+        ..._selectedStadium.sectors.map((sec) {
+          return Container(
+            margin: const EdgeInsets.only(bottom: 8),
+            padding: const EdgeInsets.all(12),
+            decoration: BoxDecoration(
+              color: TifoTheme.cardSurface,
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(color: TifoTheme.cardBorder),
+            ),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Row(
+                  children: [
+                    const Icon(Icons.stadium_outlined, color: TifoTheme.stadiumGreen, size: 18),
+                    const SizedBox(width: 10),
+                    Text(
+                      sec.nameAr,
+                      style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 12.5),
+                    ),
+                  ],
+                ),
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                  decoration: BoxDecoration(
+                    color: TifoTheme.stadiumCyan.withValues(alpha: 0.15),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: Text(
+                    sec.standGroup,
+                    style: const TextStyle(color: TifoTheme.stadiumCyan, fontSize: 10, fontWeight: FontWeight.bold),
+                  ),
+                ),
+              ],
+            ),
+          );
+        }),
       ],
     );
   }
@@ -225,6 +242,20 @@ class _StadiumGuideScreenState extends State<StadiumGuideScreen> {
         label,
         style: TextStyle(color: col, fontWeight: FontWeight.bold, fontSize: 9.5),
       ),
+    );
+  }
+
+  Widget _buildServicesSection() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Text('خدمات وبوابات الملعب 🚪', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 14)),
+        const SizedBox(height: 10),
+        _buildServiceTile(Icons.door_sliding_outlined, 'بوابات الدخول الرئيسية', 'بوابة 1-4 للعائلات • بوابة 5-8 للأفراد'),
+        _buildServiceTile(Icons.local_parking_rounded, 'مواقف السيارات', 'مواقف A و B متاحة لحاملي التذاكر الرقمية'),
+        _buildServiceTile(Icons.fastfood_rounded, 'منطقة المأكولات والمشروبات', 'متوفرة خلف القطاعات 102، 106، 204'),
+        _buildServiceTile(Icons.medical_services_outlined, 'العيادة والإسعافات الأولية', 'بجوار البوابة الرقمية 3'),
+      ],
     );
   }
 
@@ -252,22 +283,6 @@ class _StadiumGuideScreenState extends State<StadiumGuideScreen> {
           ),
         ],
       ),
-    );
-  }
-
-  Widget _buildChantsSection() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: _chants.map((chant) {
-        return Container(
-          margin: const EdgeInsets.only(bottom: 14),
-          child: ChantLyricsWidget(
-            title: chant['title']!,
-            lines: chant['lines']!.split('\n'),
-            primaryColor: TifoTheme.stadiumCyan,
-          ),
-        );
-      }).toList(),
     );
   }
 

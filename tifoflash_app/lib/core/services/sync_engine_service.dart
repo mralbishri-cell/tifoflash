@@ -14,6 +14,38 @@ import '../utils/stadium_seat_stencil.dart';
 import 'flash_controller_service.dart';
 import 'screen_light_service.dart';
 
+class ActiveMatchInfo {
+  final String homeTeam;
+  final String awayTeam;
+  final String homeLogo;
+  final String awayLogo;
+  final String stadiumName;
+  final String statusText;
+  final bool isLive;
+
+  const ActiveMatchInfo({
+    this.homeTeam = 'الهلال',
+    this.awayTeam = 'النصر',
+    this.homeLogo = '⚽',
+    this.awayLogo = '🏆',
+    this.stadiumName = 'أرينا العاصمة المغطاة',
+    this.statusText = 'مباشر الان 🔥',
+    this.isLive = true,
+  });
+
+  factory ActiveMatchInfo.fromMap(Map<dynamic, dynamic> map) {
+    return ActiveMatchInfo(
+      homeTeam: map['home_team']?.toString() ?? map['homeTeam']?.toString() ?? 'الهلال',
+      awayTeam: map['away_team']?.toString() ?? map['awayTeam']?.toString() ?? 'النصر',
+      homeLogo: map['home_logo']?.toString() ?? map['homeLogo']?.toString() ?? '⚽',
+      awayLogo: map['away_logo']?.toString() ?? map['awayLogo']?.toString() ?? '🏆',
+      stadiumName: map['stadium_name']?.toString() ?? map['stadiumName']?.toString() ?? 'أرينا العاصمة المغطاة',
+      statusText: map['status_text']?.toString() ?? map['statusText']?.toString() ?? 'مباشر الان 🔥',
+      isLive: map['is_live'] == true || map['isLive'] == true,
+    );
+  }
+}
+
 class SyncEngineState {
   final bool isConnectedToFirebase;
   final int serverTimeOffsetMs;
@@ -23,6 +55,7 @@ class SyncEngineState {
   final String? activeColorHex;
   final SponsorInfo? activeSponsor;
   final String statusMessageAr;
+  final ActiveMatchInfo activeMatch;
 
   List<SponsorInfo> get activeSponsors => currentAction?.sponsors.isNotEmpty == true 
       ? currentAction!.sponsors 
@@ -37,6 +70,7 @@ class SyncEngineState {
     this.activeColorHex,
     this.activeSponsor,
     required this.statusMessageAr,
+    this.activeMatch = const ActiveMatchInfo(),
   });
 
   factory SyncEngineState.initial() => const SyncEngineState(
@@ -48,6 +82,7 @@ class SyncEngineState {
         activeColorHex: null,
         activeSponsor: null,
         statusMessageAr: 'جاري الاتصال بالنظام المباشر للملعب...',
+        activeMatch: ActiveMatchInfo(),
       );
 
   SyncEngineState copyWith({
@@ -59,6 +94,7 @@ class SyncEngineState {
     String? activeColorHex,
     SponsorInfo? activeSponsor,
     String? statusMessageAr,
+    ActiveMatchInfo? activeMatch,
   }) {
     return SyncEngineState(
       isConnectedToFirebase: isConnectedToFirebase ?? this.isConnectedToFirebase,
@@ -69,6 +105,7 @@ class SyncEngineState {
       activeColorHex: activeColorHex ?? this.activeColorHex,
       activeSponsor: activeSponsor ?? this.activeSponsor,
       statusMessageAr: statusMessageAr ?? this.statusMessageAr,
+      activeMatch: activeMatch ?? this.activeMatch,
     );
   }
 }
@@ -244,6 +281,19 @@ class SyncEngineService {
         }
       }, onError: (err) {
         debugPrint('[SyncEngine] WebSocket error: $err');
+      });
+
+      // Active Match Info Listener (Synced with Admin Dashboard)
+      db.ref('/matches/$_matchId/active_info').onValue.listen((event) {
+        if (event.snapshot.value != null && event.snapshot.value is Map) {
+          try {
+            final matchMap = Map<dynamic, dynamic>.from(event.snapshot.value as Map);
+            final info = ActiveMatchInfo.fromMap(matchMap);
+            _updateState(_state.copyWith(activeMatch: info));
+          } catch (e) {
+            debugPrint('[SyncEngine] Error parsing active match info: $e');
+          }
+        }
       });
     } catch (e) {
       debugPrint('[SyncEngine] Firebase init error: $e');

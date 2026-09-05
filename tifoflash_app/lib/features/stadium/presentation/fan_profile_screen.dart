@@ -1,8 +1,18 @@
 import 'package:flutter/material.dart';
+import 'package:url_launcher/url_launcher.dart';
 import '../../../core/theme/tifo_theme.dart';
 
 class FanProfileScreen extends StatelessWidget {
   const FanProfileScreen({super.key});
+
+  Future<void> _launchUrlString(String urlStr) async {
+    try {
+      final Uri uri = Uri.parse(urlStr);
+      if (await canLaunchUrl(uri)) {
+        await launchUrl(uri, mode: LaunchMode.externalApplication);
+      }
+    } catch (_) {}
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -29,11 +39,11 @@ class FanProfileScreen extends StatelessWidget {
         'unlocked': true,
       },
       {
-        'title': 'مايسترو الأهازيج 🎵',
-        'desc': 'التفاعل مع أهازيج الفريق بالكامل',
+        'title': 'مايسترو العروض 🎵',
+        'desc': 'التفاعل مع عروض الفريق بالكامل',
         'icon': Icons.music_note,
         'color': const Color(0xFFA855F7),
-        'unlocked': false,
+        'unlocked': true,
       },
     ];
 
@@ -47,7 +57,7 @@ class FanProfileScreen extends StatelessWidget {
             Icon(Icons.badge_outlined, color: TifoTheme.stadiumGreen, size: 22),
             SizedBox(width: 8),
             Text(
-              'بروفايل المشجع والأوسمة (Fan Profile)',
+              'بروفايل المشجع والإعدادات (Fan Profile)',
               style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: Colors.white),
             ),
           ],
@@ -201,7 +211,7 @@ class FanProfileScreen extends StatelessWidget {
 
             const SizedBox(height: 24),
 
-            // Help, Support & Privacy Center Card
+            // Help, Support & Privacy Center Card (Interactive Tappable Links)
             Container(
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
@@ -217,9 +227,24 @@ class FanProfileScreen extends StatelessWidget {
                     style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 13.5),
                   ),
                   const SizedBox(height: 12),
-                  _buildLinkTile(Icons.headset_mic_outlined, 'الدعم الفني المباشر (Contact Support)', 'shelny.exp@gmail.com'),
-                  _buildLinkTile(Icons.shield_outlined, 'سياسة الخصوصية والأمان (Privacy Policy)', 'لا يتم جمع أي بيانات شخصية'),
-                  _buildLinkTile(Icons.info_outline, 'إصدار التطبيق (App Version)', 'TifoFlash v1.0.0+6 (Build 2026)'),
+                  _buildInteractiveTile(
+                    icon: Icons.headset_mic_outlined,
+                    title: 'الدعم الفني المباشر (Contact Support Center)',
+                    subtitle: 'shelny.exp@gmail.com (انقر للمراسلة/فتح صفحة الدعم)',
+                    onTap: () => _launchUrlString('https://mralbishri-cell.github.io/tifoflash/support.html'),
+                  ),
+                  _buildInteractiveTile(
+                    icon: Icons.shield_outlined,
+                    title: 'سياسة الخصوصية والأمان (Privacy Policy)',
+                    subtitle: 'لا يتم جمع أو تتبع أي بيانات شخصية (انقر لفتح الصفحة)',
+                    onTap: () => _launchUrlString('https://mralbishri-cell.github.io/tifoflash/privacy.html'),
+                  ),
+                  _buildInteractiveTile(
+                    icon: Icons.info_outline,
+                    title: 'إصدار التطبيق (App Version)',
+                    subtitle: 'TifoFlash v1.0.0+6 (Build 2026)',
+                    onTap: null,
+                  ),
                 ],
               ),
             ),
@@ -229,24 +254,34 @@ class FanProfileScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildLinkTile(IconData icon, String title, String subtitle) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 8),
-      child: Row(
-        children: [
-          Icon(icon, color: TifoTheme.stadiumCyan, size: 20),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(title, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 12)),
-                Text(subtitle, style: const TextStyle(color: Colors.white60, fontSize: 10)),
-              ],
+  Widget _buildInteractiveTile({
+    required IconData icon,
+    required String title,
+    required String subtitle,
+    VoidCallback? onTap,
+  }) {
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(12),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 4),
+        child: Row(
+          children: [
+            Icon(icon, color: TifoTheme.stadiumCyan, size: 22),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(title, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 12)),
+                  const SizedBox(height: 2),
+                  Text(subtitle, style: const TextStyle(color: TifoTheme.stadiumCyan, fontSize: 10.5)),
+                ],
+              ),
             ),
-          ),
-          const Icon(Icons.arrow_forward_ios, color: Colors.white24, size: 12),
-        ],
+            if (onTap != null) const Icon(Icons.open_in_new, color: TifoTheme.stadiumCyan, size: 16),
+          ],
+        ),
       ),
     );
   }
