@@ -4,6 +4,8 @@
 *.pyc
 *.swp
 .DS_Store
+*service-account*.json
+*adminsdk*.json
 .atom/
 .buildlog/
 .history
