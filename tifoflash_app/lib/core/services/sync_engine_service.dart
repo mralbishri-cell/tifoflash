@@ -35,12 +35,12 @@ class ActiveMatchInfo {
 
   factory ActiveMatchInfo.fromMap(Map<dynamic, dynamic> map) {
     return ActiveMatchInfo(
-      homeTeam: map['home_team']?.toString() ?? map['homeTeam']?.toString() ?? 'الهلال',
-      awayTeam: map['away_team']?.toString() ?? map['awayTeam']?.toString() ?? 'النصر',
-      homeLogo: map['home_logo']?.toString() ?? map['homeLogo']?.toString() ?? '⚽',
-      awayLogo: map['away_logo']?.toString() ?? map['awayLogo']?.toString() ?? '🏆',
-      stadiumName: map['stadium_name']?.toString().trim() ?? map['stadiumName']?.toString().trim() ?? 'استاد جامعة الملك سعود (الأول بارك)',
-      statusText: map['status_text']?.toString().trim() ?? map['statusText']?.toString().trim() ?? 'مباشر الان 🔥',
+      homeTeam: (map['home_team'] ?? map['homeTeam'] ?? 'الهلال').toString().trim(),
+      awayTeam: (map['away_team'] ?? map['awayTeam'] ?? '').toString().trim(),
+      homeLogo: (map['home_logo'] ?? map['homeLogo'] ?? '⚽').toString().trim(),
+      awayLogo: (map['away_logo'] ?? map['awayLogo'] ?? '').toString().trim(),
+      stadiumName: (map['stadium_name'] ?? map['stadiumName'] ?? 'استاد جامعة الملك سعود (الأول بارك)').toString().trim(),
+      statusText: (map['status_text'] ?? map['statusText'] ?? 'مباشر الان 🔥').toString().trim(),
       isLive: map['is_live'] == true || map['isLive'] == true,
     );
   }

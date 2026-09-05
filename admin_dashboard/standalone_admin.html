@@ -146,7 +146,20 @@
             <span class="w-2 h-2 rounded-full bg-emerald-400 animate-ping"></span>
             بث حي مباشر للملعب والجوالات
           </span>
-        </div>
+      <!-- Event Mode Quick Preset Selector (مباراة أو حفل ومهرجان) -->
+      <div class="flex flex-wrap items-center gap-2 text-xs bg-slate-900/90 p-2.5 rounded-xl border border-slate-800">
+        <span class="text-slate-400 font-extrabold flex items-center gap-1">
+          <span>🎭</span> نوع الحدث:
+        </span>
+        <button type="button" onclick="setEventModePreset('MATCH')" class="px-3 py-1 rounded-lg bg-amber-500/20 text-amber-300 border border-amber-500/40 font-bold hover:bg-amber-500/30 transition">
+          ⚽ مباراة رياضية (Match)
+        </button>
+        <button type="button" onclick="setEventModePreset('CONCERT')" class="px-3 py-1 rounded-lg bg-cyan-500/20 text-cyan-300 border border-cyan-500/40 font-bold hover:bg-cyan-500/30 transition">
+          🎪 حفل غنائي / مهرجان (Concert & Festival)
+        </button>
+        <button type="button" onclick="setEventModePreset('NATIONAL')" class="px-3 py-1 rounded-lg bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 font-bold hover:bg-emerald-500/30 transition">
+          🇸🇦 احتفالية وطنية (National Event)
+        </button>
       </div>
 
       <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-12 gap-4 items-end">
@@ -4255,14 +4268,43 @@
       }
     });
 
-    // ── ACTIVE MATCH & TEAMS LOGIC ──
+    // ── ACTIVE MATCH & EVENT PRESETS LOGIC ──
+    function setEventModePreset(mode) {
+      if (mode === 'CONCERT') {
+        document.getElementById('matchHomeTeamInput').value = 'حفل موسم الرياض الغنائي 🎵';
+        document.getElementById('matchHomeLogoInput').value = '🎵';
+        document.getElementById('matchAwayTeamInput').value = '';
+        document.getElementById('matchAwayLogoInput').value = '';
+        document.getElementById('matchStadiumInput').value = 'مسرح محمد عبده أرينا (بوليفارد سيتي)';
+        document.getElementById('matchStatusTextInput').value = 'العرض الضوئي المباشر نشط الآن ⚡';
+        switchStadium('open_hall');
+      } else if (mode === 'NATIONAL') {
+        document.getElementById('matchHomeTeamInput').value = 'احتفالية اليوم الوطني السعودي 🇸🇦';
+        document.getElementById('matchHomeLogoInput').value = '🇸🇦';
+        document.getElementById('matchAwayTeamInput').value = '';
+        document.getElementById('matchAwayLogoInput').value = '';
+        document.getElementById('matchStadiumInput').value = 'ساحة الاحتفالات والميدان الكبير';
+        document.getElementById('matchStatusTextInput').value = 'عرض الأضواء والراية الخضراء 🇸🇦';
+        switchStadium('outdoor_plaza');
+      } else {
+        document.getElementById('matchHomeTeamInput').value = 'الهلال';
+        document.getElementById('matchHomeLogoInput').value = '⚽';
+        document.getElementById('matchAwayTeamInput').value = 'النصر';
+        document.getElementById('matchAwayLogoInput').value = '🏆';
+        document.getElementById('matchStadiumInput').value = 'استاد جامعة الملك سعود (الأول بارك)';
+        document.getElementById('matchStatusTextInput').value = 'مباشر الان 🔥';
+        switchStadium('alawwal_park');
+      }
+      showToast('🎭 تم تبديل نمط الفعالية — اضغط حفظ للبث للتطبيق!');
+    }
+
     async function broadcastActiveMatchInfo() {
-      const homeTeam = sanitizeText(document.getElementById('matchHomeTeamInput')?.value?.trim(), 50) || 'الهلال';
+      const homeTeam = sanitizeText(document.getElementById('matchHomeTeamInput')?.value?.trim(), 100) || 'الهلال';
       const homeLogo = sanitizeText(document.getElementById('matchHomeLogoInput')?.value?.trim(), 500) || '⚽';
-      const awayTeam = sanitizeText(document.getElementById('matchAwayTeamInput')?.value?.trim(), 50) || 'النصر';
-      const awayLogo = sanitizeText(document.getElementById('matchAwayLogoInput')?.value?.trim(), 500) || '🏆';
+      const awayTeam = sanitizeText(document.getElementById('matchAwayTeamInput')?.value?.trim(), 100) || '';
+      const awayLogo = sanitizeText(document.getElementById('matchAwayLogoInput')?.value?.trim(), 500) || '';
       const stadiumName = sanitizeText(document.getElementById('matchStadiumInput')?.value?.trim(), 100) || 'استاد جامعة الملك سعود (الأول بارك)';
-      const statusText = sanitizeText(document.getElementById('matchStatusTextInput')?.value?.trim(), 50) || 'مباشر الان 🔥';
+      const statusText = sanitizeText(document.getElementById('matchStatusTextInput')?.value?.trim(), 100) || 'مباشر الان 🔥';
 
       const matchData = {
         home_team: homeTeam,

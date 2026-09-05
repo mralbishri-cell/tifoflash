@@ -510,37 +510,61 @@ class _MatchdayHubScreenState extends State<MatchdayHubScreen> {
             ],
           ),
           const SizedBox(height: 12),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              _buildLogoWidget(activeMatch.homeLogo),
-              const SizedBox(width: 8),
-              Flexible(
-                child: Text(
-                  activeMatch.homeTeam,
-                  style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 16),
-                  overflow: TextOverflow.ellipsis,
+          if (activeMatch.awayTeam.trim().isEmpty) ...[
+            // Concert / Festival / Solo Event Mode (حفل أو فعالية جماهيرية)
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                _buildLogoWidget(activeMatch.homeLogo),
+                const SizedBox(width: 10),
+                Flexible(
+                  child: Text(
+                    activeMatch.homeTeam,
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontWeight: FontWeight.w900,
+                      fontSize: 18,
+                    ),
+                    textAlign: TextAlign.center,
+                    overflow: TextOverflow.ellipsis,
+                  ),
                 ),
-              ),
-              const Padding(
-                padding: EdgeInsets.symmetric(horizontal: 10),
-                child: Text('🆚', style: TextStyle(fontSize: 18)),
-              ),
-              Flexible(
-                child: Text(
-                  activeMatch.awayTeam,
-                  style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 16),
-                  overflow: TextOverflow.ellipsis,
+              ],
+            ),
+          ] else ...[
+            // Sports Match Mode (Team 1 VS Team 2)
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                _buildLogoWidget(activeMatch.homeLogo),
+                const SizedBox(width: 8),
+                Flexible(
+                  child: Text(
+                    activeMatch.homeTeam,
+                    style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 16),
+                    overflow: TextOverflow.ellipsis,
+                  ),
                 ),
-              ),
-              const SizedBox(width: 8),
-              _buildLogoWidget(activeMatch.awayLogo),
-            ],
-          ),
+                const Padding(
+                  padding: EdgeInsets.symmetric(horizontal: 10),
+                  child: Text('🆚', style: TextStyle(fontSize: 18)),
+                ),
+                Flexible(
+                  child: Text(
+                    activeMatch.awayTeam,
+                    style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 16),
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ),
+                const SizedBox(width: 8),
+                _buildLogoWidget(activeMatch.awayLogo),
+              ],
+            ),
+          ],
           const SizedBox(height: 6),
           Center(
             child: Text(
-              '${activeMatch.stadiumName} • بث التيفو نشط الآن 🏟️',
+              '${activeMatch.stadiumName} • ${activeMatch.awayTeam.trim().isEmpty ? "العرض الضوئي التفاعلي نشط 🎪" : "بث التيفو نشط الآن 🏟️"}',
               style: const TextStyle(color: Colors.white60, fontSize: 11),
             ),
           ),

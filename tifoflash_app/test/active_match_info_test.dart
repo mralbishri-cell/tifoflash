@@ -61,5 +61,25 @@ void main() {
 
       expect(info1 == info2, isFalse);
     });
+
+    test('Correctly handles Concert / Festival Mode with single event title and empty away team', () {
+      final concertData = {
+        'home_team': 'حفل موسم الرياض الغنائي 🎵',
+        'home_logo': '🎵',
+        'away_team': '',
+        'away_logo': '',
+        'stadium_name': 'مسرح محمد عبده أرينا (بوليفارد سيتي)',
+        'status_text': 'العرض الضوئي المباشر نشط الآن ⚡',
+        'is_live': true,
+      };
+
+      final info = ActiveMatchInfo.fromMap(concertData);
+
+      expect(info.homeTeam, equals('حفل موسم الرياض الغنائي 🎵'));
+      expect(info.homeLogo, equals('🎵'));
+      expect(info.awayTeam, isEmpty);
+      expect(info.awayLogo, isEmpty);
+      expect(info.stadiumName, equals('مسرح محمد عبده أرينا (بوليفارد سيتي)'));
+    });
   });
 }
