@@ -1,6 +1,8 @@
 import 'dart:async';
+import 'dart:convert';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
 import 'package:vibration/vibration.dart';
 import '../../../core/models/stadium_sector.dart';
 import '../../../core/theme/tifo_theme.dart';
@@ -20,6 +22,7 @@ class MainNavigationScreen extends StatefulWidget {
 class _MainNavigationScreenState extends State<MainNavigationScreen> {
   int _currentIndex = 0;
   StreamSubscription<DatabaseEvent>? _alertSubscription;
+  Timer? _httpAlertTimer;
   String? _lastHandledAlertId;
 
   @override
@@ -31,33 +34,60 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
   @override
   void dispose() {
     _alertSubscription?.cancel();
+    _httpAlertTimer?.cancel();
     super.dispose();
   }
 
   void _listenForLiveStadiumAlerts() {
+    // 1. HTTP Immediate Fetch & Periodic Polling
+    _pollLiveAlertHttp();
+    _httpAlertTimer?.cancel();
+    _httpAlertTimer = Timer.periodic(const Duration(seconds: 3), (_) {
+      if (mounted) _pollLiveAlertHttp();
+    });
+
+    // 2. WebSocket Realtime Listener
     try {
       final alertRef = FirebaseDatabase.instance.ref('/matches/match_2026_final/live_alert');
       _alertSubscription = alertRef.onValue.listen((event) {
         if (event.snapshot.value == null || event.snapshot.value is! Map) return;
         try {
           final map = Map<String, dynamic>.from(event.snapshot.value as Map);
-          final alertId = map['id']?.toString() ?? '';
-          final title = map['title']?.toString() ?? 'إشعار من إدارة المباراة 📣';
-          final body = map['body']?.toString() ?? 'شارك الآن في العرض الضوئي والتيفو ⚡';
-          final timestamp = (map['timestamp'] as num?)?.toInt() ?? 0;
-
-          final now = DateTime.now().millisecondsSinceEpoch;
-          // Only show if fresh (within last 90 seconds) and not handled yet
-          if (alertId.isNotEmpty && alertId != _lastHandledAlertId && (now - timestamp).abs() < 90000) {
-            _lastHandledAlertId = alertId;
-            _triggerInAppNotification(title, body);
-          }
+          _handleAlertMap(map);
         } catch (e) {
           debugPrint('[LiveAlert] Parse error: $e');
         }
       });
     } catch (e) {
       debugPrint('[LiveAlert] Init error: $e');
+    }
+  }
+
+  void _pollLiveAlertHttp() async {
+    try {
+      final url = Uri.parse('https://tifoflash-default-rtdb.europe-west1.firebasedatabase.app/matches/match_2026_final/live_alert.json');
+      final res = await http.get(url).timeout(const Duration(seconds: 2));
+      if (res.statusCode == 200 && res.body.isNotEmpty && res.body != 'null') {
+        final decoded = json.decode(res.body);
+        if (decoded is Map) {
+          final map = Map<String, dynamic>.from(decoded);
+          _handleAlertMap(map);
+        }
+      }
+    } catch (_) {}
+  }
+
+  void _handleAlertMap(Map<String, dynamic> map) {
+    final alertId = map['id']?.toString() ?? '';
+    final title = map['title']?.toString() ?? 'إشعار من إدارة المباراة 📣';
+    final body = map['body']?.toString() ?? 'شارك الآن في العرض الضوئي والتيفو ⚡';
+    final timestamp = (map['timestamp'] as num?)?.toInt() ?? 0;
+
+    final now = DateTime.now().millisecondsSinceEpoch;
+    // Only show if fresh (within last 90 seconds) and not handled yet
+    if (alertId.isNotEmpty && alertId != _lastHandledAlertId && (now - timestamp).abs() < 90000) {
+      _lastHandledAlertId = alertId;
+      _triggerInAppNotification(title, body);
     }
   }
 

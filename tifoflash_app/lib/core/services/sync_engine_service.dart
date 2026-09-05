@@ -299,7 +299,31 @@ class SyncEngineService {
       debugPrint('[SyncEngine] Firebase init error: $e');
     }
 
+    _fetchActiveMatchInfoHttp();
     _startHttpPolling();
+  }
+
+  Future<void> _fetchActiveMatchInfoHttp() async {
+    try {
+      final encodedMatchId = Uri.encodeComponent(_matchId);
+      final url = Uri.parse('https://tifoflash-default-rtdb.europe-west1.firebasedatabase.app/matches/$encodedMatchId/active_info.json');
+      final res = await http.get(url).timeout(const Duration(milliseconds: 3000));
+      if (res.statusCode == 200 && res.body.isNotEmpty && res.body != 'null') {
+        final decoded = json.decode(res.body);
+        if (decoded is Map) {
+          final info = ActiveMatchInfo.fromMap(decoded);
+          if (info.homeTeam != _state.activeMatch.homeTeam ||
+              info.awayTeam != _state.activeMatch.awayTeam ||
+              info.statusText != _state.activeMatch.statusText ||
+              info.stadiumName != _state.activeMatch.stadiumName) {
+            _updateState(_state.copyWith(activeMatch: info));
+            debugPrint('[SyncEngine] Synced match info: ${info.homeTeam} vs ${info.awayTeam}');
+          }
+        }
+      }
+    } catch (e) {
+      debugPrint('[SyncEngine] HTTP active_info fetch notice: $e');
+    }
   }
 
   void _startHttpPolling() {
@@ -310,6 +334,7 @@ class SyncEngineService {
       if (_disposed) return;
       _httpPollTimer = Timer(Duration(milliseconds: _httpPollBackoffMs), () async {
         if (_disposed) return;
+        _fetchActiveMatchInfoHttp();
         try {
           final encodedMatchId = Uri.encodeComponent(_matchId);
           final url = Uri.parse('https://tifoflash-default-rtdb.europe-west1.firebasedatabase.app/matches/$encodedMatchId/live_action.json');
